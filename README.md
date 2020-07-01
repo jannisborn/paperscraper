@@ -1,2 +1,19 @@
 # paper_scraper
-Tools to scrape metadata from arxiv, pubmed and medrxiv
+
+## Overview
+
+Package to scrape paper from arxiv, PubMed and medrxiv based on keywords.
+ 
+Install:
+
+```sh
+pip install .
+```
+
+### development
+
+Install in editable mode for development:
+
+```sh
+pip install -e .
+```

@@ -15,22 +15,31 @@ if os.path.exists('README.md'):
     with open('README.md') as fp:
         LONG_DESCRIPTION = fp.read()
 
+scripts = []
+
 setup(
     name='paper_scraper',
     version=__version__,
-    description=('Paper scraper for arXiv, PubMed, bio/medRxiv.'),
+    description='paper_scraper: Package to scrape paper.',
     long_description=LONG_DESCRIPTION,
-    author='IBM RXN team.',
+    long_description_content_type="text/markdown",
+    author='Matteo Manica, Jannis Born',
+    author_email=(
+        'drugilsberg@gmail.com, jab@zurich.ibm.com, '
+    ),
     url='https://github.com/PhosphorylatedRabbits/paper_scraper',
+    license='MIT',
     install_requires=[
-        'requests==2.24.0'
+        'arxiv', 'pymed', 'pandas'
     ],
     classifiers=[
-        'Intended Audience :: Developers', 'Intended Audience :: Science/Research',
-        'Programming Language :: Python :: 3', 'Programming Language :: Python :: 3.6',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     packages=find_packages(),
-    scripts=[]
+    scripts=scripts
 )
