@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dump medRxiv data in jsonl format."""
+"""Dump medRxiv data in JSONL format."""
 import os
 import json
 import argparse
