@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 import arxiv
 from paper_scraper.utils import dump_papers
 from paper_scraper.arxiv.utils import get_query_from_keywords
@@ -8,6 +8,9 @@ arxiv_field_mapper = {
     'journal_reference': 'journal',
     'summary': 'abstract'
 }
+
+# Authors and date fields needs specific processing
+process_fields = {'date': lambda d: [int(d[:4]), int(d[5:7]), int(d[8:10])]}
 
 
 def get_arxiv_papers(
@@ -33,7 +36,8 @@ def get_arxiv_papers(
 
     processed = [
         {
-            arxiv_field_mapper.get(key, key): value
+            arxiv_field_mapper.get(key, key):
+            process_fields.get(key, lambda x: x)[value]
             for key, value in paper.items()
             if arxiv_field_mapper.get(key, key) in fields
         } for paper in raw
@@ -42,7 +46,7 @@ def get_arxiv_papers(
 
 
 def get_and_dump_arxiv_papers(
-    keywords: List[str, List[str]],
+    keywords: List[Union[str, List[str]]],
     filepath: str,
     fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
     *args,

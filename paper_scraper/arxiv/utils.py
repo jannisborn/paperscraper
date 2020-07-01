@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Union
 
 finalize_disjunction = lambda x: '(' + x[:-4] + ') AND '
 finalize_conjunction = lambda x: x[:-5]
 
 
-def get_query_from_keywords(keywords: List[str, List[str]]) -> str:
+def get_query_from_keywords(keywords: List[Union[str, List[str]]]) -> str:
     """Receives a list of keywords and returns the query for the arxiv API.
 
     Args:
