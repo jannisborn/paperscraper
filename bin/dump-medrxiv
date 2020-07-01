@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Dump medRxiv data in jsonl format."""
+import os
+import json
+import argparse
+from paper_scraper.xrxiv.xrxiv_api import MedRxivApi
+
+# define the parser arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    'output_filepath', type=str, help='path to JSONL file where the dump is stored.'
+)
+
+if __name__ == '__main__':
+    # parse arguments
+    args = parser.parse_args()
+    output_filepath = args.output_filepath
+    # create API client
+    api = MedRxivApi()
+    # dump all papers
+    with open(output_filepath, 'w') as fp:
+        for index, paper in enumerate(api.get_papers()):
+            if index > 1:
+                fp.write(os.linesep)
+            fp.write(json.dumps(paper))

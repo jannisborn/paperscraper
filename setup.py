@@ -15,7 +15,7 @@ if os.path.exists('README.md'):
     with open('README.md') as fp:
         LONG_DESCRIPTION = fp.read()
 
-scripts = []
+scripts = ['bin/dump-medrxiv', 'bin/dump-biorxiv']
 
 setup(
     name='paper_scraper',
