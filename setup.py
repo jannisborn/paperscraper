@@ -30,7 +30,7 @@ setup(
     url='https://github.com/PhosphorylatedRabbits/paper_scraper',
     license='MIT',
     install_requires=[
-        'arxiv', 'pymed', 'pandas'
+        'arxiv', 'pymed', 'pandas', 'requests'
     ],
     classifiers=[
         'Intended Audience :: Developers',
