@@ -13,4 +13,4 @@ def dump_papers(papers: List[dict], filepath: str) -> None:
 
     with open(filepath, 'w') as f:
         for paper in papers:
-            f.write(str(paper), '\n')
+            f.write(str(paper) + '\n')

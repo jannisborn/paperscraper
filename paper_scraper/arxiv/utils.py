@@ -24,3 +24,4 @@ def get_query_from_keywords(keywords: List[Union[str, List[str]]]) -> str:
             query += finalize_disjunction(inter)
 
     query = finalize_conjunction(query)
+    return query
