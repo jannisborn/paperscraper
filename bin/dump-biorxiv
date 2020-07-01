@@ -20,6 +20,6 @@ if __name__ == '__main__':
     # dump all papers
     with open(output_filepath, 'w') as fp:
         for index, paper in enumerate(api.get_papers()):
-            if index > 1:
+            if index > 0:
                 fp.write(os.linesep)
             fp.write(json.dumps(paper))
