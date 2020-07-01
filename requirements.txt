@@ -1,0 +1,3 @@
+arxiv==0.5.3
+pymed==0.8.9
+pandas==1.0.4
