@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import List, Union
+
 import arxiv
-from paper_scraper.utils import dump_papers
 from paper_scraper.arxiv.utils import get_query_from_keywords
+from paper_scraper.utils import dump_papers
 
 arxiv_field_mapper = {
     'published': 'date',
@@ -10,7 +12,10 @@ arxiv_field_mapper = {
 }
 
 # Authors and date fields needs specific processing
-process_fields = {'date': lambda d: [int(d[:4]), int(d[5:7]), int(d[8:10])]}
+process_fields = {
+    'date': lambda date: datetime.fromisoformat(date[:10]).date(),
+    'journal': lambda j: j if j is not None else ''
+}
 
 
 def get_arxiv_papers(

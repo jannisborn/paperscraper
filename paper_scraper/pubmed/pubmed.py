@@ -7,7 +7,7 @@ PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
 pubmed_field_mapper = {'publication_date': 'date'}
 
-# Authors and date fields needs specific processing
+# Authors fields needs specific processing
 process_fields = {
     'authors':
         lambda authors: list(
@@ -15,9 +15,7 @@ process_fields = {
                 lambda a: str(a.get('firstname', '')) + '' +
                 str(a.get('lastname', '')), authors
             )
-        ),
-    'date':
-        lambda date: [date.year, date.month, date.day]
+        )
 }
 
 
