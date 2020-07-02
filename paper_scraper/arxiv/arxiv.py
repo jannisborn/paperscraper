@@ -13,8 +13,11 @@ arxiv_field_mapper = {
 
 # Authors and date fields needs specific processing
 process_fields = {
-    'date': lambda date: datetime.fromisoformat(date[:10]).date(),
-    'journal': lambda j: j if j is not None else ''
+    'date':
+        lambda date:
+        (datetime.fromisoformat(date[:10]).date().strftime('%Y-%m-%d')),
+    'journal':
+        lambda j: j if j is not None else ''
 }
 
 
@@ -42,7 +45,8 @@ def get_arxiv_papers(
     processed = [
         {
             arxiv_field_mapper.get(key, key):
-            process_fields.get(key, lambda x: x)(value)
+            process_fields.get(arxiv_field_mapper.get(key, key),
+                               lambda x: x)(value)
             for key, value in paper.items()
             if arxiv_field_mapper.get(key, key) in fields
         } for paper in raw
