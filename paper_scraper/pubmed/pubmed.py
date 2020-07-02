@@ -61,7 +61,7 @@ def get_pubmed_papers(
 
 def get_and_dump_pubmed_papers(
     keywords: List[Union[str, List[str]]],
-    filepath: str,
+    output_filepath: str,
     fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
     *args,
     **kwargs
