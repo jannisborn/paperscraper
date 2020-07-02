@@ -76,4 +76,4 @@ def get_and_dump_arxiv_papers(
     # Translate keywords into query.
     query = get_query_from_keywords(keywords)
     papers = get_arxiv_papers(query, fields, *args, **kwargs)
-    dump_papers(papers, filepath)
+    dump_papers(papers, output_filepath)

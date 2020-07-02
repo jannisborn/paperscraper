@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Union
 
 from pymed import PubMed
@@ -19,7 +20,10 @@ process_fields = {
             )
         ),
     'date':
-        lambda date: date.strftime('%Y-%m-%d')
+        lambda date: (
+            date.strftime('%Y-%m-%d')
+            if isinstance(date, datetime.date) else date
+        )
 }
 
 
@@ -81,4 +85,4 @@ def get_and_dump_pubmed_papers(
     # Translate keywords into query.
     query = get_query_from_keywords(keywords)
     papers = get_pubmed_papers(query, fields, *args, **kwargs)
-    dump_papers(papers, filepath)
+    dump_papers(papers, output_filepath)
