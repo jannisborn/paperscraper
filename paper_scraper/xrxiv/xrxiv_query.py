@@ -1,5 +1,6 @@
 """Query dumps from bioRxiv and medRXiv."""
 import pandas as pd
+from datetime import datetime
 from typing import List, Union
 
 
@@ -22,11 +23,13 @@ class XRXivQuery:
         self.dump_filepath = dump_filepath
         self.fields = fields
         self.df = pd.read_json(self.dump_filepath, lines=True)
+        self.df['date'] = [date.strftime('%Y-%m-%d') for date in self.df['date']]
 
     def search_keywords(
         self,
         keywords: List[Union[str, List[str]]],
-        fields: List[dict] = None
+        fields: List[dict] = None,
+        output_filepath: str = None
     ) -> List[dict]:
         """
         Search for papers in the dump using keywords.
@@ -36,6 +39,8 @@ class XRXivQuery:
                 are lists themselves, they will be OR separated.
             fields (List[dict], optional): fields to be used in the query search.
                 Defaults to None, a.k.a. search in all fields excluding date.
+            output_filepath (str, optional): optional output filepath where to store
+                the hits in JSONL format. Defaults to None, a.k.a., no export to a file.
 
         Returns:
             List[dict]: a list of papers associated to the query.
@@ -62,4 +67,6 @@ class XRXivQuery:
             hits = hits_per_field[0]
             for single_hits in hits_per_field[1:]:
                 hits |= single_hits
+        if output_filepath is not None:
+            self.df[hits].to_json(output_filepath, orient='records', lines=True)
         return self.df[hits]
