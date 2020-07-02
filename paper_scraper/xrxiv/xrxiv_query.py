@@ -1,6 +1,5 @@
 """Query dumps from bioRxiv and medRXiv."""
 import pandas as pd
-from datetime import datetime
 from typing import List, Union
 
 
