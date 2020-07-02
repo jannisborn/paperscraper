@@ -9,7 +9,7 @@ class XRXivQuery:
     def __init__(
         self,
         dump_filepath: str,
-        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date']
+        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date', 'journal']
     ):
         """
         Initialize the query class.
@@ -17,7 +17,7 @@ class XRXivQuery:
         Args:
             dump_filepath (str): filepath to the dump to be queried.
             fields (List[str], optional): fields to contained in the dump per paper.
-                Defaults to ['title', 'doi', 'authors', 'abstract', 'date'].
+                Defaults to ['title', 'doi', 'authors', 'abstract', 'date', 'journal'].
         """
         self.dump_filepath = dump_filepath
         self.fields = fields
@@ -27,7 +27,7 @@ class XRXivQuery:
     def search_keywords(
         self,
         keywords: List[Union[str, List[str]]],
-        fields: List[dict] = None,
+        fields: List[str] = None,
         output_filepath: str = None
     ) -> List[dict]:
         """
@@ -36,7 +36,7 @@ class XRXivQuery:
         Args:
             keywords (List[str, List[str]]): Items will be AND separated. If items
                 are lists themselves, they will be OR separated.
-            fields (List[dict], optional): fields to be used in the query search.
+            fields (List[str], optional): fields to be used in the query search.
                 Defaults to None, a.k.a. search in all fields excluding date.
             output_filepath (str, optional): optional output filepath where to store
                 the hits in JSONL format. Defaults to None, a.k.a., no export to a file.

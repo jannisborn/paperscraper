@@ -39,7 +39,7 @@ class XRXivApi:
         self,
         begin_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date']
+        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date', 'journal']
     ) -> Generator:
         """
         Get paper metadata.
@@ -48,7 +48,7 @@ class XRXivApi:
             begin_date (Optional[str], optional): begin date. Defaults to None, a.k.a. launch date.
             end_date (Optional[str], optional): end date. Defaults to None, a.k.a. today.
             fields (List[str], optional): fields to return per paper.
-                Defaults to ['title', 'doi', 'authors', 'abstract', 'date'].
+                Defaults to ['title', 'doi', 'authors', 'abstract', 'date', 'journal'].
 
         Yields:
             Generator: a generator of paper metadata (dict) with the desired fields.
