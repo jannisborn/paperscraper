@@ -1,6 +1,6 @@
 """Query dumps from bioRxiv and medRXiv."""
 import pandas as pd
-from typing import List
+from typing import List, Union
 
 
 class XRXivQuery:
@@ -23,18 +23,43 @@ class XRXivQuery:
         self.fields = fields
         self.df = pd.read_json(self.dump_filepath, lines=True)
 
-    def search(
-        self, query: dict,
+    def search_keywords(
+        self,
+        keywords: List[Union[str, List[str]]],
         fields: List[dict] = None
     ) -> List[dict]:
         """
-        Search for papers in the dump.
+        Search for papers in the dump using keywords.
 
         Args:
-            query (dict): a dictionary representing a query.
-            fields (List[dict], optional): fields to be used in the query search. Defaults to None.
+            keywords (List[str, List[str]]): Items will be AND separated. If items
+                are lists themselves, they will be OR separated.
+            fields (List[dict], optional): fields to be used in the query search.
+                Defaults to None, a.k.a. search in all fields excluding date.
 
         Returns:
             List[dict]: a list of papers associated to the query.
         """
-        raise NotImplementedError('query mechanism to be implemented')
+        if fields is None:
+            fields = self.fields
+        fields = [field for field in fields if field != 'date']
+        hits_per_field = []
+        for field in fields:
+            field_data = self.df[field].str.lower()
+            hits_per_keyword = []
+            for keyword in keywords:
+                if isinstance(keyword, list):
+                    query = '|'.join([_.lower() for _ in keyword])
+                else:
+                    query = keyword.lower()
+                hits_per_keyword.append(field_data.str.contains(query))
+            if len(hits_per_keyword):
+                keyword_hits = hits_per_keyword[0]
+                for single_keyword_hits in hits_per_keyword[1:]:
+                    keyword_hits &= single_keyword_hits
+                hits_per_field.append(keyword_hits)
+        if len(hits_per_field):
+            hits = hits_per_field[0]
+            for single_hits in hits_per_field[1:]:
+                hits |= single_hits
+        return self.df[hits]
