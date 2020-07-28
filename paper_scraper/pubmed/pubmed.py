@@ -3,7 +3,7 @@ from typing import List, Union
 
 from pymed import PubMed
 
-from paper_scraper.pubmed.utils import get_query_from_keywords
+from paper_scraper.pubmed.utils import get_query_from_keywords_and_date
 from paper_scraper.utils import dump_papers
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
@@ -41,7 +41,7 @@ def get_pubmed_papers(
     Args:
         query (str): Query to PubMed API. Needs to match PubMed API notation.
         fields (list[str]): List of strings with fields to keep in output.
-
+        max_results (int): Maximal number of results retrieved from DB.
         NOTE: *args, **kwargs are additional arguments for pubmed.query
 
     Returns:
@@ -67,6 +67,8 @@ def get_and_dump_pubmed_papers(
     keywords: List[Union[str, List[str]]],
     output_filepath: str,
     fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
+    start_date: str = 'None',
+    end_date: str = 'None',
     *args,
     **kwargs
 ):
@@ -81,8 +83,14 @@ def get_and_dump_pubmed_papers(
         fields (List, optional): List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
+        start_date (str): Start date for the search. Needs to be in format:
+            YYYY/MM/DD, e.g. '2020/07/20'. Defaults to 'None', i.e. no specific
+            dates are used.
+        end_date (str): End date for the search. Same notation as start_date.
     """
     # Translate keywords into query.
-    query = get_query_from_keywords(keywords)
+    query = get_query_from_keywords_and_date(
+        keywords, start_date=start_date, end_date=end_date
+    )
     papers = get_pubmed_papers(query, fields, *args, **kwargs)
     dump_papers(papers, output_filepath)
