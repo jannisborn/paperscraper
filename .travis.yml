@@ -1,0 +1,24 @@
+dist: bionic
+
+sudo: required
+
+language: python
+
+python:
+  - 3.6
+  - 3.7
+  - 3.8
+
+before_script:
+  - pip install .
+
+script:
+  - python -c "import paperscraper"
+  - pytest
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: bash .travis/deploy.sh
+  on:
+    branch: master
