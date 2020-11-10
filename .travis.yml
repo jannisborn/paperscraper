@@ -14,7 +14,6 @@ before_script:
 
 script:
   - python -c "import paperscraper"
-  - pytest
 
 deploy:
   provider: script

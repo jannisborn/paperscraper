@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+*.jsonl
+*.csv
+*.txt
+*.ipynb
+/notebooks
+
 # Mac
 *.DS_Store
 
@@ -130,3 +136,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.pyc
+*.cpython-37.pyc
+__pycache__/
