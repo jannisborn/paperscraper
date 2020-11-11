@@ -72,13 +72,13 @@ querier = XRXivQuery('server_dumps/chemrxiv_2020-11-10.jsonl')
 querier.search_keywords(query, output_filepath='covid19_ai_imaging.jsonl')
 ```
 
-You can also use the `QUERY_FN_DICT` to iterate over all databases in one pass:
+You can also use `dump_queries` to iterate over a bunch of queries for all available databases.
 
 ```py
-from paperscraper import QUERY_FN_DICT
+from paperscraper import dump_queries
 
-for db,f in QUERY_FN_DICT.items():
-    f(query, output_filepath=os.path.join(root, db, 'covid19_ai_imaging.jsonl')))
+queries = [[covid19, ai, mi], [covid19, ai], [ai]]
+dump_queuries(queries os.path.join('paperscraper', 'keyword_dumps'))
 ```
 
 * Scrape papers from Google Scholar:
@@ -114,7 +114,9 @@ automatically: Venn diagrams and bar plots.
 #### Venn Diagrams
 
 ```py
-from paperscraper.plotting import plot_venn_two, plot_venn_three, plot_multiple_venn
+from paperscraper.plotting import (
+    plot_venn_two, plot_venn_three, plot_multiple_venn
+)
 
 sizes_2020 = (30842, 14474, 2292, 35476, 1904, 1408, 376)
 sizes_2019 = (55402, 11899, 2563)
@@ -128,7 +130,9 @@ plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 
 
 ```py
-plot_venn_three(sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid')
+plot_venn_three(
+    sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid'
+)
 ```
 
 ![2020](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging_covid.pdf)
@@ -151,6 +155,7 @@ plot_multiple_venn(
 Compare the temporal evolution of different queries across different servers.
 
 ```py
+from paperscraper import QUERY_FN_DICT
 from paperscraper.postprocessing import aggregate_paper
 from paperscraper.utils import get_filename_from_query
 
@@ -173,12 +178,13 @@ for query in queries:
         with open(os.path.join(root, db, filename), 'r') as f:
             data = f.readlines()
 
-        # Here, the unstructured matches are aggregated into 6 bins, one bin per year
-        # from 2015 to 2020. Meanwhile, a sanity check is performed by having 
-        # `filtering=True` which removes all papers that don't contain all of the
-        # keywords in query.
+        # Unstructured matches are aggregated into 6 bins, 1 per year
+        # from 2015 to 2020. Sanity check is performed by having 
+        # `filtering=True`, removing papers that don't contain all of
+        # the keywords in query.
         data_dict[filename][db], filtered = aggregate_paper(
-            data, 2015, bins_per_year=1, filtering=True, filter_keys=query, return_filtered=True
+            data, 2015, bins_per_year=1, filtering=True,
+            filter_keys=query, return_filtered=True
         )
 
 # Plotting is now very simple
