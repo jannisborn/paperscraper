@@ -30,11 +30,13 @@ biorxiv()  # Takes ~2.5h and should result in ~250 MB file
 ```
 *NOTE*: For `chemrxiv` you need to create an access token in your account on [figshare.com](https://figshare.com/account/applications). Either pass the token to as keyword argument (`chemrxiv(token=your_token)`) or save it under `~/.config/figshare/chemrxiv.txt`.
 
-### Examples
+## Examples
 `paperscraper` is build on top of the packages [pymed](https://pypi.org/project/pymed/),
 [arxiv](https://pypi.org/project/arxiv/) and ['scholarly'](https://pypi.org/project/scholarly/). 
 
-Consider you want to perform a publication keyword search with the query `COVID-19` AND `Artificial Intelligence` AND `Medical Imaging`. 
+### Publication keyword search
+Consider you want to perform a publication keyword search with the query:
+`COVID-19` **AND** `Artificial Intelligence` **AND** `Medical Imaging`. 
 
 * Scrape papers from PubMed: 
 ```py
@@ -66,17 +68,115 @@ You can also use the `QUERY_FN_DICT` to iterate over all databases in one pass:
 from paperscraper import QUERY_FN_DICT
 
 for db,f in QUERY_FN_DICT.items():
-    print(f'Database = {db}')
     f(query, output_filepath=os.path.join(root, db, 'covid19_ai_imaging.jsonl')))
-
+```
 
 * Scrape papers from Google Scholar: 
+Thanks to [scholarly](https://pypi.org/project/scholarly/), there is an endpoint for Google Scholar too.
+It does not understand Boolean expressions like the others, but should be used just like
+the [Google Scholar search fields](https://scholar.google.com).
+```py
+from paperscraper.scholar import get_and_dump_scholar_papers
+topic = 'Machine Learning'
+get_and_dump_scholar_papers(topic)
+```
 
-- use exe_dict
-- aggregate data
-- plot results
+### Citation search
+A plus of the Scholar endpoint is that the number of citations of a paper can be fetched:
+```py
+from paperscraper.scholar import get_citations_from_title
+title = 'Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I.'
+get_citations_from_title(title)
+```
+*NOTE*: The scholar endpoint does not require authentification but since it regularly
+prompts with captchas, it's difficult to apply large scale.
+
+### Plotting
+When multiple query searches are performed, two types of plots can be generated
+automatically: Venn diagrams and bar plots.
+
+#### Venn Diagrams
+
+```py
+from paperscraper.plotting import plot_venn_two, plot_venn_three, plot_multiple_venn
+
+sizes_2020 = (30842, 14474, 2292, 35476, 1904, 1408, 376)
+sizes_2019 = (55402, 11899, 2563)
+labels_2020 = ('Medical\nImaging', 'Artificial\nIntelligence', 'COVID-19')
+labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
+
+plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
+```
+![2019](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging.pdf)
 
 
+```py
+plot_venn_three(sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid')
+```
+![2020](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging_covid.pdf)
 
-### Citation
-(Coming soon.)
+
+Or plot both together:
+```py
+plot_multiple_venn(
+    [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
+    titles=['2019', '2020'], suptitle='Keyword search comparison', 
+    gridspec_kw={'width_ratios': [1, 2]}, figsize=(10, 6),
+    figname='both'
+)
+```
+![both](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/both.pdf)
+
+#### Barplots 
+Compare the temporal evolution of different queries across different servers.
+
+```py
+from paperscraper.postprocessing import aggregate_paper
+from paperscraper.utils import get_filename_from_query
+
+# Define search terms and their synonyms
+ml = ['Deep learning', 'Neural Network', 'Machine learning']
+mol = ['molecule', 'molecular', 'drug', 'ligand', 'compound']
+gnn = ['gcn', 'gnn', 'graph neural', 'graph convolutional', 'molecular graph']
+smiles = ['SMILES', 'Simplified molecular']
+fp = ['fingerprint', 'molecular fingerprint', 'fingerprints']
+
+# Define queries
+queries = [[ml, mol, smiles], [ml, mol, fp], [ml, mol, gnn]]
+
+data_dict = dict()
+for query in queries:
+    filename = get_filename_from_query(query)
+    data_dict[filename] = dict()
+    for db,_ in QUERY_FN_DICT.items():
+        # Assuming the keyword search has been performed already
+        with open(os.path.join(root, db, filename), 'r') as f:
+            data = f.readlines()
+        
+        # Here, the unstructured matches are aggregated into 6 bins, one bin per year
+        # from 2015 to 2020. Meanwhile, a sanity check is performed by having 
+        # `filtering=True` which removes all papers that don't contain all of the
+        # keywords in query.
+        data_dict[filename][db], filtered = aggregate_paper(
+            data, 2015, bins_per_year=1, filtering=True, filter_keys=query, return_filtered=True
+        )
+
+# Plotting is now very simple
+from paperscraper.plotting import plot_comparison
+
+data_keys = [
+    'deeplearning_molecule_fingerprint.jsonl',
+    'deeplearning_molecule_smiles.jsonl', 
+    'deeplearning_molecule_gcn.jsonl'
+]
+plot_comparison(
+    data_dict,
+    data_keys,
+    title_text="'Deep Learning' AND 'Molecule' AND X",
+    keyword_text=['Fingerprint', 'SMILES', 'Graph'],
+    figname='mol_representation'
+)
+```
+![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/molreps.pdf)
+
+

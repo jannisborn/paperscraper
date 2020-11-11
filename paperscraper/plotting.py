@@ -45,12 +45,12 @@ def plot_comparison(
                     ...
                 }
             }
+        keys (List[str]): List of keys which should be plotted. This has to be a
+           subset of data_dict.keys().
         x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
             same length as data_dict[key][database]. Defaults to ['2015', '2016',
             '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
             year.
-        keys (List[str]): List of keys which should be plotted. This has to be a
-            ubset of data_dict.keys().
         show_preprint (bool, optional): Whether preprint servers are aggregated or not.
             Defaults to False.
         title_text (str, optional): Title for the produced figure. Defaults to ''.
