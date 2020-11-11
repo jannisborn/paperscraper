@@ -48,7 +48,7 @@ setup(
         'Chemrxiv',
     ],
     packages=find_packages('.'),
-    package_data={'paperscraper.keyword_dumps': ['*']},
+    package_data={'paperscraper.server_dumps': ['*']},
     zip_safe=False,
     classifiers=[
         'Development Status :: 3 - Alpha',
