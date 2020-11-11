@@ -111,7 +111,7 @@ prompts with captchas, it's difficult to apply large scale.
 ### Plotting
 
 When multiple query searches are performed, two types of plots can be generated
-automatically: [Venn diagrams](#Venn Diagrams) and bar plots.
+automatically: Venn diagrams and bar plots.
 
 #### Barplots
 
