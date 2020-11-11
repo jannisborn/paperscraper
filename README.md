@@ -32,11 +32,13 @@ biorxiv()  # Takes ~2.5h and should result in ~250 MB file
 ```
 
 *NOTE*: For `chemrxiv` you need to create an access token in your account on [figshare.com](https://figshare.com/account/applications). Either pass the token to as keyword argument (`chemrxiv(token=your_token)`) or save it under `~/.config/figshare/chemrxiv.txt`.
+*NOTE*: Once the dumps are stored, please make sure to restart the python interpreter
+so that the changes take effect. 
 
 ## Examples
 
 `paperscraper` is build on top of the packages [pymed](https://pypi.org/project/pymed/),
-[arxiv](https://pypi.org/project/arxiv/) and ['scholarly'](https://pypi.org/project/scholarly/). 
+[arxiv](https://pypi.org/project/arxiv/) and [scholarly](https://pypi.org/project/scholarly/). 
 
 ### Publication keyword search
 
