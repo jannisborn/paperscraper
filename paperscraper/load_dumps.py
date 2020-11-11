@@ -2,7 +2,8 @@ import glob
 import logging
 import os
 import sys
-from pathlib import Path
+
+import pkg_resources
 
 from paperscraper.arxiv import get_and_dump_arxiv_papers
 from paperscraper.pubmed import get_and_dump_pubmed_papers
@@ -17,7 +18,7 @@ QUERY_FN_DICT = {
     'pubmed': get_and_dump_pubmed_papers,
 }
 # For biorxiv, chemrxiv and medrxiv search for local dumps
-dump_root = os.path.join(Path(__file__).parent.parent, 'server_dumps')
+dump_root = pkg_resources.resource_filename('paperscraper', 'server_dumps')
 
 for db in ['biorxiv', 'chemrxiv', 'medrxiv']:
     dump_paths = glob.glob(os.path.join(dump_root, db + '*'))

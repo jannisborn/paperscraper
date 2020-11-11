@@ -13,12 +13,6 @@ mpl_logger = logging.getLogger('matplotlib')
 mpl_logger.setLevel(logging.WARNING)
 
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-SAVE_PATH = os.path.abspath(os.path.join(HERE, '..', 'plots'))
-if not os.path.exists(SAVE_PATH):
-    os.makedirs(SAVE_PATH)
-
-
 def plot_comparison(
     data_dict: dict,
     keys: List[str],
@@ -26,7 +20,7 @@ def plot_comparison(
     show_preprint: bool = False,
     title_text: str = '',
     keyword_text=None,
-    figname: str = '',
+    figpath: str = 'comparison_plot.pdf',
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
@@ -56,8 +50,8 @@ def plot_comparison(
         title_text (str, optional): Title for the produced figure. Defaults to ''.
         keyword_text ([type], optional): Figure caption per keyword. Defaults to None,
             i.e. empty strings will be used.
-        figname (str, optional): Name under which figure is saved. Figures are saved in
-            folder plots/ at top level directory. Defaults to ''.
+        figpath (str, optional): Name under which figure is saved. Relative or absolute
+            paths can be given. Defaults to 'comparison_plot.pdf'.
 
     Raises:
         KeyError: If a database is missing in data_dict.
@@ -178,7 +172,7 @@ def plot_comparison(
     plt.ylim([0, ymax * 1.02])
 
     plt.tight_layout()
-    plt.savefig(os.path.join(SAVE_PATH, f'{figname}.pdf'))
+    plt.savefig(figpath)
     plt.show()
 
 
@@ -186,7 +180,11 @@ get_name = lambda n: ' vs. '.join(list(map(lambda x: x.split(' ')[0], n)))
 
 
 def plot_venn_two(
-    sizes: List[int], labels: List[str], figname: str = '', title: str = '', **kwargs
+    sizes: List[int],
+    labels: List[str],
+    figpath: str = 'venn_two.pdf',
+    title: str = '',
+    **kwargs,
 ) -> None:
     """Plot a single Venn Diagram with two terms.
 
@@ -194,7 +192,7 @@ def plot_venn_two(
         sizes (List[int]): List of ints of length 3. First two elements correspond to
             the labels, third one to the intersection.
         labels ([type]): List of str of length 2, containing names of circles.
-        figname (str): Name under which figure is saved. Defaults to '', i.e. it is
+        figpath (str): Name under which figure is saved. Defaults to 'venn_two.pdf', i.e. it is
             inferred from labels.
         title (str): Title of the plot. Defaults to '', i.e. it is inferred from
             labels.
