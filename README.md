@@ -111,46 +111,7 @@ prompts with captchas, it's difficult to apply large scale.
 ### Plotting
 
 When multiple query searches are performed, two types of plots can be generated
-automatically: Venn diagrams and bar plots.
-
-#### Venn Diagrams
-
-```py
-from paperscraper.plotting import (
-    plot_venn_two, plot_venn_three, plot_multiple_venn
-)
-
-sizes_2020 = (30842, 14474, 2292, 35476, 1904, 1408, 376)
-sizes_2019 = (55402, 11899, 2563)
-labels_2020 = ('Medical\nImaging', 'Artificial\nIntelligence', 'COVID-19')
-labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
-
-plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
-```
-
-![2019](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging.png "2019")
-
-
-```py
-plot_venn_three(
-    sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid'
-)
-```
-
-![2020](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
-
-Or plot both together:
-
-```py
-plot_multiple_venn(
-    [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
-    titles=['2019', '2020'], suptitle='Keyword search comparison', 
-    gridspec_kw={'width_ratios': [1, 2]}, figsize=(10, 6),
-    figname='both'
-)
-```
-
-![both](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/both.png "Both")
+automatically: [Venn diagrams](#Venn Diagrams) and bar plots.
 
 #### Barplots
 
@@ -207,3 +168,43 @@ plot_comparison(
 ```
 
 ![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/molreps.png "MolReps")
+
+
+#### Venn Diagrams
+
+```py
+from paperscraper.plotting import (
+    plot_venn_two, plot_venn_three, plot_multiple_venn
+)
+
+sizes_2020 = (30842, 14474, 2292, 35476, 1904, 1408, 376)
+sizes_2019 = (55402, 11899, 2563)
+labels_2020 = ('Medical\nImaging', 'Artificial\nIntelligence', 'COVID-19')
+labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
+
+plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
+```
+
+![2019](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging.png "2019")
+
+
+```py
+plot_venn_three(
+    sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid'
+)
+```
+
+![2020](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
+
+Or plot both together:
+
+```py
+plot_multiple_venn(
+    [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
+    titles=['2019', '2020'], suptitle='Keyword search comparison', 
+    gridspec_kw={'width_ratios': [1, 2]}, figsize=(10, 6),
+    figname='both'
+)
+```
+
+![both](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/both.png "Both")
