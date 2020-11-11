@@ -12,33 +12,39 @@ publication metadata from PubMed or from preprint servers such as arXiv, medRxiv
 bioRxiv or chemRiv. It provides a streamlined interface to scrape metadata and comes
 with simple postprocessing functions and plotting routines for meta-analysis.
 
+## Getting started
 
-## Getting started 
-
-```sh
+```console
 pip install paperscraper
 ```
-This is enough to query PubMed, arXiv or Google Scholar. 
+
+This is enough to query PubMed, arXiv or Google Scholar.
 
 #### Download X-rxiv Dumps
-However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) or [chemrxiv](https://chemrxiv.org), the setup is different. The entire dump is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line). 
+
+However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) or [chemrxiv](https://chemrxiv.org), the setup is different. The entire dump is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line).
+
 ```py
 from paperscraper.get_dumps import chemrxiv, biorxiv, medrxiv
 chemrxiv()  # Takes ~1h and should result in ~10 MB file
 medrxiv()  # Takes ~30min and should result in ~35 MB file
 biorxiv()  # Takes ~2.5h and should result in ~250 MB file
 ```
+
 *NOTE*: For `chemrxiv` you need to create an access token in your account on [figshare.com](https://figshare.com/account/applications). Either pass the token to as keyword argument (`chemrxiv(token=your_token)`) or save it under `~/.config/figshare/chemrxiv.txt`.
 
 ## Examples
+
 `paperscraper` is build on top of the packages [pymed](https://pypi.org/project/pymed/),
 [arxiv](https://pypi.org/project/arxiv/) and ['scholarly'](https://pypi.org/project/scholarly/). 
 
 ### Publication keyword search
+
 Consider you want to perform a publication keyword search with the query:
 `COVID-19` **AND** `Artificial Intelligence` **AND** `Medical Imaging`. 
 
-* Scrape papers from PubMed: 
+* Scrape papers from PubMed:
+
 ```py
 from paperscraper.pubmed import get_and_dump_pubmed_papers
 covid19 = ['COVID-19', 'SARS-CoV-2']
@@ -48,7 +54,9 @@ query = [covid19, ai, mi]
 
 get_and_dump_pubmed_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 ```
-* Scrape papers from arXiv: 
+
+* Scrape papers from arXiv:
+
 ```py
 from paperscraper.pubmed import get_and_dump_arxiv_papers
 
@@ -56,6 +64,7 @@ get_and_dump_arxiv_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 ```
 
 * Scrape papers from bioRiv, medRxiv or chemRxiv:
+
 ```py
 from paperscraper.xrxiv.xrxiv_query import XRXivQuery
 
@@ -64,6 +73,7 @@ querier.search_keywords(query, output_filepath='covid19_ai_imaging.jsonl')
 ```
 
 You can also use the `QUERY_FN_DICT` to iterate over all databases in one pass:
+
 ```py
 from paperscraper import QUERY_FN_DICT
 
@@ -71,10 +81,12 @@ for db,f in QUERY_FN_DICT.items():
     f(query, output_filepath=os.path.join(root, db, 'covid19_ai_imaging.jsonl')))
 ```
 
-* Scrape papers from Google Scholar: 
+* Scrape papers from Google Scholar:
+
 Thanks to [scholarly](https://pypi.org/project/scholarly/), there is an endpoint for Google Scholar too.
 It does not understand Boolean expressions like the others, but should be used just like
 the [Google Scholar search fields](https://scholar.google.com).
+
 ```py
 from paperscraper.scholar import get_and_dump_scholar_papers
 topic = 'Machine Learning'
@@ -82,16 +94,20 @@ get_and_dump_scholar_papers(topic)
 ```
 
 ### Citation search
+
 A plus of the Scholar endpoint is that the number of citations of a paper can be fetched:
+
 ```py
 from paperscraper.scholar import get_citations_from_title
 title = 'Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I.'
 get_citations_from_title(title)
 ```
+
 *NOTE*: The scholar endpoint does not require authentification but since it regularly
 prompts with captchas, it's difficult to apply large scale.
 
 ### Plotting
+
 When multiple query searches are performed, two types of plots can be generated
 automatically: Venn diagrams and bar plots.
 
@@ -107,16 +123,18 @@ labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 
 plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 ```
+
 ![2019](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging.pdf)
 
 
 ```py
 plot_venn_three(sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid')
 ```
+
 ![2020](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging_covid.pdf)
 
-
 Or plot both together:
+
 ```py
 plot_multiple_venn(
     [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
@@ -125,9 +143,11 @@ plot_multiple_venn(
     figname='both'
 )
 ```
+
 ![both](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/both.pdf)
 
-#### Barplots 
+#### Barplots
+
 Compare the temporal evolution of different queries across different servers.
 
 ```py
@@ -152,7 +172,7 @@ for query in queries:
         # Assuming the keyword search has been performed already
         with open(os.path.join(root, db, filename), 'r') as f:
             data = f.readlines()
-        
+
         # Here, the unstructured matches are aggregated into 6 bins, one bin per year
         # from 2015 to 2020. Meanwhile, a sanity check is performed by having 
         # `filtering=True` which removes all papers that don't contain all of the
@@ -177,6 +197,5 @@ plot_comparison(
     figname='mol_representation'
 )
 ```
+
 ![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/molreps.pdf)
-
-
