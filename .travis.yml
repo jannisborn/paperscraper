@@ -20,4 +20,5 @@ deploy:
   skip_cleanup: true
   script: bash .travis/deploy.sh
   on:
+    tags: true
     branch: master
