@@ -78,7 +78,7 @@ You can also use `dump_queries` to iterate over a bunch of queries for all avail
 from paperscraper import dump_queries
 
 queries = [[covid19, ai, mi], [covid19, ai], [ai]]
-dump_queuries(queries os.path.join('paperscraper', 'keyword_dumps'))
+dump_queries(queries, '.')
 ```
 
 * Scrape papers from Google Scholar:
