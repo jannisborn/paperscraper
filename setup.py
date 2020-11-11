@@ -18,7 +18,7 @@ if os.path.exists('README.md'):
 setup(
     name='paperscraper',
     version=__version__,
-    description='paperscraper: Package to scrape paper.',
+    description='paperscraper: Package to scrape papers.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author='Jannis Born, Matteo Manica',
