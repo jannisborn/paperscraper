@@ -128,7 +128,7 @@ labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 ```
 
-![2019](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging.pdf)
+![2019](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging.png "2019")
 
 
 ```py
@@ -137,7 +137,7 @@ plot_venn_three(
 )
 ```
 
-![2020](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/ai_imaging_covid.pdf)
+![2020](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
 
 Or plot both together:
 
@@ -150,7 +150,7 @@ plot_multiple_venn(
 )
 ```
 
-![both](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/both.pdf)
+![both](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/both.png "Both")
 
 #### Barplots
 
@@ -206,4 +206,4 @@ plot_comparison(
 )
 ```
 
-![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/raw/master/assets/molreps.pdf)
+![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/molreps.png "MolReps")
