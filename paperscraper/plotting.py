@@ -226,7 +226,7 @@ def plot_venn_three(
     Args:
         sizes (List[int]): List of ints of length 3. First two elements correspond to
             the labels, third one to the intersection.
-        labels ([type]): List of str of length 2, containing names of circles.
+        labels (List[str]): List of str of length 2, containing names of circles.
         figname (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         title (str): Title of the plot. Defaults to '', i.e. it is inferred from

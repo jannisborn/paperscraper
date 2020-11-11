@@ -10,7 +10,7 @@ save_folder = os.path.abspath(os.path.join(HERE, '..', '..', 'server_dumps'))
 save_path = os.path.join(save_folder, f'chemrxiv_{today}.jsonl')
 
 
-def chemrxiv(save_path: str = save_path, token=None):
+def chemrxiv(save_path: str = save_path, token=None) -> None:
     """Fetches all papers from biorxiv until current date, stores them in jsonl
     format in save_path.
 

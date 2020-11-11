@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -9,25 +10,26 @@ logger = logging.getLogger(__name__)
 
 
 def aggregate_paper(
-    data: list,
+    data: List[str],
     start_year: int = 2016,
     bins_per_year: int = 4,
     filtering: bool = False,
-    filter_keys: list = None,
+    filter_keys: List = list(),
     return_filtered: bool = False,
 ):
     """Consumes a list of unstructured keyword results from a .jsonl and
     aggregates papers into several bins per year.
 
     Args:
-        data (list): Loaded .jsonl file (e.g. via readlines()).
+        data (list[str]): Loaded .jsonl file (e.g. via readlines()). NOTE: The strings
+            have to be dictionary-convertible via `eval`.
         start_year (int, optional): First year of interest. Defaults to 2016.
         bins_per_year (int, optional): Defaults to 4 (quarterly aggregation).
         filtering (bool, optional): Whether or not all papers in .jsonl are
             perceived as matches or whether an additional sanity checking for
             the keywords is performed in abstract/title. Defaults to False.
         filter_keys (list, optional): List of str used for filtering. Only
-            applies if filtering is True. Defaults to None.
+            applies if filtering is True. Defaults to empty list.
         return_filtered (bool, optional): Whether the filtered matches are also
             returned. Only applies if filtering is True. Defaults to False.
 
@@ -67,7 +69,7 @@ def aggregate_paper(
 
         # At least one synonym per keyword needs to be in either title or
         # abstract.
-        if filtering and filter_keys is not None:
+        if filtering and filter_keys != list():
 
             got_keys = []
             for key_term in filter_keys:
