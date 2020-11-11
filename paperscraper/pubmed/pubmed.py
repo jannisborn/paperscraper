@@ -3,8 +3,8 @@ from typing import List, Union
 
 from pymed import PubMed
 
-from paper_scraper.pubmed.utils import get_query_from_keywords_and_date
-from paper_scraper.utils import dump_papers
+from paperscraper.pubmed.utils import get_query_from_keywords_and_date
+from paperscraper.utils import dump_papers
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
@@ -12,18 +12,15 @@ pubmed_field_mapper = {'publication_date': 'date'}
 
 # Authors fields needs specific processing
 process_fields = {
-    'authors':
-        lambda authors: list(
-            map(
-                lambda a: str(a.get('firstname', '')) + '' +
-                str(a.get('lastname', '')), authors
-            )
-        ),
-    'date':
-        lambda date: (
-            date.strftime('%Y-%m-%d')
-            if isinstance(date, datetime.date) else date
+    'authors': lambda authors: list(
+        map(
+            lambda a: str(a.get('firstname', '')) + '' + str(a.get('lastname', '')),
+            authors,
         )
+    ),
+    'date': lambda date: (
+        date.strftime('%Y-%m-%d') if isinstance(date, datetime.date) else date
+    ),
 }
 
 
@@ -52,12 +49,13 @@ def get_pubmed_papers(
 
     processed = [
         {
-            pubmed_field_mapper.get(key, key):
-            process_fields.get(pubmed_field_mapper.get(key, key),
-                               lambda x: x)(value)
+            pubmed_field_mapper.get(key, key): process_fields.get(
+                pubmed_field_mapper.get(key, key), lambda x: x
+            )(value)
             for key, value in paper.toDict().items()
             if pubmed_field_mapper.get(key, key) in fields
-        } for paper in raw
+        }
+        for paper in raw
     ]
 
     return processed

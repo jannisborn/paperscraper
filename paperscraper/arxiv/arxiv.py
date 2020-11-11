@@ -2,28 +2,28 @@ from datetime import datetime
 from typing import List, Union
 
 import arxiv
-from paper_scraper.arxiv.utils import get_query_from_keywords
-from paper_scraper.utils import dump_papers
+from paperscraper.arxiv.utils import get_query_from_keywords
+from paperscraper.utils import dump_papers
 
 arxiv_field_mapper = {
     'published': 'date',
     'journal_reference': 'journal',
-    'summary': 'abstract'
+    'summary': 'abstract',
 }
 
 # Authors and date fields needs specific processing
 process_fields = {
-    'date':
-        lambda date:
-        (datetime.fromisoformat(date[:10]).date().strftime('%Y-%m-%d')),
-    'journal':
-        lambda j: j if j is not None else ''
+    'date': lambda date: (
+        datetime.fromisoformat(date[:10]).date().strftime('%Y-%m-%d')
+    ),
+    'journal': lambda j: j if j is not None else '',
 }
 
 
 def get_arxiv_papers(
     query: str,
     fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
+    max_results: int = 99999,
     *args,
     **kwargs
 ):
@@ -34,22 +34,25 @@ def get_arxiv_papers(
     Args:
         query (str): Query to arxiv API. Needs to match the arxiv API notation.
         fields (list[str]): List of strings with fields to keep in output.
+        max_results (int): Maximal number of results, defaults to 99999.
         *args, **kwargs are additional arguments for arxiv.query
 
     Returns:
         list of dicts. One dict per paper.
 
     """
-    raw = arxiv.query(query=query, *args, **kwargs)
-
+    raw = arxiv.query(query=query, max_results=max_results, *args, **kwargs)
+    if kwargs.get('iterative', False):
+        raw = raw()
     processed = [
         {
-            arxiv_field_mapper.get(key, key):
-            process_fields.get(arxiv_field_mapper.get(key, key),
-                               lambda x: x)(value)
+            arxiv_field_mapper.get(key, key): process_fields.get(
+                arxiv_field_mapper.get(key, key), lambda x: x
+            )(value)
             for key, value in paper.items()
             if arxiv_field_mapper.get(key, key) in fields
-        } for paper in raw
+        }
+        for paper in raw
     ]
     return processed
 

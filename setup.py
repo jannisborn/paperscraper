@@ -7,7 +7,7 @@ import re
 
 __version__ = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-    io.open('paper_scraper/__init__.py', encoding='utf_8_sig').read()
+    io.open('paperscraper/__init__.py', encoding='utf_8_sig').read(),
 ).group(1)
 
 LONG_DESCRIPTION = ''
@@ -15,31 +15,49 @@ if os.path.exists('README.md'):
     with open('README.md') as fp:
         LONG_DESCRIPTION = fp.read()
 
-scripts = ['bin/dump-medrxiv', 'bin/dump-biorxiv']
-
 setup(
-    name='paper_scraper',
+    name='paperscraper',
     version=__version__,
-    description='paper_scraper: Package to scrape paper.',
+    description='paperscraper: Package to scrape papers.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    author='Matteo Manica, Jannis Born',
-    author_email=(
-        'drugilsberg@gmail.com, jab@zurich.ibm.com, '
-    ),
-    url='https://github.com/PhosphorylatedRabbits/paper_scraper',
+    author='Jannis Born, Matteo Manica',
+    author_email=('jannis.born@gmx.de, drugilsberg@gmail.com'),
+    url='https://github.com/PhosphorylatedRabbits/paperscraper',
     license='MIT',
     install_requires=[
-        'arxiv', 'pymed', 'pandas', 'requests'
+        'arxiv',
+        'pymed',
+        'pandas',
+        'requests',
+        'tqdm',
+        'scholarly',
+        'seaborn',
+        'matplotlib',
+        'matplotlib_venn',
     ],
+    keywords=[
+        'Academics',
+        'Science',
+        'Publication',
+        'Search',
+        'PubMed',
+        'Arxiv',
+        'Medrxiv',
+        'Biorxiv',
+        'Chemrxiv',
+    ],
+    packages=find_packages('.'),
+    package_data={'paperscraper.server_dumps': ['*']},
+    zip_safe=False,
     classifiers=[
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    packages=find_packages(),
-    scripts=scripts
 )
