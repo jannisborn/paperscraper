@@ -3,14 +3,13 @@ import json
 import os
 from datetime import datetime
 
+import pkg_resources
 from paperscraper.xrxiv.xrxiv_api import MedRxivApi
 from tqdm import tqdm
 
-HERE = os.path.abspath(os.path.dirname(__file__))
 today = datetime.today().strftime('%Y-%m-%d')
-save_path = os.path.abspath(
-    os.path.join(HERE, '..', '..', 'server_dumps', f'medrxiv_{today}.jsonl')
-)
+save_folder = pkg_resources.resource_filename('paperscraper', 'server_dumps')
+save_path = os.path.join(save_folder, f'medrxiv_{today}.jsonl')
 
 
 def medrxiv(save_path: str = save_path):

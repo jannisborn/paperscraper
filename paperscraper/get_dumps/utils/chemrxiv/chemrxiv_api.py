@@ -3,9 +3,6 @@ from typing import Optional
 
 import requests
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-save_dir = os.path.abspath(os.path.join(HERE, '..', '..', 'server_dumps', 'chemrxiv'))
-
 
 class ChemrxivAPI:
     """Handle figshare API requests, using access token.

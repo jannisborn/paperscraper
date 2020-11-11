@@ -1,12 +1,12 @@
 """Dump chemRxiv data in JSONL format."""
 import os
-
 from datetime import datetime
+
+import pkg_resources
 from paperscraper.get_dumps.utils.chemrxiv import ChemrxivAPI, download_full, parse_dump
 
-HERE = os.path.abspath(os.path.dirname(__file__))
 today = datetime.today().strftime('%Y-%m-%d')
-save_folder = os.path.abspath(os.path.join(HERE, '..', '..', 'server_dumps'))
+save_folder = pkg_resources.resource_filename('paperscraper', 'server_dumps')
 save_path = os.path.join(save_folder, f'chemrxiv_{today}.jsonl')
 
 

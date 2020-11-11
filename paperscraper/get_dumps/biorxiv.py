@@ -3,13 +3,14 @@ import json
 import os
 from datetime import datetime
 
+import pkg_resources
 from paperscraper.xrxiv.xrxiv_api import BioRxivApi
 from tqdm import tqdm
 
-HERE = os.path.abspath(os.path.dirname(__file__))
 today = datetime.today().strftime('%Y-%m-%d')
-save_path = os.path.abspath(
-    os.path.join(HERE, '..', '..', 'server_dumps', f'biorxiv_{today}.jsonl')
+save_path = os.path.join(
+    pkg_resources.resource_filename('paperscraper', 'server_dumps'),
+    f'biorxiv_{today}.jsonl',
 )
 
 
