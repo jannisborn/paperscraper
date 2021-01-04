@@ -93,6 +93,9 @@ def get_citations_from_title(title: str) -> int:
     if not isinstance(title, str):
         raise TypeError(f'Pass str not {type(title)}')
 
+    # Search for exact match
+    title = "\"" + title.strip() + "\""
+
     matches = scholarly.search_pubs(title)
     counts = list(map(lambda p: int(p.bib['cites']), matches))
     if len(counts) == 0:
