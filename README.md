@@ -208,3 +208,18 @@ plot_multiple_venn(
 ```
 
 ![both](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/both.png "Both")
+
+
+
+## Citation
+If you use `paperscraper`, please cite the following:
+
+```bib
+@article{born2020role,
+  title={On the Role of Artificial Intelligence in Medical Imaging of COVID-19},
+  author={Born, Jannis and Beymer, David and Rajan, Deepta and Coy, Adam and Mukherjee, Vandana V and Manica, Matteo and Prasanna, Prasanth and Ballah, Deddeh and Shah, Pallav L and Karteris, Emmanouil and others},
+  journal={medRxiv},
+  year={2020},
+  publisher={Cold Spring Harbor Laboratory Press}
+}
+```
