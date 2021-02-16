@@ -165,7 +165,7 @@ plot_comparison(
     data_keys,
     title_text="'Deep Learning' AND 'Molecule' AND X",
     keyword_text=['Fingerprint', 'SMILES', 'Graph'],
-    figname='mol_representation'
+    figpath='mol_representation'
 )
 ```
 

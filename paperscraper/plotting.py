@@ -202,7 +202,7 @@ def plot_venn_two(
     assert len(labels) == 2, 'Incorrect type/length of labels'
 
     title = get_name(labels) if title == '' else title
-    figname = title.lower().replace(' vs. ', '_') if figname == '' else figname
+    figname = title.lower().replace(' vs. ', '_') if figpath == '' else figpath
     venn2(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn2_circles(
         subsets=sizes, linestyle='solid', linewidth=0.6, color='grey', **kwargs
@@ -213,11 +213,11 @@ def plot_venn_two(
         kwargs['ax'].set_title(title, fontdict={'fontweight': 'bold'}, size=15)
     else:
         plt.title(title, fontdict={'fontweight': 'bold'}, size=15)
-        plt.savefig(os.path.join(SAVE_PATH, f'{figname}.pdf'))
+        plt.savefig(f'{figname}.pdf')
 
 
 def plot_venn_three(
-    sizes: List[int], labels: List[str], figname: str = '', title: str = '', **kwargs
+    sizes: List[int], labels: List[str], figpath: str = '', title: str = '', **kwargs
 ) -> None:
     """Plot a single Venn Diagram with two terms.
 
@@ -225,7 +225,7 @@ def plot_venn_three(
         sizes (List[int]): List of ints of length 3. First two elements correspond to
             the labels, third one to the intersection.
         labels (List[str]): List of str of length 2, containing names of circles.
-        figname (str): Name under which figure is saved. Defaults to '', i.e. it is
+        figpath (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         title (str): Title of the plot. Defaults to '', i.e. it is inferred from
             labels.
@@ -235,7 +235,7 @@ def plot_venn_three(
     assert len(labels) == 3, 'Incorrect type/length of labels'
 
     title = get_name(labels) if title == '' else title
-    figname = title.lower().replace(' vs. ', '_') if figname == '' else figname
+    figname = title.lower().replace(' vs. ', '_') if figpath == '' else figpath
 
     venn3(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn3_circles(
@@ -246,7 +246,7 @@ def plot_venn_three(
         kwargs['ax'].set_title(title, fontdict={'fontweight': 'bold'}, size=15)
     else:
         plt.title(title, fontdict={'fontweight': 'bold'}, size=15)
-        plt.savefig(os.path.join(SAVE_PATH, f'{figname}.pdf'))
+        plt.savefig(f'{figname}.pdf')
 
 
 def plot_multiple_venn(
@@ -288,10 +288,12 @@ def plot_multiple_venn(
     fig, axes = plt.subplots(1, len(sizes), gridspec_kw=gridspec_kw, figsize=figsize)
     plt.suptitle(suptitle, size=18, fontweight='bold')
 
+    figname = titles[0].lower().replace(' vs. ', '_') if figname == '' else figname
+
     for idx, (size, label, title) in enumerate(zip(sizes, labels, titles)):
         if len(label) == 2:
             plot_venn_two(size, label, title=title, ax=axes[idx])
         elif len(label) == 3:
             plot_venn_three(size, label, title=title, ax=axes[idx])
 
-    plt.savefig(os.path.join(SAVE_PATH, f'{figname}.pdf'))
+    plt.savefig(f'{figname}.pdf')
