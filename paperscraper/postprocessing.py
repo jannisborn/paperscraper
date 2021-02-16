@@ -16,6 +16,7 @@ def aggregate_paper(
     filtering: bool = False,
     filter_keys: List = list(),
     return_filtered: bool = False,
+    last_year: int = 2021,
 ):
     """Consumes a list of unstructured keyword results from a .jsonl and
     aggregates papers into several bins per year.
@@ -32,6 +33,8 @@ def aggregate_paper(
             applies if filtering is True. Defaults to empty list.
         return_filtered (bool, optional): Whether the filtered matches are also
             returned. Only applies if filtering is True. Defaults to False.
+        last_year (int, optional): Most recent year for the aggregation. Defaults
+            to current year. All newer entries are discarded.
 
 
     Returns:
@@ -46,7 +49,7 @@ def aggregate_paper(
     if 12 % bins_per_year != 0:
         raise ValueError(f'Cant split year into {bins_per_year} bins')
 
-    num_years = 2020 - start_year + 1
+    num_years = last_year - start_year + 1
     bins = np.zeros((num_years * bins_per_year))
 
     # Read data
@@ -64,7 +67,7 @@ def aggregate_paper(
     filtered = []
     for paper, date in zip(data, dates):
         year = int(date.split('-')[0])
-        if year < start_year:
+        if year < start_year or year > last_year:
             continue
 
         # At least one synonym per keyword needs to be in either title or
