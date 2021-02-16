@@ -132,6 +132,8 @@ fp = ['fingerprint', 'molecular fingerprint', 'fingerprints']
 # Define queries
 queries = [[ml, mol, smiles], [ml, mol, fp], [ml, mol, gnn]]
 
+root = '../keyword_dumps'
+
 data_dict = dict()
 for query in queries:
     filename = get_filename_from_query(query)
