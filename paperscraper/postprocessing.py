@@ -36,7 +36,6 @@ def aggregate_paper(
         last_year (int, optional): Most recent year for the aggregation. Defaults
             to current year. All newer entries are discarded.
 
-
     Returns:
         bins (np.array): Vector of length number of years (2020 - start_year) x
             bins_per_year.
@@ -77,6 +76,8 @@ def aggregate_paper(
             got_keys = []
             for key_term in filter_keys:
                 got_key = False
+                if not isinstance(key_term, list):
+                    key_term = [key_term]
                 for key in key_term:
                     if key.lower() in paper['title'].lower():
                         got_key = True
