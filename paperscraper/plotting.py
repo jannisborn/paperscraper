@@ -59,6 +59,7 @@ def plot_comparison(
 
     sns.set_palette(sns.color_palette("colorblind", 10))
     plt.rcParams.update({'hatch.color': 'w'})
+    plt.rcParams['figure.facecolor'] = 'white'
     plt.figure(figsize=(8, 5))
 
     arxiv, biorxiv, pubmed, medrxiv, chemrxiv, preprint = [], [], [], [], [], []
@@ -167,6 +168,169 @@ def plot_comparison(
     y_steps = np.arange(0, ymax, step_size)
 
     for y_step in y_steps:
+        plt.hlines(y_step, xmax=10, xmin=-1, color='black', linewidth=0.1)
+    plt.xlim([-0.5, len(ind)])
+    plt.ylim([0, ymax * 1.02])
+
+    plt.tight_layout()
+    plt.savefig(figpath)
+    plt.show()
+
+
+def plot_single(
+    data_dict: dict,
+    keys: str,
+    x_ticks: List[str] = ['2015', '2016', '2017', '2018', '2019', '2020'],
+    show_preprint: bool = False,
+    title_text: str = '',
+    figpath: str = 'comparison_plot.pdf',
+    logscale=False,
+) -> None:
+    """Plot temporal evolution of number of papers per keyword
+
+    Args:
+        data_dict (dict): A dictionary with keywords as keys. Each value should be a
+            dictionary itself, with keys for the different APIs. For example
+            data_dict = {
+                'covid_19.jsonl': {
+                    'pubmed': [0, 0, 0, 12345],
+                    'arxiv': [0, 0, 0, 1234],
+                    ...
+                }
+                'coronavirus.jsonl':
+                    'pubmed': [234, 345, 456, 12345],
+                    'arxiv': [123, 234, 345, 1234],
+                    ...
+                }
+            }
+        keys (str): A key which should be plotted. This has to be a
+           subset of data_dict.keys().
+        x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
+            same length as data_dict[key][database]. Defaults to ['2015', '2016',
+            '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
+            year.
+        show_preprint (bool, optional): Whether preprint servers are aggregated or not.
+            Defaults to False.
+        title_text (str, optional): Title for the produced figure. Defaults to ''.
+        figpath (str, optional): Name under which figure is saved. Relative or absolute
+            paths can be given. Defaults to 'comparison_plot.pdf'.
+        logscale (bool, optional): Whether y-axis is plotted on logscale. Defaults
+            to False.
+
+    Raises:
+        KeyError: If a database is missing in data_dict.
+    """
+
+    sns.set_palette(sns.color_palette('colorblind', 10))
+    plt.rcParams.update({'hatch.color': 'w'})
+    plt.rcParams['figure.facecolor'] = 'white'
+    plt.figure(figsize=(8, 5))
+
+    arxiv, biorxiv, pubmed, medrxiv, chemrxiv, preprint = [], [], [], [], [], []
+
+    for key in keys:
+        try:
+            arxiv.append(data_dict[key]['arxiv'])
+            biorxiv.append(data_dict[key]['biorxiv'])
+            medrxiv.append(data_dict[key]['medrxiv'])
+            chemrxiv.append(data_dict[key]['chemrxiv'])
+            pubmed.append(data_dict[key]['pubmed'])
+        except KeyError:
+            raise KeyError(
+                f'Did not find all DBs for {key}, only found {data_dict[key].keys()}'
+            )
+        preprint.append(arxiv[-1] + biorxiv[-1] + medrxiv[-1] + chemrxiv[-1])
+
+    ind = np.arange(len(arxiv[0]))  # the x locations for the groups
+    width = [0.75] * len(ind)  # the width of the bars: can also be len(x) sequence
+    fnc = np.log10 if logscale else np.copy
+
+    plts = []
+    legend_plts = []
+    if show_preprint:
+        bars = [pubmed, preprint]
+        legend_platform = ['PubMed', 'Preprint']
+        if logscale:
+            sums = np.array(pubmed) + np.array(preprint)
+            logsums = np.log10(sums)
+            bars = [pubmed * logsums / sums, preprint * logsums / sums]
+
+    else:
+        bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
+        legend_platform = ['PubMed', 'ArXiv', 'BiorXiv', 'ChemRxiv', 'MedRxiv']
+        if logscale:
+            sums = (
+                np.array(pubmed)
+                + np.array(arxiv)
+                + np.array(biorxiv)
+                + np.array(chemrxiv)
+                + np.array(medrxiv)
+            )
+            logsums = np.log10s(sums)
+            bars = [
+                pubmed * logsums / sums,
+                arxiv * logsums / sums,
+                biorxiv * logsums / sums,
+                chemrxiv * logsums / sums,
+                medrxiv * logsums / sums,
+            ]
+    for idx in range(len(keys)):
+        bottom = 0
+
+        for bidx, b in enumerate(bars):
+            if idx == 0:
+                p = plt.bar(
+                    ind,
+                    b[idx],
+                    width,
+                    linewidth=1,
+                    edgecolor='k',
+                    bottom=bottom,
+                )
+            else:
+                p = plt.bar(
+                    ind,
+                    b[idx],
+                    width,
+                    color=next(iter(plts[bidx])).get_facecolor(),
+                    linewidth=1,
+                    edgecolor='k',
+                    bottom=bottom,
+                )
+
+            bottom += b[idx]
+            plts.append(p)
+        legend_plts.append(
+            plt.bar(ind, np.zeros((len(ind),)), color='k', bottom=bottom)
+        )
+
+    plt.ylabel('Counts', size=17) if not logscale else plt.ylabel(
+        'Counts (log scale)', size=17
+    )
+    plt.xlabel('Years', size=17)
+    plt.title(f'Keywords: {title_text}', size=17)
+    # Customize minor tick labels
+
+    plt.xticks(ind, x_ticks, size=14)
+    ymax = plt.gca().get_ylim()[1]
+    yticks = np.arange(1, ymax).astype(int)
+    plt.yticks(yticks, np.power(10, yticks))
+
+    plt.tick_params(axis='y', labelsize=17)
+
+    plt.legend(
+        legend_platform,
+        prop={'size': 14},
+        loc='upper left',
+        title='Platform:',
+        title_fontsize=17,
+        ncol=1,
+    )
+
+    get_step_size = lambda x: round(x / 10, -math.floor(math.log10(x)) + 1)
+    ymax = plt.gca().get_ylim()[1]
+
+    for y_step in plt.yticks()[0]:
         plt.hlines(y_step, xmax=10, xmin=-1, color='black', linewidth=0.1)
     plt.xlim([-0.5, len(ind)])
     plt.ylim([0, ymax * 1.02])
