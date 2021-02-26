@@ -31,7 +31,7 @@ setup(
         'pandas',
         'requests',
         'tqdm',
-        'scholarly',
+        'scholarly==0.5.1',
         'seaborn',
         'matplotlib',
         'matplotlib_venn',
