@@ -308,7 +308,7 @@ def plot_single(
         'Counts (log scale)', size=17
     )
     plt.xlabel('Years', size=17)
-    plt.title(f'Keywords: {title_text}', size=17)
+    plt.title(title_text, size=17)
     # Customize minor tick labels
 
     plt.xticks(ind, x_ticks, size=14)
