@@ -4,8 +4,9 @@ import os
 from datetime import datetime
 
 import pkg_resources
-from paperscraper.xrxiv.xrxiv_api import BioRxivApi
 from tqdm import tqdm
+
+from ..xrxiv.xrxiv_api import BioRxivApi
 
 today = datetime.today().strftime('%Y-%m-%d')
 save_path = os.path.join(

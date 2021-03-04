@@ -4,8 +4,9 @@ import os
 from datetime import datetime
 
 import pkg_resources
-from paperscraper.xrxiv.xrxiv_api import MedRxivApi
 from tqdm import tqdm
+
+from ..xrxiv.xrxiv_api import MedRxivApi
 
 today = datetime.today().strftime('%Y-%m-%d')
 save_folder = pkg_resources.resource_filename('paperscraper', 'server_dumps')
