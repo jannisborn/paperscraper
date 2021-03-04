@@ -3,8 +3,8 @@ from typing import List, Union
 
 from pymed import PubMed
 
-from paperscraper.pubmed.utils import get_query_from_keywords_and_date
-from paperscraper.utils import dump_papers
+from .utils import get_query_from_keywords_and_date
+from ..utils import dump_papers
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
