@@ -2,8 +2,9 @@ import logging
 import sys
 from typing import List
 
-from paperscraper.utils import dump_papers
 from scholarly import scholarly
+
+from ..utils import dump_papers
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
