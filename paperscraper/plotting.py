@@ -313,8 +313,9 @@ def plot_single(
 
     plt.xticks(ind, x_ticks, size=14)
     ymax = plt.gca().get_ylim()[1]
-    yticks = np.arange(1, ymax).astype(int)
-    plt.yticks(yticks, np.power(10, yticks))
+    if logscale:
+        yticks = np.arange(1, ymax).astype(int)
+        plt.yticks(yticks, np.power(10, yticks))
 
     plt.tick_params(axis='y', labelsize=17)
 
