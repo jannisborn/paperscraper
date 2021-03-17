@@ -35,6 +35,7 @@ setup(
         'seaborn',
         'matplotlib',
         'matplotlib_venn',
+        'bs4',
     ],
     keywords=[
         'Academics',

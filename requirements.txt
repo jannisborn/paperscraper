@@ -7,3 +7,4 @@ scholarly==0.5.1
 seaborn>=0.11.0
 matplotlib>=3.3.2
 matplotlib-venn>=0.11.5
+bs4>=0.0.1
