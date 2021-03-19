@@ -109,13 +109,13 @@ get_citations_from_title(title)
 prompts with captchas, it's difficult to apply large scale.
 
 #### Journal impact factor
+
 You can also retrieve the impact factor for all journals indexed by citefactor:
 ```py
 from paperscraper.journal_if import Impactor
 i = Impactor()
 ```
-Then, `i.journal_to_if` should give you a dictionary wit journal to IF mappings for 
->9000 journals as of 2014.
+Then, `i.journal_to_if` should give you a dictionary wit journal to IF mappings for >9000 journals as of 2014.
 
 ### Plotting
 

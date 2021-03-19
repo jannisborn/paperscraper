@@ -22,6 +22,9 @@ from bs4 import BeautifulSoup
 
 
 class Impactor(object):
+    """
+    Class to fetch the impact factor of all citefactor-indexed journals as of 2014.
+    """
     BASE_URL_PREFIX = r'http://www.citefactor.org/journal-impact-factor-list-'
     BASE_URL_SUFFIX = r'.html'
     URL_REGEX_PREFIX = r'http://www\.citefactor\.org/journal-impact-factor-list-'
@@ -35,9 +38,7 @@ class Impactor(object):
         self.matches = set()
         self.year = year
 
-        assert year in (
-            2014,
-        )  # won't bother doing past years, but might updated for future years...
+        assert year in (2014,)  'Can only handle 2014 at the moment.'
         self.base_url = self.BASE_URL_PREFIX + str(year) + self.BASE_URL_SUFFIX
         self.url_regex = self.URL_REGEX_PREFIX + str(year) + self.URL_REGEX_SUFFIX
         self.re = re.compile(self.url_regex)
@@ -69,7 +70,7 @@ class Impactor(object):
                     logging.debug(
                         'loaded journals from {}'.format(self.journal_db_file)
                     )
-            except:
+            except Exception:
                 pass
         # If cannot load from file, load from URL
         if self.journal_data is None:
@@ -82,7 +83,7 @@ class Impactor(object):
                 with open(self.journal_db_file, 'wb') as f:
                     pickle.dump(self.journal_data, f, -1)
                     logging.debug('saved journals to {}'.format(self.journal_db_file))
-            except:
+            except Exception:
                 pass
 
     def get_all_urls(self):
@@ -139,9 +140,15 @@ class Impactor(object):
         return journals
 
     def create_if_dict(self):
+        """
+        Creates a dictionary with journal names as key (lowercase) and impact factors
+        as values.
+        """
 
-        f = lambda x: str(x).strip().lower().replace('\\', '_').replace(' ', '_')
+        stringparse = (
+            lambda x: str(x).strip().lower().replace('\\', '_').replace(' ', '_')
+        )
         self.journal_to_if = dict(
-            (f(value['JOURNAL']), value['2013/2014'])
+            (stringparse(value['JOURNAL']), value['2013/2014'])
             for key, value in self.journal_data.items()
         )
