@@ -25,6 +25,7 @@ class Impactor(object):
     """
     Class to fetch the impact factor of all citefactor-indexed journals as of 2014.
     """
+
     BASE_URL_PREFIX = r'http://www.citefactor.org/journal-impact-factor-list-'
     BASE_URL_SUFFIX = r'.html'
     URL_REGEX_PREFIX = r'http://www\.citefactor\.org/journal-impact-factor-list-'
@@ -38,7 +39,7 @@ class Impactor(object):
         self.matches = set()
         self.year = year
 
-        assert year in (2014,)  'Can only handle 2014 at the moment.'
+        assert year in (2014,), 'Can only handle 2014 at the moment.'
         self.base_url = self.BASE_URL_PREFIX + str(year) + self.BASE_URL_SUFFIX
         self.url_regex = self.URL_REGEX_PREFIX + str(year) + self.URL_REGEX_SUFFIX
         self.re = re.compile(self.url_regex)
