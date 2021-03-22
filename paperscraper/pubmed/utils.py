@@ -87,25 +87,27 @@ def get_emails(paper: PubMedArticle) -> List:
                     postfix = parts[1]
                     mail = prefix + '@' + postfix
                     if not (postfix.endswith('.') or postfix.endswith(' ')):
-                        warnings.warn(f'Mail {mail} may be parsed incorrectly.')
                         emails.append(mail)
                     else:
                         emails.append(mail[:-1])
                 else:
                     # Found multiple addresses
                     for idx, part in enumerate(parts):
-                        if idx == 0:
-                            prefix = part.split(' ')[-1]
-                        else:
-                            postfix = part.split('\n')[0]
-
-                            if postfix.endswith('.'):
-                                postfix = postfix[:-1]
-                                mail = prefix + '@' + postfix
+                        try:
+                            if idx == 0:
+                                prefix = part.split(' ')[-1]
                             else:
-                                current_postfix = postfix.split(' ')[0]
-                                mail = prefix + '@' + current_postfix
-                                prefix = postfix.split(' ')[1]
-                            emails.append(mail)
+                                postfix = part.split('\n')[0]
+
+                                if postfix.endswith('.'):
+                                    postfix = postfix[:-1]
+                                    mail = prefix + '@' + postfix
+                                else:
+                                    current_postfix = postfix.split(' ')[0]
+                                    mail = prefix + '@' + current_postfix
+                                    prefix = postfix.split(' ')[1]
+                                emails.append(mail)
+                        except IndexError:
+                            warnings.warn(f'Mail could not be inferred from {part}.')
 
     return list(set(emails))
