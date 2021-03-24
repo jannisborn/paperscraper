@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import List, Union
 
 import arxiv
-from paperscraper.arxiv.utils import get_query_from_keywords
-from paperscraper.utils import dump_papers
+from .utils import get_query_from_keywords
+from ..utils import dump_papers
 
 arxiv_field_mapper = {
     'published': 'date',
