@@ -17,6 +17,7 @@ def aggregate_paper(
     filter_keys: List = list(),
     unwanted_keys: List = list(),
     return_filtered: bool = False,
+    filter_abstract: bool = True,
     last_year: int = 2021,
 ):
     """Consumes a list of unstructured keyword results from a .jsonl and
@@ -36,6 +37,8 @@ def aggregate_paper(
             title or abstract. Only applies if filtering is True.
         return_filtered (bool, optional): Whether the filtered matches are also
             returned. Only applies if filtering is True. Defaults to False.
+        filer_abstract (bool, optional): Whether the keyword is searched in the abstract
+            or not. Defaults to True.
         last_year (int, optional): Most recent year for the aggregation. Defaults
             to current year. All newer entries are discarded.
 
@@ -82,7 +85,8 @@ def aggregate_paper(
                 if unwanted_key.lower() in paper['title'].lower():
                     unwanted = True
                 if (
-                    paper['abstract'] is not None
+                    filter_abstract
+                    and paper['abstract'] is not None
                     and unwanted_key.lower() in paper['abstract'].lower()
                 ):
                     unwanted = True
@@ -98,7 +102,8 @@ def aggregate_paper(
                     if key.lower() in paper['title'].lower():
                         got_key = True
                     if (
-                        paper['abstract'] is not None
+                        filter_abstract
+                        and paper['abstract'] is not None
                         and key.lower() in paper['abstract'].lower()
                     ):
                         got_key = True

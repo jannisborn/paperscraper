@@ -108,6 +108,15 @@ get_citations_from_title(title)
 *NOTE*: The scholar endpoint does not require authentification but since it regularly
 prompts with captchas, it's difficult to apply large scale.
 
+#### Journal impact factor
+
+You can also retrieve the impact factor for all journals indexed by citefactor:
+```py
+from paperscraper.journal_if import Impactor
+i = Impactor()
+```
+Then, `i.journal_to_if` should give you a dictionary wit journal to IF mappings for >9000 journals as of 2014.
+
 ### Plotting
 
 When multiple query searches are performed, two types of plots can be generated

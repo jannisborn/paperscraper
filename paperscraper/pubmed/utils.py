@@ -1,3 +1,5 @@
+from pymed.article import PubMedArticle
+import warnings
 from typing import List, Union
 
 finalize_disjunction = lambda x: '(' + x[:-4] + ') AND '
@@ -29,9 +31,7 @@ def get_query_from_keywords(keywords: List[Union[str, List]]) -> str:
 
 
 def get_query_from_keywords_and_date(
-    keywords: List[Union[str, List]],
-    start_date: str = 'None',
-    end_date: str = 'None'
+    keywords: List[Union[str, List]], start_date: str = 'None', end_date: str = 'None'
 ) -> str:
     """Receives a list of keywords and returns the query for the pubmed API.
 
@@ -62,3 +62,52 @@ def get_query_from_keywords_and_date(
         return query
 
     return query + ' AND ' + date
+
+
+def get_emails(paper: PubMedArticle) -> List:
+    """
+    Extracts author email addresses from PubMedArticle.
+
+    Args:
+        paper (PubMedArticle): An object of type PubMedArticle. Requires to have
+            an 'author' field.
+
+    Returns:
+        List: A possibly empty list of emails associated to authors of the paper.
+    """
+
+    emails = []
+    for author in paper.authors:
+        for v in author.values():
+            if v is not None and '@' in v:
+                parts = v.split('@')
+                if len(parts) == 2:
+                    # Found one email address
+                    prefix = parts[0].split(' ')[-1]
+                    postfix = parts[1]
+                    mail = prefix + '@' + postfix
+                    if not (postfix.endswith('.') or postfix.endswith(' ')):
+                        emails.append(mail)
+                    else:
+                        emails.append(mail[:-1])
+                else:
+                    # Found multiple addresses
+                    for idx, part in enumerate(parts):
+                        try:
+                            if idx == 0:
+                                prefix = part.split(' ')[-1]
+                            else:
+                                postfix = part.split('\n')[0]
+
+                                if postfix.endswith('.'):
+                                    postfix = postfix[:-1]
+                                    mail = prefix + '@' + postfix
+                                else:
+                                    current_postfix = postfix.split(' ')[0]
+                                    mail = prefix + '@' + current_postfix
+                                    prefix = postfix.split(' ')[1]
+                                emails.append(mail)
+                        except IndexError:
+                            warnings.warn(f'Mail could not be inferred from {part}.')
+
+    return list(set(emails))

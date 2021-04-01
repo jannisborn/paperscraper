@@ -3,7 +3,7 @@ from typing import List, Union
 
 from pymed import PubMed
 
-from .utils import get_query_from_keywords_and_date
+from .utils import get_query_from_keywords_and_date, get_emails
 from ..utils import dump_papers
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
@@ -38,6 +38,8 @@ def get_pubmed_papers(
     Args:
         query (str): Query to PubMed API. Needs to match PubMed API notation.
         fields (list[str]): List of strings with fields to keep in output.
+            NOTE: If 'emails' is passed, an attempt is made to extract author mail
+            addresses.
         max_results (int): Maximal number of results retrieved from DB.
         NOTE: *args, **kwargs are additional arguments for pubmed.query
 
@@ -46,6 +48,10 @@ def get_pubmed_papers(
 
     """
     raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
+
+    get_mails = 'emails' in fields
+    if get_mails:
+        fields.pop(fields.index('emails'))
 
     processed = [
         {
@@ -57,6 +63,9 @@ def get_pubmed_papers(
         }
         for paper in raw
     ]
+    if get_mails:
+        for idx, paper in enumerate(raw):
+            processed[idx].update({'emails': get_emails(paper)})
 
     return processed
 
@@ -81,6 +90,8 @@ def get_and_dump_pubmed_papers(
         fields (List, optional): List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
+            NOTE: If 'emails' is passed, an attempt is made to extract author mail
+            addresses.
         start_date (str): Start date for the search. Needs to be in format:
             YYYY/MM/DD, e.g. '2020/07/20'. Defaults to 'None', i.e. no specific
             dates are used.
