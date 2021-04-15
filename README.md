@@ -60,7 +60,7 @@ get_and_dump_pubmed_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 * Scrape papers from arXiv:
 
 ```py
-from paperscraper.pubmed import get_and_dump_arxiv_papers
+from paperscraper.arxiv import get_and_dump_arxiv_papers
 
 get_and_dump_arxiv_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 ```
