@@ -226,11 +226,16 @@ plot_multiple_venn(
 If you use `paperscraper`, please cite the following:
 
 ```bib
-@article{born2020role,
-  title={On the Role of Artificial Intelligence in Medical Imaging of COVID-19},
-  author={Born, Jannis and Beymer, David and Rajan, Deepta and Coy, Adam and Mukherjee, Vandana V and Manica, Matteo and Prasanna, Prasanth and Ballah, Deddeh and Shah, Pallav L and Karteris, Emmanouil and others},
-  journal={medRxiv},
-  year={2020},
-  publisher={Cold Spring Harbor Laboratory Press}
+@article{born2021on,
+	title = {On the role of artificial intelligence in medical imaging of COVID-19},
+	journal = {Patterns},
+	volume = {2},
+	number = {6},
+	pages = {100269},
+	year = {2021},
+	issn = {2666-3899},
+	doi = {https://doi.org/10.1016/j.patter.2021.100269},
+	url = {https://www.sciencedirect.com/science/article/pii/S2666389921000957},
+	author = {Jannis Born and David Beymer and Deepta Rajan and Adam Coy and Vandana V. Mukherjee and Matteo Manica and Prasanth Prasanna and Deddeh Ballah and Michal Guindy and Dorith Shaham and Pallav L. Shah and Emmanouil Karteris and Jan L. Robertus and Maria Gabrani and Michal Rosen-Zvi}
 }
 ```
