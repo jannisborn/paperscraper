@@ -40,7 +40,7 @@ def get_arxiv_papers(
         list of dicts. One dict per paper.
 
     """
-    results = arxiv.Search(query=query, max_results=max_results, *args, **kwargs).get()
+    results = arxiv.Search(query=query, max_results=max_results, *args, **kwargs).results()
     if kwargs.get('iterative', False):
         results = list(results)
     processed = [
