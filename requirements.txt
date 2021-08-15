@@ -1,4 +1,4 @@
-arxiv==0.5.3
+arxiv==1.4.1
 pymed==0.8.9
 pandas>=1.0.4
 requests==2.24.0

@@ -7,15 +7,13 @@ from ..utils import dump_papers
 
 arxiv_field_mapper = {
     'published': 'date',
-    'journal_reference': 'journal',
+    'journal_ref': 'journal',
     'summary': 'abstract',
 }
 
-# Authors and date fields needs specific processing
+# Authors and journal fields need specific processing
 process_fields = {
-    'date': lambda date: (
-        datetime.fromisoformat(date[:10]).date().strftime('%Y-%m-%d')
-    ),
+    'authors': lambda authors: ', '.join([a.name for a in authors]),
     'journal': lambda j: j if j is not None else '',
 }
 
@@ -41,18 +39,18 @@ def get_arxiv_papers(
         list of dicts. One dict per paper.
 
     """
-    raw = arxiv.query(query=query, max_results=max_results, *args, **kwargs)
+    results = arxiv.Search(query=query, max_results=max_results, *args, **kwargs).get()
     if kwargs.get('iterative', False):
-        raw = raw()
+        results = list(results)
     processed = [
         {
             arxiv_field_mapper.get(key, key): process_fields.get(
                 arxiv_field_mapper.get(key, key), lambda x: x
             )(value)
-            for key, value in paper.items()
+            for key, value in vars(paper).items()
             if arxiv_field_mapper.get(key, key) in fields
         }
-        for paper in raw
+        for paper in results
     ]
     return processed
 
