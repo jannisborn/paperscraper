@@ -11,9 +11,10 @@ arxiv_field_mapper = {
     'summary': 'abstract',
 }
 
-# Authors and journal fields need specific processing
+# Authors, date, and journal fields need specific processing
 process_fields = {
     'authors': lambda authors: ', '.join([a.name for a in authors]),
+    'date': lambda date: date.strftime('%Y-%m-%d'),
     'journal': lambda j: j if j is not None else '',
 }
 
