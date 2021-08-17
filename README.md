@@ -234,8 +234,7 @@ If you use `paperscraper`, please cite the following:
 	pages = {100269},
 	year = {2021},
 	issn = {2666-3899},
-	doi = {https://doi.org/10.1016/j.patter.2021.100269},
-	url = {https://www.sciencedirect.com/science/article/pii/S2666389921000957},
+	url = {https://doi.org/10.1016/j.patter.2021.100269},
 	author = {Jannis Born and David Beymer and Deepta Rajan and Adam Coy and Vandana V. Mukherjee and Matteo Manica and Prasanth Prasanna and Deddeh Ballah and Michal Guindy and Dorith Shaham and Pallav L. Shah and Emmanouil Karteris and Jan L. Robertus and Maria Gabrani and Michal Rosen-Zvi}
 }
 ```
