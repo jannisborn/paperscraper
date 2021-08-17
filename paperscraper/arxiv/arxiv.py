@@ -1,9 +1,9 @@
-from datetime import datetime
 from typing import List, Union
 
 import arxiv
-from .utils import get_query_from_keywords
+
 from ..utils import dump_papers
+from .utils import get_query_from_keywords
 
 arxiv_field_mapper = {
     'published': 'date',
@@ -34,15 +34,13 @@ def get_arxiv_papers(
         query (str): Query to arxiv API. Needs to match the arxiv API notation.
         fields (list[str]): List of strings with fields to keep in output.
         max_results (int): Maximal number of results, defaults to 99999.
-        *args, **kwargs are additional arguments for arxiv.query
+        *args, **kwargs are additional arguments for arxiv.Search()
 
     Returns:
         list of dicts. One dict per paper.
 
     """
     results = arxiv.Search(query=query, max_results=max_results, *args, **kwargs).results()
-    if kwargs.get('iterative', False):
-        results = list(results)
     processed = [
         {
             arxiv_field_mapper.get(key, key): process_fields.get(
@@ -74,6 +72,7 @@ def get_and_dump_arxiv_papers(
         fields (List, optional): List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
+        *args, **kwargs are additional arguments for arxiv.Search()
     """
     # Translate keywords into query.
     query = get_query_from_keywords(keywords)
