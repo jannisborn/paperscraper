@@ -1,21 +1,20 @@
-from datetime import datetime
-from typing import List, Union
+from typing import List, Union, Dict
 
 import arxiv
-from .utils import get_query_from_keywords
+
 from ..utils import dump_papers
+from .utils import get_query_from_keywords
 
 arxiv_field_mapper = {
     'published': 'date',
-    'journal_reference': 'journal',
+    'journal_ref': 'journal',
     'summary': 'abstract',
 }
 
-# Authors and date fields needs specific processing
+# Authors, date, and journal fields need specific processing
 process_fields = {
-    'date': lambda date: (
-        datetime.fromisoformat(date[:10]).date().strftime('%Y-%m-%d')
-    ),
+    'authors': lambda authors: ', '.join([a.name for a in authors]),
+    'date': lambda date: date.strftime('%Y-%m-%d'),
     'journal': lambda j: j if j is not None else '',
 }
 
@@ -24,8 +23,8 @@ def get_arxiv_papers(
     query: str,
     fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
     max_results: int = 99999,
-    *args,
-    **kwargs
+    client_options: Dict = {'num_retries': 10},
+    search_options: Dict = dict(),
 ):
     """
     Performs arxiv API request of a given query and returns list of papers with
@@ -33,26 +32,32 @@ def get_arxiv_papers(
 
     Args:
         query (str): Query to arxiv API. Needs to match the arxiv API notation.
-        fields (list[str]): List of strings with fields to keep in output.
+        fields (List[str]): List of strings with fields to keep in output.
         max_results (int): Maximal number of results, defaults to 99999.
-        *args, **kwargs are additional arguments for arxiv.query
+        client_options (Dict): Optional arguments for `arxiv.Client`. E.g.:
+            page_size (int), delay_seconds (int), num_retries (int).
+            NOTE: Decreasing 'num_retries' will speed up processing but might
+            result in more frequent 'UnexpectedEmptyPageErrors'.
+        search_options (Dict): Optional arguments for `arxiv.Search`. E.g.:
+            id_list (List), sort_by, or sort_order.
 
     Returns:
         list of dicts. One dict per paper.
 
     """
-    raw = arxiv.query(query=query, max_results=max_results, *args, **kwargs)
-    if kwargs.get('iterative', False):
-        raw = raw()
+    client = arxiv.Client(**client_options)
+    search = arxiv.Search(query=query, max_results=max_results, **search_options)
+    results = client.results(search)
+
     processed = [
         {
             arxiv_field_mapper.get(key, key): process_fields.get(
                 arxiv_field_mapper.get(key, key), lambda x: x
             )(value)
-            for key, value in paper.items()
+            for key, value in vars(paper).items()
             if arxiv_field_mapper.get(key, key) in fields
         }
-        for paper in raw
+        for paper in results
     ]
     return processed
 
@@ -75,6 +80,7 @@ def get_and_dump_arxiv_papers(
         fields (List, optional): List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
+        *args, **kwargs are additional arguments for `get_arxiv_papers`.
     """
     # Translate keywords into query.
     query = get_query_from_keywords(keywords)
