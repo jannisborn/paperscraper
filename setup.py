@@ -26,7 +26,7 @@ setup(
     url='https://github.com/PhosphorylatedRabbits/paperscraper',
     license='MIT',
     install_requires=[
-        'arxiv>=1.4.1',
+        'arxiv>=1.4.2',
         'pymed',
         'pandas',
         'requests',
