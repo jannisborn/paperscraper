@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/PhosphorylatedRabbits/paperscraper.svg?branch=master)](https://travis-ci.com/PhosphorylatedRabbits/paperscraper)
+[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/build.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/build.yml)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
