@@ -2,6 +2,8 @@
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
+[![Downloads](https://pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
+[![Downloads](https://pepy.tech/badge/paperscraper/month)](https://pepy.tech/project/paperscraper)
 
 # paperscraper
 

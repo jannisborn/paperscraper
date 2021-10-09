@@ -1,6 +1,12 @@
 """Query dumps from bioRxiv and medRXiv."""
-import pandas as pd
+import logging
+import sys
 from typing import List, Union
+
+import pandas as pd
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class XRXivQuery:
@@ -9,7 +15,7 @@ class XRXivQuery:
     def __init__(
         self,
         dump_filepath: str,
-        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date', 'journal']
+        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date', 'journal'],
     ):
         """
         Initialize the query class.
@@ -21,14 +27,23 @@ class XRXivQuery:
         """
         self.dump_filepath = dump_filepath
         self.fields = fields
-        self.df = pd.read_json(self.dump_filepath, lines=True)
-        self.df['date'] = [date.strftime('%Y-%m-%d') for date in self.df['date']]
+        self.errored = False
+
+        try:
+            self.df = pd.read_json(self.dump_filepath, lines=True)
+            self.df['date'] = [date.strftime('%Y-%m-%d') for date in self.df['date']]
+        except ValueError as e:
+            logger.warning(f'Problem in reading file {dump_filepath}: {e} - Skipping!')
+            self.errored = True
+        except KeyError as e:
+            logger.warning(f'Key {e} missing in file from {dump_filepath} - Skipping!')
+            self.errored = True
 
     def search_keywords(
         self,
         keywords: List[Union[str, List[str]]],
         fields: List[str] = None,
-        output_filepath: str = None
+        output_filepath: str = None,
     ) -> List[dict]:
         """
         Search for papers in the dump using keywords.

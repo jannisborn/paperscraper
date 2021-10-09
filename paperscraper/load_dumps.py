@@ -28,8 +28,15 @@ for db in ['biorxiv', 'chemrxiv', 'medrxiv']:
     elif len(dump_paths) > 1:
         logger.info(f' Multiple dumps found for {db}, taking most recent one')
     path = sorted(dump_paths, reverse=True)[0]
+
+    # Handly empty dumped files (e.g. when API is down)
+    if os.path.getsize(path) == 0:
+        logger.warning(f'Empty dump for {db}. Skipping entry.')
+        continue
     querier = XRXivQuery(path)
-    QUERY_FN_DICT.update({db: querier.search_keywords})
+    if not querier.errored:
+        QUERY_FN_DICT.update({db: querier.search_keywords})
+        logger.info(f'Loaded {db} dump with {len(querier.df)} entries')
 
 if len(QUERY_FN_DICT) == 2:
     logger.warning(
