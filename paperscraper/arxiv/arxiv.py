@@ -6,24 +6,24 @@ from ..utils import dump_papers
 from .utils import get_query_from_keywords
 
 arxiv_field_mapper = {
-    'published': 'date',
-    'journal_ref': 'journal',
-    'summary': 'abstract',
+    "published": "date",
+    "journal_ref": "journal",
+    "summary": "abstract",
 }
 
 # Authors, date, and journal fields need specific processing
 process_fields = {
-    'authors': lambda authors: ', '.join([a.name for a in authors]),
-    'date': lambda date: date.strftime('%Y-%m-%d'),
-    'journal': lambda j: j if j is not None else '',
+    "authors": lambda authors: ", ".join([a.name for a in authors]),
+    "date": lambda date: date.strftime("%Y-%m-%d"),
+    "journal": lambda j: j if j is not None else "",
 }
 
 
 def get_arxiv_papers(
     query: str,
-    fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
+    fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     max_results: int = 99999,
-    client_options: Dict = {'num_retries': 10},
+    client_options: Dict = {"num_retries": 10},
     search_options: Dict = dict(),
 ):
     """
@@ -65,7 +65,7 @@ def get_arxiv_papers(
 def get_and_dump_arxiv_papers(
     keywords: List[Union[str, List[str]]],
     output_filepath: str,
-    fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
+    fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     *args,
     **kwargs
 ):

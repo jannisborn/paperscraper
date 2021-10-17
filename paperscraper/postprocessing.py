@@ -48,11 +48,11 @@ def aggregate_paper(
     """
 
     if not isinstance(data, list):
-        raise ValueError(f'Expected list, received {type(data)}')
+        raise ValueError(f"Expected list, received {type(data)}")
     if not isinstance(bins_per_year, int):
-        raise ValueError(f'Expected int, received {type(bins_per_year)}')
+        raise ValueError(f"Expected int, received {type(bins_per_year)}")
     if 12 % bins_per_year != 0:
-        raise ValueError(f'Cant split year into {bins_per_year} bins')
+        raise ValueError(f"Cant split year into {bins_per_year} bins")
 
     num_years = last_year - start_year + 1
     bins = np.zeros((num_years * bins_per_year))
@@ -64,14 +64,14 @@ def aggregate_paper(
         return bins if not return_filtered else (bins, [])
 
     # Remove duplicate entries (keep only the first one)
-    df = pd.DataFrame(data).sort_values(by='date', ascending=True)
-    data = df.drop_duplicates(subset='title', keep='first').to_dict('records')
+    df = pd.DataFrame(data).sort_values(by="date", ascending=True)
+    data = df.drop_duplicates(subset="title", keep="first").to_dict("records")
 
-    dates = [dd['date'] for dd in data]
+    dates = [dd["date"] for dd in data]
 
     filtered = []
     for paper, date in zip(data, dates):
-        year = int(date.split('-')[0])
+        year = int(date.split("-")[0])
         if year < start_year or year > last_year:
             continue
 
@@ -82,12 +82,12 @@ def aggregate_paper(
             # Filter out papers which undesired terms
             unwanted = False
             for unwanted_key in unwanted_keys:
-                if unwanted_key.lower() in paper['title'].lower():
+                if unwanted_key.lower() in paper["title"].lower():
                     unwanted = True
                 if (
                     filter_abstract
-                    and paper['abstract'] is not None
-                    and unwanted_key.lower() in paper['abstract'].lower()
+                    and paper["abstract"] is not None
+                    and unwanted_key.lower() in paper["abstract"].lower()
                 ):
                     unwanted = True
             if unwanted:
@@ -99,12 +99,12 @@ def aggregate_paper(
                 if not isinstance(key_term, list):
                     key_term = [key_term]
                 for key in key_term:
-                    if key.lower() in paper['title'].lower():
+                    if key.lower() in paper["title"].lower():
                         got_key = True
                     if (
                         filter_abstract
-                        and paper['abstract'] is not None
-                        and key.lower() in paper['abstract'].lower()
+                        and paper["abstract"] is not None
+                        and key.lower() in paper["abstract"].lower()
                     ):
                         got_key = True
                 got_keys.append(got_key)
@@ -114,14 +114,14 @@ def aggregate_paper(
 
         filtered.append(paper)
 
-        if len(date.split('-')) < 2:
+        if len(date.split("-")) < 2:
             logger.warning(
-                f'Paper without month {date}, randomly assigned month.'
+                f"Paper without month {date}, randomly assigned month."
                 f"{paper['title']}"
             )
             month = np.random.choice(12)
         else:
-            month = int(date.split('-')[1])
+            month = int(date.split("-")[1])
 
         year_bin = year - start_year
         month_bin = int(np.floor((month - 1) / (12 / bins_per_year)))

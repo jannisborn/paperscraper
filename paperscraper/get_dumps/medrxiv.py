@@ -8,9 +8,9 @@ from tqdm import tqdm
 
 from ..xrxiv.xrxiv_api import MedRxivApi
 
-today = datetime.today().strftime('%Y-%m-%d')
-save_folder = pkg_resources.resource_filename('paperscraper', 'server_dumps')
-save_path = os.path.join(save_folder, f'medrxiv_{today}.jsonl')
+today = datetime.today().strftime("%Y-%m-%d")
+save_folder = pkg_resources.resource_filename("paperscraper", "server_dumps")
+save_path = os.path.join(save_folder, f"medrxiv_{today}.jsonl")
 
 
 def medrxiv(save_path: str = save_path):
@@ -24,7 +24,7 @@ def medrxiv(save_path: str = save_path):
     # create API client
     api = MedRxivApi()
     # dump all papers
-    with open(save_path, 'w') as fp:
+    with open(save_path, "w") as fp:
         for index, paper in enumerate(tqdm(api.get_papers())):
             if index > 0:
                 fp.write(os.linesep)

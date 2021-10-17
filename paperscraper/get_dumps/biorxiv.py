@@ -8,10 +8,10 @@ from tqdm import tqdm
 
 from ..xrxiv.xrxiv_api import BioRxivApi
 
-today = datetime.today().strftime('%Y-%m-%d')
+today = datetime.today().strftime("%Y-%m-%d")
 save_path = os.path.join(
-    pkg_resources.resource_filename('paperscraper', 'server_dumps'),
-    f'biorxiv_{today}.jsonl',
+    pkg_resources.resource_filename("paperscraper", "server_dumps"),
+    f"biorxiv_{today}.jsonl",
 )
 
 
@@ -27,7 +27,7 @@ def biorxiv(save_path: str = save_path):
     api = BioRxivApi()
 
     # dump all papers
-    with open(save_path, 'w') as fp:
+    with open(save_path, "w") as fp:
         for index, paper in enumerate(tqdm(api.get_papers())):
             if index > 0:
                 fp.write(os.linesep)

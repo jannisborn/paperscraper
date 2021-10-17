@@ -11,9 +11,9 @@ def dump_papers(papers: List[dict], filepath: str) -> None:
         filepath (str): Path to dump the papers.
     """
 
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         for paper in papers:
-            f.write(str(paper) + '\n')
+            f.write(str(paper) + "\n")
 
 
 def get_filename_from_query(query: List[str]) -> str:
@@ -25,6 +25,6 @@ def get_filename_from_query(query: List[str]) -> str:
     Returns:
         str: Filename.
     """
-    filename = '_'.join([k if isinstance(k, str) else k[0] for k in query]) + '.jsonl'
-    filename = filename.replace(' ', '').lower()
+    filename = "_".join([k if isinstance(k, str) else k[0] for k in query]) + ".jsonl"
+    filename = filename.replace(" ", "").lower()
     return filename

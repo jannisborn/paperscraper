@@ -2,7 +2,7 @@ from pymed.article import PubMedArticle
 import warnings
 from typing import List, Union
 
-finalize_disjunction = lambda x: '(' + x[:-4] + ') AND '
+finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
 finalize_conjunction = lambda x: x[:-5]
 date_root = '("{0}"[Date - Create] : "{1}"[Date - Create])'
 
@@ -18,12 +18,12 @@ def get_query_from_keywords(keywords: List[Union[str, List]]) -> str:
         str: query to enter to pubmed API.
     """
 
-    query = ''
+    query = ""
     for i, key in enumerate(keywords):
         if isinstance(key, str):
-            query += f'({key}) AND '
+            query += f"({key}) AND "
         elif isinstance(key, list):
-            inter = ''.join([f'({syn}) OR ' for syn in key])
+            inter = "".join([f"({syn}) OR " for syn in key])
             query += finalize_disjunction(inter)
 
     query = finalize_conjunction(query)
@@ -31,7 +31,7 @@ def get_query_from_keywords(keywords: List[Union[str, List]]) -> str:
 
 
 def get_query_from_keywords_and_date(
-    keywords: List[Union[str, List]], start_date: str = 'None', end_date: str = 'None'
+    keywords: List[Union[str, List]], start_date: str = "None", end_date: str = "None"
 ) -> str:
     """Receives a list of keywords and returns the query for the pubmed API.
 
@@ -52,16 +52,16 @@ def get_query_from_keywords_and_date(
 
     query = get_query_from_keywords(keywords)
 
-    if start_date != 'None' and end_date != 'None':
+    if start_date != "None" and end_date != "None":
         date = date_root.format(start_date, end_date)
-    elif start_date != 'None' and end_date == 'None':
-        date = date_root.format(start_date, '3000')
-    elif start_date == 'None' and end_date != 'None':
-        date = date_root.format('1000', end_date)
+    elif start_date != "None" and end_date == "None":
+        date = date_root.format(start_date, "3000")
+    elif start_date == "None" and end_date != "None":
+        date = date_root.format("1000", end_date)
     else:
         return query
 
-    return query + ' AND ' + date
+    return query + " AND " + date
 
 
 def get_emails(paper: PubMedArticle) -> List:
@@ -79,14 +79,14 @@ def get_emails(paper: PubMedArticle) -> List:
     emails = []
     for author in paper.authors:
         for v in author.values():
-            if v is not None and '@' in v:
-                parts = v.split('@')
+            if v is not None and "@" in v:
+                parts = v.split("@")
                 if len(parts) == 2:
                     # Found one email address
-                    prefix = parts[0].split(' ')[-1]
+                    prefix = parts[0].split(" ")[-1]
                     postfix = parts[1]
-                    mail = prefix + '@' + postfix
-                    if not (postfix.endswith('.') or postfix.endswith(' ')):
+                    mail = prefix + "@" + postfix
+                    if not (postfix.endswith(".") or postfix.endswith(" ")):
                         emails.append(mail)
                     else:
                         emails.append(mail[:-1])
@@ -95,19 +95,19 @@ def get_emails(paper: PubMedArticle) -> List:
                     for idx, part in enumerate(parts):
                         try:
                             if idx == 0:
-                                prefix = part.split(' ')[-1]
+                                prefix = part.split(" ")[-1]
                             else:
-                                postfix = part.split('\n')[0]
+                                postfix = part.split("\n")[0]
 
-                                if postfix.endswith('.'):
+                                if postfix.endswith("."):
                                     postfix = postfix[:-1]
-                                    mail = prefix + '@' + postfix
+                                    mail = prefix + "@" + postfix
                                 else:
-                                    current_postfix = postfix.split(' ')[0]
-                                    mail = prefix + '@' + current_postfix
-                                    prefix = postfix.split(' ')[1]
+                                    current_postfix = postfix.split(" ")[0]
+                                    mail = prefix + "@" + current_postfix
+                                    prefix = postfix.split(" ")[1]
                                 emails.append(mail)
                         except IndexError:
-                            warnings.warn(f'Mail could not be inferred from {part}.')
+                            warnings.warn(f"Mail could not be inferred from {part}.")
 
     return list(set(emails))

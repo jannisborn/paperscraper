@@ -140,3 +140,6 @@ dmypy.json
 *.pyc
 *.cpython-37.pyc
 __pycache__/
+
+# Specific folders
+paperscraper/server_dumps/*.json

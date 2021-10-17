@@ -27,9 +27,7 @@ def get_author(author_list: List[Dict]) -> str:
         str: ;-concatenated author list.
     """
 
-    return "; ".join(
-        [" ".join([a["firstName"], a["lastName"]]) for a in author_list]
-    )
+    return "; ".join([" ".join([a["firstName"], a["lastName"]]) for a in author_list])
 
 
 def get_categories(category_list: List[Dict]) -> str:

@@ -38,12 +38,8 @@ class ChemrxivAPI:
 
         page = 0
         while True:
-            params.update(
-                {"limit": self.page_size, "skip": page * self.page_size}
-            )
-            r = self.request(
-                os.path.join(self.base, query), method, params=params
-            )
+            params.update({"limit": self.page_size, "skip": page * self.page_size})
+            r = self.request(os.path.join(self.base, query), method, params=params)
             if r.status_code == 400:
                 raise ValueError(r.json()["message"])
             r.raise_for_status()

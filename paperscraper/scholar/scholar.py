@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 scholar_field_mapper = {
-    'venue': 'journal',
-    'author': 'authors',
-    'cites': 'citations',
+    "venue": "journal",
+    "author": "authors",
+    "cites": "citations",
 }
-process_fields = {'year': lambda x: int(x) if x.isdigit() else -1, 'citations': int}
+process_fields = {"year": lambda x: int(x) if x.isdigit() else -1, "citations": int}
 
 
 def get_scholar_papers(
     title: str,
-    fields: List = ['title', 'authors', 'year', 'abstract', 'journal', 'citations'],
+    fields: List = ["title", "authors", "year", "abstract", "journal", "citations"],
     *args,
     **kwargs,
 ):
@@ -37,11 +37,11 @@ def get_scholar_papers(
 
     """
     logger.info(
-        'NOTE: Scholar API cannot be used with Boolean logic in keywords.'
-        'Query should be a single string to be entered in the Scholar search field.'
+        "NOTE: Scholar API cannot be used with Boolean logic in keywords."
+        "Query should be a single string to be entered in the Scholar search field."
     )
     if not isinstance(title, str):
-        raise TypeError(f'Pass str not {type(title)}')
+        raise TypeError(f"Pass str not {type(title)}")
 
     matches = scholarly.search_pubs(title)
 
@@ -61,7 +61,7 @@ def get_scholar_papers(
 def get_and_dump_scholar_papers(
     title: str,
     output_filepath: str,
-    fields: List = ['title', 'authors', 'year', 'abstract', 'journal', 'citations'],
+    fields: List = ["title", "authors", "year", "abstract", "journal", "citations"],
 ):
     """
     Combines get_scholar_papers and dump_papers.
@@ -92,16 +92,16 @@ def get_citations_from_title(title: str) -> int:
     """
 
     if not isinstance(title, str):
-        raise TypeError(f'Pass str not {type(title)}')
+        raise TypeError(f"Pass str not {type(title)}")
 
     # Search for exact match
-    title = "\"" + title.strip() + "\""
+    title = '"' + title.strip() + '"'
 
     matches = scholarly.search_pubs(title)
-    counts = list(map(lambda p: int(p.bib['cites']), matches))
+    counts = list(map(lambda p: int(p.bib["cites"]), matches))
     if len(counts) == 0:
-        logger.warning(f'Found no match for {title}.')
+        logger.warning(f"Found no match for {title}.")
         return 0
     if len(counts) > 1:
-        logger.warning(f'Found {len(counts)} matches for {title}.')
+        logger.warning(f"Found {len(counts)} matches for {title}.")
     return counts[0]
