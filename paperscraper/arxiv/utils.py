@@ -1,6 +1,6 @@
 from typing import List, Union
 
-finalize_disjunction = lambda x: '(' + x[:-4] + ') AND '
+finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
 finalize_conjunction = lambda x: x[:-5]
 
 
@@ -15,12 +15,12 @@ def get_query_from_keywords(keywords: List[Union[str, List[str]]]) -> str:
         str: query to enter to arxiv API.
     """
 
-    query = ''
+    query = ""
     for i, key in enumerate(keywords):
         if isinstance(key, str):
-            query += f'all:{key} AND '
+            query += f"all:{key} AND "
         elif isinstance(key, list):
-            inter = ''.join([f'all:{syn} OR ' for syn in key])
+            inter = "".join([f"all:{syn} OR " for syn in key])
             query += finalize_disjunction(inter)
 
     query = finalize_conjunction(query)

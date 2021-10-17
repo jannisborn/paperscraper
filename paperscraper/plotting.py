@@ -9,18 +9,18 @@ import seaborn as sns
 from matplotlib_venn import venn2, venn2_circles, venn3, venn3_circles
 
 # Set matplotlib logging depth
-mpl_logger = logging.getLogger('matplotlib')
+mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
 
 def plot_comparison(
     data_dict: dict,
     keys: List[str],
-    x_ticks: List[str] = ['2015', '2016', '2017', '2018', '2019', '2020'],
+    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
     show_preprint: bool = False,
-    title_text: str = '',
+    title_text: str = "",
     keyword_text=None,
-    figpath: str = 'comparison_plot.pdf',
+    figpath: str = "comparison_plot.pdf",
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
@@ -58,22 +58,22 @@ def plot_comparison(
     """
 
     sns.set_palette(sns.color_palette("colorblind", 10))
-    plt.rcParams.update({'hatch.color': 'w'})
-    plt.rcParams['figure.facecolor'] = 'white'
+    plt.rcParams.update({"hatch.color": "w"})
+    plt.rcParams["figure.facecolor"] = "white"
     plt.figure(figsize=(8, 5))
 
     arxiv, biorxiv, pubmed, medrxiv, chemrxiv, preprint = [], [], [], [], [], []
 
     for key in keys:
         try:
-            arxiv.append(data_dict[key]['arxiv'])
-            biorxiv.append(data_dict[key]['biorxiv'])
-            medrxiv.append(data_dict[key]['medrxiv'])
-            chemrxiv.append(data_dict[key]['chemrxiv'])
-            pubmed.append(data_dict[key]['pubmed'])
+            arxiv.append(data_dict[key]["arxiv"])
+            biorxiv.append(data_dict[key]["biorxiv"])
+            medrxiv.append(data_dict[key]["medrxiv"])
+            chemrxiv.append(data_dict[key]["chemrxiv"])
+            pubmed.append(data_dict[key]["pubmed"])
         except KeyError:
             raise KeyError(
-                f'Did not find all DBs for {key}, only found {data_dict[key].keys()}'
+                f"Did not find all DBs for {key}, only found {data_dict[key].keys()}"
             )
         preprint.append(arxiv[-1] + biorxiv[-1] + medrxiv[-1] + chemrxiv[-1])
 
@@ -86,13 +86,13 @@ def plot_comparison(
 
     plts = []
     legend_plts = []
-    patterns = ('|||', 'oo', 'xx', '..', '**')
+    patterns = ("|||", "oo", "xx", "..", "**")
     if show_preprint:
         bars = [pubmed, preprint]
-        legend_platform = ['PubMed', 'Preprint']
+        legend_platform = ["PubMed", "Preprint"]
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ['PubMed', 'ArXiv', 'BiorXiv', 'ChemRxiv', 'MedRxiv']
+        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
     for idx in range(len(keys)):
         bottom = 0
 
@@ -103,7 +103,7 @@ def plot_comparison(
                     b[idx],
                     width,
                     linewidth=1,
-                    edgecolor='k',
+                    edgecolor="k",
                     bottom=bottom,
                 )
             else:
@@ -113,27 +113,27 @@ def plot_comparison(
                     width,
                     color=next(iter(plts[bidx])).get_facecolor(),
                     linewidth=1,
-                    edgecolor='k',
+                    edgecolor="k",
                     bottom=bottom,
                 )
 
             bottom += b[idx]
             plts.append(p)
         legend_plts.append(
-            plt.bar(ind + pos[idx], np.zeros((len(ind),)), color='k', bottom=bottom)
+            plt.bar(ind + pos[idx], np.zeros((len(ind),)), color="k", bottom=bottom)
         )
 
-    plt.ylabel('Counts', size=15)
-    plt.xlabel('Years', size=15)
+    plt.ylabel("Counts", size=15)
+    plt.xlabel("Years", size=15)
     plt.title(f"Keywords: {title_text}", size=14)
     # Customize minor tick labels
     plt.xticks(ind, x_ticks, size=10)
 
     legend = plt.legend(
         legend_platform,
-        prop={'size': 12},
-        loc='upper left',
-        title='Platform:',
+        prop={"size": 12},
+        loc="upper left",
+        title="Platform:",
         title_fontsize=13,
         ncol=1,
     )
@@ -150,14 +150,14 @@ def plot_comparison(
             bar.set_hatch(patterns[idx])
 
     if not keyword_text:
-        keyword_text = [''] * len(keys)
+        keyword_text = [""] * len(keys)
 
     plt.legend(
         legend_plts,
         keyword_text,
-        loc='upper center',
-        prop={'size': 12},
-        title='Keywords (X):',
+        loc="upper center",
+        prop={"size": 12},
+        title="Keywords (X):",
         title_fontsize=13,
     )
     plt.gca().add_artist(legend)
@@ -168,7 +168,7 @@ def plot_comparison(
     y_steps = np.arange(0, ymax, step_size)
 
     for y_step in y_steps:
-        plt.hlines(y_step, xmax=10, xmin=-1, color='black', linewidth=0.1)
+        plt.hlines(y_step, xmax=10, xmin=-1, color="black", linewidth=0.1)
     plt.xlim([-0.5, len(ind)])
     plt.ylim([0, ymax * 1.02])
 
@@ -180,10 +180,10 @@ def plot_comparison(
 def plot_single(
     data_dict: dict,
     keys: str,
-    x_ticks: List[str] = ['2015', '2016', '2017', '2018', '2019', '2020'],
+    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
     show_preprint: bool = False,
-    title_text: str = '',
-    figpath: str = 'comparison_plot.pdf',
+    title_text: str = "",
+    figpath: str = "comparison_plot.pdf",
     logscale=False,
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
@@ -221,23 +221,23 @@ def plot_single(
         KeyError: If a database is missing in data_dict.
     """
 
-    sns.set_palette(sns.color_palette('colorblind', 10))
-    plt.rcParams.update({'hatch.color': 'w'})
-    plt.rcParams['figure.facecolor'] = 'white'
+    sns.set_palette(sns.color_palette("colorblind", 10))
+    plt.rcParams.update({"hatch.color": "w"})
+    plt.rcParams["figure.facecolor"] = "white"
     plt.figure(figsize=(8, 5))
 
     arxiv, biorxiv, pubmed, medrxiv, chemrxiv, preprint = [], [], [], [], [], []
 
     for key in keys:
         try:
-            arxiv.append(data_dict[key]['arxiv'])
-            biorxiv.append(data_dict[key]['biorxiv'])
-            medrxiv.append(data_dict[key]['medrxiv'])
-            chemrxiv.append(data_dict[key]['chemrxiv'])
-            pubmed.append(data_dict[key]['pubmed'])
+            arxiv.append(data_dict[key]["arxiv"])
+            biorxiv.append(data_dict[key]["biorxiv"])
+            medrxiv.append(data_dict[key]["medrxiv"])
+            chemrxiv.append(data_dict[key]["chemrxiv"])
+            pubmed.append(data_dict[key]["pubmed"])
         except KeyError:
             raise KeyError(
-                f'Did not find all DBs for {key}, only found {data_dict[key].keys()}'
+                f"Did not find all DBs for {key}, only found {data_dict[key].keys()}"
             )
         preprint.append(arxiv[-1] + biorxiv[-1] + medrxiv[-1] + chemrxiv[-1])
 
@@ -249,7 +249,7 @@ def plot_single(
     legend_plts = []
     if show_preprint:
         bars = [pubmed, preprint]
-        legend_platform = ['PubMed', 'Preprint']
+        legend_platform = ["PubMed", "Preprint"]
         if logscale:
             sums = np.array(pubmed) + np.array(preprint)
             logsums = np.log10(sums)
@@ -257,7 +257,7 @@ def plot_single(
 
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ['PubMed', 'ArXiv', 'BiorXiv', 'ChemRxiv', 'MedRxiv']
+        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
         if logscale:
             sums = (
                 np.array(pubmed)
@@ -284,7 +284,7 @@ def plot_single(
                     b[idx],
                     width,
                     linewidth=1,
-                    edgecolor='k',
+                    edgecolor="k",
                     bottom=bottom,
                 )
             else:
@@ -294,20 +294,20 @@ def plot_single(
                     width,
                     color=next(iter(plts[bidx])).get_facecolor(),
                     linewidth=1,
-                    edgecolor='k',
+                    edgecolor="k",
                     bottom=bottom,
                 )
 
             bottom += b[idx]
             plts.append(p)
         legend_plts.append(
-            plt.bar(ind, np.zeros((len(ind),)), color='k', bottom=bottom)
+            plt.bar(ind, np.zeros((len(ind),)), color="k", bottom=bottom)
         )
 
-    plt.ylabel('Counts', size=17) if not logscale else plt.ylabel(
-        'Counts (log scale)', size=17
+    plt.ylabel("Counts", size=17) if not logscale else plt.ylabel(
+        "Counts (log scale)", size=17
     )
-    plt.xlabel('Years', size=17)
+    plt.xlabel("Years", size=17)
     plt.title(title_text, size=17)
     # Customize minor tick labels
 
@@ -317,13 +317,13 @@ def plot_single(
         yticks = np.arange(1, ymax).astype(int)
         plt.yticks(yticks, np.power(10, yticks))
 
-    plt.tick_params(axis='y', labelsize=17)
+    plt.tick_params(axis="y", labelsize=17)
 
     plt.legend(
         legend_platform,
-        prop={'size': 14},
-        loc='upper left',
-        title='Platform:',
+        prop={"size": 14},
+        loc="upper left",
+        title="Platform:",
         title_fontsize=17,
         ncol=1,
     )
@@ -332,7 +332,7 @@ def plot_single(
     ymax = plt.gca().get_ylim()[1]
 
     for y_step in plt.yticks()[0]:
-        plt.hlines(y_step, xmax=10, xmin=-1, color='black', linewidth=0.1)
+        plt.hlines(y_step, xmax=10, xmin=-1, color="black", linewidth=0.1)
     plt.xlim([-0.5, len(ind)])
     plt.ylim([0, ymax * 1.02])
 
@@ -341,14 +341,14 @@ def plot_single(
     plt.show()
 
 
-get_name = lambda n: ' vs. '.join(list(map(lambda x: x.split(' ')[0], n)))
+get_name = lambda n: " vs. ".join(list(map(lambda x: x.split(" ")[0], n)))
 
 
 def plot_venn_two(
     sizes: List[int],
     labels: List[str],
-    figpath: str = 'venn_two.pdf',
-    title: str = '',
+    figpath: str = "venn_two.pdf",
+    title: str = "",
     **kwargs,
 ) -> None:
     """Plot a single Venn Diagram with two terms.
@@ -363,26 +363,26 @@ def plot_venn_two(
             labels.
         **kwargs: Additional keyword arguments for venn2.
     """
-    assert len(sizes) == 3, 'Incorrect type/length of sizes'
-    assert len(labels) == 2, 'Incorrect type/length of labels'
+    assert len(sizes) == 3, "Incorrect type/length of sizes"
+    assert len(labels) == 2, "Incorrect type/length of labels"
 
-    title = get_name(labels) if title == '' else title
-    figname = title.lower().replace(' vs. ', '_') if figpath == '' else figpath
+    title = get_name(labels) if title == "" else title
+    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
     venn2(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn2_circles(
-        subsets=sizes, linestyle='solid', linewidth=0.6, color='grey', **kwargs
+        subsets=sizes, linestyle="solid", linewidth=0.6, color="grey", **kwargs
     )
-    if kwargs.get('ax', False):
+    if kwargs.get("ax", False):
         print(kwargs, type(kwargs))
-        print(kwargs['ax'])
-        kwargs['ax'].set_title(title, fontdict={'fontweight': 'bold'}, size=15)
+        print(kwargs["ax"])
+        kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
-        plt.title(title, fontdict={'fontweight': 'bold'}, size=15)
-        plt.savefig(f'{figname}.pdf')
+        plt.title(title, fontdict={"fontweight": "bold"}, size=15)
+        plt.savefig(f"{figname}.pdf")
 
 
 def plot_venn_three(
-    sizes: List[int], labels: List[str], figpath: str = '', title: str = '', **kwargs
+    sizes: List[int], labels: List[str], figpath: str = "", title: str = "", **kwargs
 ) -> None:
     """Plot a single Venn Diagram with two terms.
 
@@ -396,22 +396,22 @@ def plot_venn_three(
             labels.
         **kwargs: Additional keyword arguments for venn3.
     """
-    assert len(sizes) == 7, 'Incorrect type/length of sizes'
-    assert len(labels) == 3, 'Incorrect type/length of labels'
+    assert len(sizes) == 7, "Incorrect type/length of sizes"
+    assert len(labels) == 3, "Incorrect type/length of labels"
 
-    title = get_name(labels) if title == '' else title
-    figname = title.lower().replace(' vs. ', '_') if figpath == '' else figpath
+    title = get_name(labels) if title == "" else title
+    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
 
     venn3(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn3_circles(
-        subsets=sizes, linestyle='solid', linewidth=0.6, color='grey', **kwargs
+        subsets=sizes, linestyle="solid", linewidth=0.6, color="grey", **kwargs
     )
 
-    if kwargs.get('ax', False):
-        kwargs['ax'].set_title(title, fontdict={'fontweight': 'bold'}, size=15)
+    if kwargs.get("ax", False):
+        kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
-        plt.title(title, fontdict={'fontweight': 'bold'}, size=15)
-        plt.savefig(f'{figname}.pdf')
+        plt.title(title, fontdict={"fontweight": "bold"}, size=15)
+        plt.savefig(f"{figname}.pdf")
 
 
 def plot_multiple_venn(
@@ -419,7 +419,7 @@ def plot_multiple_venn(
     labels: List[List[str]],
     figname: str,
     titles: List[str],
-    suptitle: str = '',
+    suptitle: str = "",
     gridspec_kw: dict = {},
     figsize: Iterable = (8, 4.5),
     **kwargs,
@@ -444,16 +444,16 @@ def plot_multiple_venn(
         **kwargs: Additional keyword arguments for venn3.
     """
 
-    assert len(sizes) == len(labels), 'Length of labels & sizes dont match.'
-    assert len(sizes) == len(titles), 'Length of titles & sizes dont match.'
-    assert len(sizes) > 1, 'At least 2 items should be provided.'
-    assert all(list(map(lambda x: len(x) in [2, 3], labels))), 'Wrong label sizes.'
-    assert all(list(map(lambda x: len(x) in [3, 7], sizes))), 'Wrong label sizes.'
+    assert len(sizes) == len(labels), "Length of labels & sizes dont match."
+    assert len(sizes) == len(titles), "Length of titles & sizes dont match."
+    assert len(sizes) > 1, "At least 2 items should be provided."
+    assert all(list(map(lambda x: len(x) in [2, 3], labels))), "Wrong label sizes."
+    assert all(list(map(lambda x: len(x) in [3, 7], sizes))), "Wrong label sizes."
 
     fig, axes = plt.subplots(1, len(sizes), gridspec_kw=gridspec_kw, figsize=figsize)
-    plt.suptitle(suptitle, size=18, fontweight='bold')
+    plt.suptitle(suptitle, size=18, fontweight="bold")
 
-    figname = titles[0].lower().replace(' vs. ', '_') if figname == '' else figname
+    figname = titles[0].lower().replace(" vs. ", "_") if figname == "" else figname
 
     for idx, (size, label, title) in enumerate(zip(sizes, labels, titles)):
         if len(label) == 2:
@@ -461,4 +461,4 @@ def plot_multiple_venn(
         elif len(label) == 3:
             plot_venn_three(size, label, title=title, ax=axes[idx])
 
-    plt.savefig(f'{figname}.pdf')
+    plt.savefig(f"{figname}.pdf")

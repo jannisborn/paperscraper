@@ -8,25 +8,25 @@ from ..utils import dump_papers
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
-pubmed_field_mapper = {'publication_date': 'date'}
+pubmed_field_mapper = {"publication_date": "date"}
 
 # Authors fields needs specific processing
 process_fields = {
-    'authors': lambda authors: list(
+    "authors": lambda authors: list(
         map(
-            lambda a: str(a.get('firstname', '')) + '' + str(a.get('lastname', '')),
+            lambda a: str(a.get("firstname", "")) + "" + str(a.get("lastname", "")),
             authors,
         )
     ),
-    'date': lambda date: (
-        date.strftime('%Y-%m-%d') if isinstance(date, datetime.date) else date
+    "date": lambda date: (
+        date.strftime("%Y-%m-%d") if isinstance(date, datetime.date) else date
     ),
 }
 
 
 def get_pubmed_papers(
     query: str,
-    fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
+    fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     max_results: int = 999999,
     *args,
     **kwargs
@@ -49,9 +49,9 @@ def get_pubmed_papers(
     """
     raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
 
-    get_mails = 'emails' in fields
+    get_mails = "emails" in fields
     if get_mails:
-        fields.pop(fields.index('emails'))
+        fields.pop(fields.index("emails"))
 
     processed = [
         {
@@ -65,7 +65,7 @@ def get_pubmed_papers(
     ]
     if get_mails:
         for idx, paper in enumerate(raw):
-            processed[idx].update({'emails': get_emails(paper)})
+            processed[idx].update({"emails": get_emails(paper)})
 
     return processed
 
@@ -73,9 +73,9 @@ def get_pubmed_papers(
 def get_and_dump_pubmed_papers(
     keywords: List[Union[str, List[str]]],
     output_filepath: str,
-    fields: List = ['title', 'authors', 'date', 'abstract', 'journal', 'doi'],
-    start_date: str = 'None',
-    end_date: str = 'None',
+    fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
+    start_date: str = "None",
+    end_date: str = "None",
     *args,
     **kwargs
 ):

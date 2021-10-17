@@ -14,35 +14,32 @@ logger = logging.getLogger(__name__)
 
 # Set up the query dictionary
 QUERY_FN_DICT = {
-    'arxiv': get_and_dump_arxiv_papers,
-    'pubmed': get_and_dump_pubmed_papers,
+    "arxiv": get_and_dump_arxiv_papers,
+    "pubmed": get_and_dump_pubmed_papers,
 }
 # For biorxiv, chemrxiv and medrxiv search for local dumps
-dump_root = pkg_resources.resource_filename('paperscraper', 'server_dumps')
+dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
 
-for db in ['biorxiv', 'chemrxiv', 'medrxiv']:
-    dump_paths = glob.glob(os.path.join(dump_root, db + '*'))
+for db in ["biorxiv", "chemrxiv", "medrxiv"]:
+    dump_paths = glob.glob(os.path.join(dump_root, db + "*"))
     if not dump_paths:
-        # Having no chemrxiv dump is the new default but for backwards compatibility
-        # old dumps can still be searched when locally available.
-        if db != 'chemrxiv':
-            logger.warning(f' No dump found for {db}. Skipping entry.')
+        logger.warning(f" No dump found for {db}. Skipping entry.")
         continue
     elif len(dump_paths) > 1:
-        logger.info(f' Multiple dumps found for {db}, taking most recent one')
+        logger.info(f" Multiple dumps found for {db}, taking most recent one")
     path = sorted(dump_paths, reverse=True)[0]
 
     # Handly empty dumped files (e.g. when API is down)
     if os.path.getsize(path) == 0:
-        logger.warning(f'Empty dump for {db}. Skipping entry.')
+        logger.warning(f"Empty dump for {db}. Skipping entry.")
         continue
     querier = XRXivQuery(path)
     if not querier.errored:
         QUERY_FN_DICT.update({db: querier.search_keywords})
-        logger.info(f'Loaded {db} dump with {len(querier.df)} entries')
+        logger.info(f"Loaded {db} dump with {len(querier.df)} entries")
 
 if len(QUERY_FN_DICT) == 2:
     logger.warning(
-        ' No dumps found for either of biorxiv and medrxiv.'
-        ' Consider using paperscraper.get_dumps.* to fetch the dumps.'
+        " No dumps found for either biorxiv or medrxiv."
+        " Consider using paperscraper.get_dumps.* to fetch the dumps."
     )

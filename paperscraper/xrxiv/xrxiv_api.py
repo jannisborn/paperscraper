@@ -4,10 +4,7 @@ from datetime import datetime
 from typing import Optional, List, Generator
 
 
-launch_dates = {
-    'biorxiv': '2013-01-01',
-    'medrxiv': '2019-06-01'
-}
+launch_dates = {"biorxiv": "2013-01-01", "medrxiv": "2019-06-01"}
 
 
 class XRXivApi:
@@ -17,7 +14,7 @@ class XRXivApi:
         self,
         server: str,
         launch_date: str,
-        api_base_url: str = 'https://api.biorxiv.org'
+        api_base_url: str = "https://api.biorxiv.org",
     ):
         """
         Initialize API class.
@@ -31,15 +28,16 @@ class XRXivApi:
         self.api_base_url = api_base_url
         self.launch_date = launch_date
         self.launch_datetime = datetime.fromisoformat(self.launch_date)
-        self.get_papers_url = '{}/details/{}'.format(
-            self.api_base_url, self.server
-        ) + '/{begin_date}/{end_date}/{cursor}'
+        self.get_papers_url = (
+            "{}/details/{}".format(self.api_base_url, self.server)
+            + "/{begin_date}/{end_date}/{cursor}"
+        )
 
     def get_papers(
         self,
         begin_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        fields: List[str] = ['title', 'doi', 'authors', 'abstract', 'date', 'journal']
+        fields: List[str] = ["title", "doi", "authors", "abstract", "date", "journal"],
     ) -> Generator:
         """
         Get paper metadata.
@@ -64,43 +62,40 @@ class XRXivApi:
             if end_date:
                 end_datetime = datetime.fromisoformat(end_date)
                 if end_datetime > now_datetime:
-                    end_date = now_datetime.strftime('%Y-%m-%d')
+                    end_date = now_datetime.strftime("%Y-%m-%d")
             else:
-                end_date = now_datetime.strftime('%Y-%m-%d')
+                end_date = now_datetime.strftime("%Y-%m-%d")
             do_loop = True
             cursor = 0
             while do_loop:
                 json_response = requests.get(
                     self.get_papers_url.format(
-                        begin_date=begin_date,
-                        end_date=end_date,
-                        cursor=cursor
+                        begin_date=begin_date, end_date=end_date, cursor=cursor
                     )
                 ).json()
-                do_loop = json_response['messages'][0]['status'] == 'ok'
+                do_loop = json_response["messages"][0]["status"] == "ok"
                 if do_loop:
-                    cursor += json_response['messages'][0]['count']
-                    for paper in json_response['collection']:
+                    cursor += json_response["messages"][0]["count"]
+                    for paper in json_response["collection"]:
                         processed_paper = {
-                            field: paper.get(field, '')
-                            for field in fields
+                            field: paper.get(field, "") for field in fields
                         }
                         yield processed_paper
         except Exception as exc:
-            raise RuntimeError('Failed getting papers: {} - {}'.format(
-                exc.__class__.__name__, exc
-            ))
+            raise RuntimeError(
+                "Failed getting papers: {} - {}".format(exc.__class__.__name__, exc)
+            )
 
 
 class BioRxivApi(XRXivApi):
     """bioRxiv API."""
 
     def __init__(self):
-        super().__init__(server='biorxiv', launch_date=launch_dates['biorxiv'])
+        super().__init__(server="biorxiv", launch_date=launch_dates["biorxiv"])
 
 
 class MedRxivApi(XRXivApi):
     """medRxiv API."""
 
     def __init__(self):
-        super().__init__(server='medrxiv', launch_date=launch_dates['medrxiv'])
+        super().__init__(server="medrxiv", launch_date=launch_dates["medrxiv"])
