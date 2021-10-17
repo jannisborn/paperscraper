@@ -12,12 +12,9 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 
 `paperscraper` is a `python` package that ships via `pypi` and facilitates scraping
 publication metadata from **PubMed** or from preprint servers such as **arXiv**,
-**medRxiv** or **bioRxiv**. It provides a streamlined interface to scrape metadata and comes
+**medRxiv**, **bioRxiv** and **chemRxiv**. It provides a streamlined interface to scrape metadata and comes
 with simple postprocessing functions and plotting routines for meta-analysis.
 
-### ChemRxiv support update
-*NOTE* ChemRxiv:
-Since September 2021, the ChemRxiv endpoint is no longer supported because ChemRxiv has changed its host from [figshare.com](https://figshare.com/blog/Figshare_to_power_ChemRxiv_Beta_New_Chemistry_Preprint_Server_For_The_Global_Chemistry_Community/322) (which shipped with the [figshare API](https://docs.figshare.com)) to [Cambridge Open Engage](https://www.google.com/search?q=open%20engage) (see [announcement](https://axial.acs.org/2021/06/10/chemrxiv-open-engage-platform/)). Ironically, **Open** Engage does not provide an API and hence no programmatic interaction with this preprint server is possible anymore, effective September 2021.
 
 ## Getting started
 
@@ -29,12 +26,13 @@ This is enough to query **PubMed**, **arXiv** or Google Scholar.
 
 #### Download X-rxiv Dumps
 
-However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org) and [medrxiv](https://www.medrxiv.org), the setup is different. The entire dump is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line).
+However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) and [chemrxiv](https://www.chemrxiv.org), the setup is different. The entire dump is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line).
 
 ```py
-from paperscraper.get_dumps import biorxiv, medrxiv
-medrxiv()  # Takes ~30min and should result in ~35 MB file
-biorxiv()  # Takes ~2.5h and should result in ~250 MB file
+from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
+medrxiv()  #  Takes ~30min and should result in ~35 MB file
+biorxiv()  # Takes ~1h and should result in ~350 MB file
+chemrxiv()  #  Takes ~15min and should result in ~16 MB file
 ```
 
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter

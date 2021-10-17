@@ -27,7 +27,9 @@ def get_author(author_list: List[Dict]) -> str:
         str: ;-concatenated author list.
     """
 
-    return "; ".join([" ".join([a["firstName"], a["lastName"]]) for a in author_list])
+    return "; ".join(
+        [" ".join([a["firstName"], a["lastName"]]) for a in author_list]
+    )
 
 
 def get_categories(category_list: List[Dict]) -> str:
@@ -87,7 +89,7 @@ def parse_dump(source_path: str, target_path: str) -> None:
 
     dump = []
     # Read source dump
-    for file_name in os.listdir(source_path):
+    for file_name in tqdm(os.listdir(source_path)):
 
         if not file_name.endswith(".json"):
             continue

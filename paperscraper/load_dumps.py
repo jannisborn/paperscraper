@@ -23,10 +23,7 @@ dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
 for db in ["biorxiv", "chemrxiv", "medrxiv"]:
     dump_paths = glob.glob(os.path.join(dump_root, db + "*"))
     if not dump_paths:
-        # Having no chemrxiv dump is the new default but for backwards compatibility
-        # old dumps can still be searched when locally available.
-        if db != "chemrxiv":
-            logger.warning(f" No dump found for {db}. Skipping entry.")
+        logger.warning(f" No dump found for {db}. Skipping entry.")
         continue
     elif len(dump_paths) > 1:
         logger.info(f" Multiple dumps found for {db}, taking most recent one")
@@ -43,6 +40,6 @@ for db in ["biorxiv", "chemrxiv", "medrxiv"]:
 
 if len(QUERY_FN_DICT) == 2:
     logger.warning(
-        " No dumps found for either of biorxiv and medrxiv."
+        " No dumps found for either biorxiv or medrxiv."
         " Consider using paperscraper.get_dumps.* to fetch the dumps."
     )
