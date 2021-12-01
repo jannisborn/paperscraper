@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def aggregate_paper(
-    data: List[str],
+    data: List[Dict[str, str]],
     start_year: int = 2016,
     bins_per_year: int = 4,
     filtering: bool = False,
@@ -24,8 +24,8 @@ def aggregate_paper(
     aggregates papers into several bins per year.
 
     Args:
-        data (list[str]): Loaded .jsonl file (e.g. via readlines()). NOTE: The strings
-            have to be dictionary-convertible via `eval`.
+        data (List[Dict[str,str]]): Content of a .jsonl file, i.e., a list of
+            dictionaries, one per paper.
         start_year (int, optional): First year of interest. Defaults to 2016.
         bins_per_year (int, optional): Defaults to 4 (quarterly aggregation).
         filtering (bool, optional): Whether or not all papers in .jsonl are
@@ -56,9 +56,6 @@ def aggregate_paper(
 
     num_years = last_year - start_year + 1
     bins = np.zeros((num_years * bins_per_year))
-
-    # Read data
-    data = [eval(dd) for dd in data]
 
     if len(data) == 0:
         return bins if not return_filtered else (bins, [])

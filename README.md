@@ -132,7 +132,7 @@ Compare the temporal evolution of different queries across different servers.
 ```py
 from paperscraper import QUERY_FN_DICT
 from paperscraper.postprocessing import aggregate_paper
-from paperscraper.utils import get_filename_from_query
+from paperscraper.utils import get_filename_from_query, load_jsonl
 
 # Define search terms and their synonyms
 ml = ['Deep learning', 'Neural Network', 'Machine learning']
@@ -152,8 +152,7 @@ for query in queries:
     data_dict[filename] = dict()
     for db,_ in QUERY_FN_DICT.items():
         # Assuming the keyword search has been performed already
-        with open(os.path.join(root, db, filename), 'r') as f:
-            data = f.readlines()
+        data = load_jsonl(os.path.join(root, db, filename))
 
         # Unstructured matches are aggregated into 6 bins, 1 per year
         # from 2015 to 2020. Sanity check is performed by having 
