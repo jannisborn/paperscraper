@@ -1,4 +1,5 @@
 from typing import List
+import json
 
 
 def dump_papers(papers: List[dict], filepath: str) -> None:
@@ -13,7 +14,7 @@ def dump_papers(papers: List[dict], filepath: str) -> None:
 
     with open(filepath, "w") as f:
         for paper in papers:
-            f.write(str(paper) + "\n")
+            f.write(json.dumps(paper) + "\n")
 
 
 def get_filename_from_query(query: List[str]) -> str:
