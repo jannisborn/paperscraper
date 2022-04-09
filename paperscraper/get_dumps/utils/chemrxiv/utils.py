@@ -100,6 +100,8 @@ def parse_dump(source_path: str, target_path: str) -> None:
         target_paper = {
             "title": source_paper["title"],
             "doi": source_paper["doi"],
+            "vordoi": source_paper["vor"]["vorDoi"],
+            "url": source_paper["vor"]["url"],
             "authors": get_author(source_paper["authors"]),
             "abstract": source_paper["abstract"],
             "date": get_date(source_paper["statusDate"]),
