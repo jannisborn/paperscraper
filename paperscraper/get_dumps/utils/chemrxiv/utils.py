@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from requests.exceptions import SSLError
 from requests.models import HTTPError
 from tqdm import tqdm
 
@@ -132,15 +133,17 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
     os.makedirs(save_dir, exist_ok=True)
     for preprint in tqdm(api.all_preprints()):
 
-        preprint = preprint["item"]
-        preprint_id = preprint["id"]
-
-        path = os.path.join(save_dir, f"{preprint_id}.json")
+        path = os.path.join(save_dir, f"{preprint['id']}.json")
         if os.path.exists(path):
             continue
+        preprint_id = preprint["id"]
+        preprint = preprint["item"]
         try:
             preprint = api.preprint(preprint_id)
         except HTTPError:
             logger.warning(f"HTTP API Client error for ID: {preprint_id}")
+        except SSLError:
+            logger.warning(f'SSLError for ID: {preprint_id}')
+
         with open(path, "w") as file:
             json.dump(preprint, file, indent=2)
