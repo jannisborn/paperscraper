@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from requests.exceptions import SSLError
 from requests.models import HTTPError
 from tqdm import tqdm
 
@@ -100,6 +101,12 @@ def parse_dump(source_path: str, target_path: str) -> None:
         target_paper = {
             "title": source_paper["title"],
             "doi": source_paper["doi"],
+            "published_doi": (
+                source_paper["vor"]["vorDoi"] if source_paper["vor"] else "N.A."
+            ),
+            "published_url": (
+                source_paper["vor"]["url"] if source_paper["vor"] else "N.A."
+            ),
             "authors": get_author(source_paper["authors"]),
             "abstract": source_paper["abstract"],
             "date": get_date(source_paper["statusDate"]),
@@ -126,15 +133,17 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
     os.makedirs(save_dir, exist_ok=True)
     for preprint in tqdm(api.all_preprints()):
 
-        preprint = preprint["item"]
-        preprint_id = preprint["id"]
-
-        path = os.path.join(save_dir, f"{preprint_id}.json")
+        path = os.path.join(save_dir, f"{preprint['id']}.json")
         if os.path.exists(path):
             continue
+        preprint_id = preprint["id"]
+        preprint = preprint["item"]
         try:
             preprint = api.preprint(preprint_id)
         except HTTPError:
             logger.warning(f"HTTP API Client error for ID: {preprint_id}")
+        except SSLError:
+            logger.warning(f'SSLError for ID: {preprint_id}')
+
         with open(path, "w") as file:
             json.dump(preprint, file, indent=2)
