@@ -133,11 +133,11 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
     os.makedirs(save_dir, exist_ok=True)
     for preprint in tqdm(api.all_preprints()):
 
-        path = os.path.join(save_dir, f"{preprint['id']}.json")
+        path = os.path.join(save_dir, f"{preprint['item']['id']}.json")
         if os.path.exists(path):
             continue
-        preprint_id = preprint["id"]
         preprint = preprint["item"]
+        preprint_id = preprint["id"]
         try:
             preprint = api.preprint(preprint_id)
         except HTTPError:
