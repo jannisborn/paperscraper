@@ -11,10 +11,11 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 ## Overview
 
 `paperscraper` is a `python` package that ships via `pypi` and facilitates scraping
-publication metadata from **PubMed** or from preprint servers such as **arXiv**,
+publication metadata as well as full PDF files from **PubMed** or from preprint servers such as **arXiv**,
 **medRxiv**, **bioRxiv** and **chemRxiv**. It provides a streamlined interface to scrape metadata and comes
 with simple postprocessing functions and plotting routines for meta-analysis.
 
+Since v0.2.4 `paperscraper` also supports scraping PDF files directly! Thanks to [@daenuprobst](https://github.com/daenuprobst) for suggestions!
 
 ## Getting started
 
@@ -86,6 +87,15 @@ queries = [[covid19, ai, mi], [covid19, ai], [ai]]
 dump_queries(queries, '.')
 ```
 
+Or use the harmonized interface of `QUERY_FN_DICT` to query multiple databases of your choice:
+```py
+from paperscraper.load_dumps import QUERY_FN_DICT
+print(QUERY_FN_DICT.keys())
+
+QUERY_FN_DICT['biorxiv'](query, output_filepath='biorxiv_covid_ai_imaging.jsonl')
+QUERY_FN_DICT['medrxiv'](query, output_filepath='medrxiv_covid_ai_imaging.jsonl')
+```
+
 * Scrape papers from Google Scholar:
 
 Thanks to [scholarly](https://pypi.org/project/scholarly/), there is an endpoint for Google Scholar too.
@@ -97,6 +107,29 @@ from paperscraper.scholar import get_and_dump_scholar_papers
 topic = 'Machine Learning'
 get_and_dump_scholar_papers(topic)
 ```
+
+### Scrape PDFs
+
+`paperscraper` also allows you to download the PDF files.
+
+```py
+from paperscraper.pdf import save_pdf
+paper_data = {'doi': "10.48550/arXiv.2207.03928"}
+save_pdf(paper_data, filepath='gt4sd_paper.pdf')
+```
+
+If you want to batch download all PDFs for your previous metadata search, use the wrapper.
+Here we scrape the PDFs for the metadata obtained in the previous example.
+
+```py
+from paperscraper.pdf import save_pdf_from_dump
+
+# Save PDFs in current folder and name the files by their DOI
+save_pdf_from_dump('medrxiv_covid_ai_imaging.jsonl', pdf_path='.', key_to_save='doi')
+```
+*NOTE*: This works robustly for preprint servers, but if you use it on a PubMed dump, dont expect to obtain all PDFs. 
+Many publishers detect and block scraping and many publications are simply behind paywalls.
+
 
 ### Citation search
 
@@ -225,9 +258,20 @@ plot_multiple_venn(
 
 
 ## Citation
-If you use `paperscraper`, please cite the following:
+If you use `paperscraper`, please cite the papers that motivated our development of this tool.
 
 ```bib
+@article{born2021trends,
+  title={Trends in Deep Learning for Property-driven Drug Design},
+  author={Born, Jannis and Manica, Matteo},
+  journal={Current Medicinal Chemistry},
+  volume={28},
+  number={38},
+  pages={7862--7886},
+  year={2021},
+  publisher={Bentham Science Publishers}
+}
+
 @article{born2021on,
 	title = {On the role of artificial intelligence in medical imaging of COVID-19},
 	journal = {Patterns},

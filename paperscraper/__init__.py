@@ -1,6 +1,6 @@
 """Initialize the module."""
 __name__ = "paperscraper"
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 import logging
 import os
@@ -21,9 +21,7 @@ arxiv_logger = logging.getLogger("arxiv")
 arxiv_logger.setLevel(logging.WARNING)
 
 
-def dump_queries(
-    keywords: List[List[Union[str, List[str]]]], dump_root: str
-) -> None:
+def dump_queries(keywords: List[List[Union[str, List[str]]]], dump_root: str) -> None:
     """Performs keyword search on all available servers and dump the results.
 
     Args:
