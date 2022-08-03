@@ -1,4 +1,6 @@
-from typing import List, Union, Dict
+from typing import Dict, List, Union
+
+import pandas as pd
 
 import arxiv
 
@@ -25,7 +27,7 @@ def get_arxiv_papers(
     max_results: int = 99999,
     client_options: Dict = {"num_retries": 10},
     search_options: Dict = dict(),
-):
+) -> pd.DataFrame:
     """
     Performs arxiv API request of a given query and returns list of papers with
     fields as desired.
@@ -42,23 +44,25 @@ def get_arxiv_papers(
             id_list (List), sort_by, or sort_order.
 
     Returns:
-        list of dicts. One dict per paper.
+        pd.DataFrame: One row per paper.
 
     """
     client = arxiv.Client(**client_options)
     search = arxiv.Search(query=query, max_results=max_results, **search_options)
     results = client.results(search)
 
-    processed = [
-        {
-            arxiv_field_mapper.get(key, key): process_fields.get(
-                arxiv_field_mapper.get(key, key), lambda x: x
-            )(value)
-            for key, value in vars(paper).items()
-            if arxiv_field_mapper.get(key, key) in fields
-        }
-        for paper in results
-    ]
+    processed = pd.DataFrame(
+        [
+            {
+                arxiv_field_mapper.get(key, key): process_fields.get(
+                    arxiv_field_mapper.get(key, key), lambda x: x
+                )(value)
+                for key, value in vars(paper).items()
+                if arxiv_field_mapper.get(key, key) in fields
+            }
+            for paper in results
+        ]
+    )
     return processed
 
 

@@ -44,7 +44,7 @@ class XRXivQuery:
         keywords: List[Union[str, List[str]]],
         fields: List[str] = None,
         output_filepath: str = None,
-    ) -> List[dict]:
+    ) -> pd.DataFrame:
         """
         Search for papers in the dump using keywords.
 
@@ -57,7 +57,7 @@ class XRXivQuery:
                 the hits in JSONL format. Defaults to None, a.k.a., no export to a file.
 
         Returns:
-            List[dict]: a list of papers associated to the query.
+            pd.DataFrame: A dataframe with one paper per row.
         """
         if fields is None:
             fields = self.fields

@@ -1,10 +1,11 @@
 import datetime
 from typing import List, Union
 
+import pandas as pd
 from pymed import PubMed
 
-from .utils import get_query_from_keywords_and_date, get_emails
 from ..utils import dump_papers
+from .utils import get_emails, get_query_from_keywords_and_date
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
@@ -30,7 +31,7 @@ def get_pubmed_papers(
     max_results: int = 999999,
     *args,
     **kwargs
-):
+) -> pd.DataFrame:
     """
     Performs PubMed API request of a query and returns list of papers with
     fields as desired.
@@ -44,7 +45,7 @@ def get_pubmed_papers(
         NOTE: *args, **kwargs are additional arguments for pubmed.query
 
     Returns:
-        list of dicts. One dict per paper.
+        pd.DataFrame. One paper per row.
 
     """
     raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
@@ -67,7 +68,7 @@ def get_pubmed_papers(
         for idx, paper in enumerate(raw):
             processed[idx].update({"emails": get_emails(paper)})
 
-    return processed
+    return pd.DataFrame(processed)
 
 
 def get_and_dump_pubmed_papers(
@@ -78,7 +79,7 @@ def get_and_dump_pubmed_papers(
     end_date: str = "None",
     *args,
     **kwargs
-):
+) -> None:
     """
     Combines get_pubmed_papers and dump_papers.
 

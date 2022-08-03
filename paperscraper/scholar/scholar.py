@@ -2,6 +2,7 @@ import logging
 import sys
 from typing import List
 
+import pandas as pd
 from scholarly import scholarly
 
 from ..utils import dump_papers
@@ -23,7 +24,7 @@ def get_scholar_papers(
     fields: List = ["title", "authors", "year", "abstract", "journal", "citations"],
     *args,
     **kwargs,
-):
+) -> pd.DataFrame:
     """
     Performs Google Scholar API request of a given query and returns list of papers with
     fields as desired.
@@ -33,7 +34,7 @@ def get_scholar_papers(
         fields (list[str]): List of strings with fields to keep in output.
 
     Returns:
-        list of dicts. One dict per paper.
+        pd.DataFrame. One paper per row.
 
     """
     logger.info(
@@ -55,14 +56,14 @@ def get_scholar_papers(
         }
         for paper in matches
     ]
-    return processed
+    return pd.DataFrame(processed)
 
 
 def get_and_dump_scholar_papers(
     title: str,
     output_filepath: str,
     fields: List = ["title", "authors", "year", "abstract", "journal", "citations"],
-):
+) -> None:
     """
     Combines get_scholar_papers and dump_papers.
 
