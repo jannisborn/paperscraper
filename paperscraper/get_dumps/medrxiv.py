@@ -2,6 +2,7 @@
 import json
 import os
 from datetime import datetime
+from typing import Optional
 
 import pkg_resources
 from tqdm import tqdm
@@ -13,7 +14,10 @@ save_folder = pkg_resources.resource_filename("paperscraper", "server_dumps")
 save_path = os.path.join(save_folder, f"medrxiv_{today}.jsonl")
 
 
-def medrxiv(save_path: str = save_path):
+def medrxiv(
+        begin_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        save_path: str = save_path):
     """Fetches all papers from medrxiv until current date, stores them in jsonl
     format in save_path.
 
@@ -25,7 +29,7 @@ def medrxiv(save_path: str = save_path):
     api = MedRxivApi()
     # dump all papers
     with open(save_path, "w") as fp:
-        for index, paper in enumerate(tqdm(api.get_papers())):
+        for index, paper in enumerate(tqdm(api.get_papers(begin_date=begin_date, end_date=end_date))):
             if index > 0:
                 fp.write(os.linesep)
             fp.write(json.dumps(paper))
