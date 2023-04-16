@@ -1,8 +1,11 @@
 import os
 from typing import Optional, Dict
+from datetime import datetime 
 
 import requests
 
+now_datetime = datetime.now()
+launch_dates = {"chemrxiv": "2017-01-01"}
 
 class ChemrxivAPI:
     """Handle OpenEngage API requests, using access.
@@ -11,9 +14,44 @@ class ChemrxivAPI:
 
     base = "https://chemrxiv.org/engage/chemrxiv/public-api/v1"
 
-    def __init__(self, page_size: Optional[int] = None):
+    def __init__(self,
+                 begin_date: Optional[str] = None,
+                 end_date: Optional[str] = None,
+                 page_size: Optional[int] = None):
+        """
+        Initialize API class.
+
+        Args:
+            begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD. 
+                Defaults to None.
+            end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
+                Defaults to None.
+            page_size (int, optional): The batch size used to fetch the records from chemrxiv.
+        """
 
         self.page_size = page_size or 50
+        
+        # Begin Date and End Date of the search
+        launch_date = launch_dates['chemrxiv']
+        launch_datetime = datetime.fromisoformat(launch_date)
+
+        if begin_date:
+            begin_datetime = datetime.fromisoformat(begin_date)
+            if begin_datetime < launch_datetime:
+                self.begin_date = launch_date
+            else:
+                self.begin_date = begin_date
+        else:
+            self.begin_date = launch_date
+        if end_date:
+            end_datetime = datetime.fromisoformat(end_date)
+            if end_datetime > now_datetime:
+                self.end_date = now_datetime.strftime("%Y-%m-%d")
+            else:
+                self.end_date = end_date
+        else:
+            self.end_date = now_datetime.strftime("%Y-%m-%d")
+        
 
     def request(self, url, method, params=None):
         """Send an API request to open Engage."""
@@ -38,7 +76,11 @@ class ChemrxivAPI:
 
         page = 0
         while True:
-            params.update({"limit": self.page_size, "skip": page * self.page_size})
+            params.update({
+                "limit": self.page_size, 
+                "skip": page * self.page_size,
+                "searchDateFrom": self.begin_date,
+                "searchDateTo": self.end_date})
             r = self.request(os.path.join(self.base, query), method, params=params)
             if r.status_code == 400:
                 raise ValueError(r.json()["message"])
