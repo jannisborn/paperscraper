@@ -47,6 +47,9 @@ class ChemrxivAPI:
             begin_datetime = datetime.fromisoformat(begin_date)
             if begin_datetime < launch_datetime:
                 self.begin_date = launch_date
+                logger.warning(
+                    f"Begin date {begin_date} is before chemrxiv launch date. Will use {launch_date} instead."
+                )
             else:
                 self.begin_date = begin_date
         else:
@@ -54,6 +57,9 @@ class ChemrxivAPI:
         if end_date:
             end_datetime = datetime.fromisoformat(end_date)
             if end_datetime > now_datetime:
+                logger.warning(
+                    f"End date {end_date} is in the future. Will use {now_datetime} instead."
+                )
                 self.end_date = now_datetime.strftime("%Y-%m-%d")
             else:
                 self.end_date = end_date
