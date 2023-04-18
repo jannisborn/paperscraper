@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from datetime import datetime
-
 from typing import Optional
 
 import pkg_resources
@@ -19,16 +18,17 @@ save_path = os.path.join(save_folder, f"chemrxiv_{today}.jsonl")
 
 
 def chemrxiv(
-        begin_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        save_path: str = save_path) -> None:
-    """Fetches papers from bichemrxiv based on time range, i.e., begin_date and end_date. 
-    If the begin_date and end_date are not provided, papers will be fetched from chemrxiv 
-    from the launch date of chemrxiv until the current date. The fetched papers will be 
+    begin_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    save_path: str = save_path,
+) -> None:
+    """Fetches papers from bichemrxiv based on time range, i.e., begin_date and end_date.
+    If the begin_date and end_date are not provided, papers will be fetched from chemrxiv
+    from the launch date of chemrxiv until the current date. The fetched papers will be
     stored in jsonl format in save_path.
 
     Args:
-        begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD. 
+        begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
             Defaults to None.
         end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
             Defaults to None.
