@@ -28,9 +28,7 @@ def get_author(author_list: List[Dict]) -> str:
         str: ;-concatenated author list.
     """
 
-    return "; ".join(
-        [" ".join([a["firstName"], a["lastName"]]) for a in author_list]
-    )
+    return "; ".join([" ".join([a["firstName"], a["lastName"]]) for a in author_list])
 
 
 def get_categories(category_list: List[Dict]) -> str:
@@ -143,7 +141,7 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
         except HTTPError:
             logger.warning(f"HTTP API Client error for ID: {preprint_id}")
         except SSLError:
-            logger.warning(f'SSLError for ID: {preprint_id}')
+            logger.warning(f"SSLError for ID: {preprint_id}")
 
         with open(path, "w") as file:
             json.dump(preprint, file, indent=2)

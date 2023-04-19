@@ -35,9 +35,14 @@ medrxiv()  #  Takes ~30min and should result in ~35 MB file
 biorxiv()  # Takes ~1h and should result in ~350 MB file
 chemrxiv()  #  Takes ~45min and should result in ~20 MB file
 ```
-
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter
 so that the changes take effect. 
+
+Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates! Thanks to [@achouhan93 ](https://github.com/achouhan93 ) for contributions!
+```py
+medrxiv(begin_date="2023-04-01", end_date="2023-04-08")
+```
+But watch out. The resulting `.jsonl` file will be labelled according to the current date and all your subsequent searches will be based on this file **only**. If you use this option you might want to keep an eye on the source files (`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata for all papers you're interested in.
 
 ## Examples
 

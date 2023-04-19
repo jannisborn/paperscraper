@@ -1,8 +1,7 @@
 from typing import Dict, List, Union
 
-import pandas as pd
-
 import arxiv
+import pandas as pd
 
 from ..utils import dump_papers
 from .utils import get_query_from_keywords

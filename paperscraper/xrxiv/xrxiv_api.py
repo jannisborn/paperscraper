@@ -1,8 +1,8 @@
 """API for bioRxiv and medRXiv."""
-import requests
 from datetime import datetime
-from typing import Optional, List, Generator
+from typing import Generator, List, Optional
 
+import requests
 
 launch_dates = {"biorxiv": "2013-01-01", "medrxiv": "2019-06-01"}
 
