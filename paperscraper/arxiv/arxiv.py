@@ -1,7 +1,9 @@
 from typing import Dict, List, Union
 
-import arxiv
 import pandas as pd
+from tqdm import tqdm
+
+import arxiv
 
 from ..utils import dump_papers
 from .utils import get_query_from_keywords
@@ -10,6 +12,7 @@ arxiv_field_mapper = {
     "published": "date",
     "journal_ref": "journal",
     "summary": "abstract",
+    "entry_id": "doi",
 }
 
 # Authors, date, and journal fields need specific processing
@@ -17,6 +20,7 @@ process_fields = {
     "authors": lambda authors: ", ".join([a.name for a in authors]),
     "date": lambda date: date.strftime("%Y-%m-%d"),
     "journal": lambda j: j if j is not None else "",
+    "doi": lambda entry_id: f"10.48550/arXiv.{entry_id.split('/')[-1].split('v')[0]}",
 }
 
 
@@ -57,9 +61,9 @@ def get_arxiv_papers(
                     arxiv_field_mapper.get(key, key), lambda x: x
                 )(value)
                 for key, value in vars(paper).items()
-                if arxiv_field_mapper.get(key, key) in fields
+                if arxiv_field_mapper.get(key, key) in fields and key != "doi"
             }
-            for paper in results
+            for paper in tqdm(results, desc=f"Processing {query}")
         ]
     )
     return processed
@@ -70,7 +74,7 @@ def get_and_dump_arxiv_papers(
     output_filepath: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     *args,
-    **kwargs
+    **kwargs,
 ):
     """
     Combines get_arxiv_papers and dump_papers.
