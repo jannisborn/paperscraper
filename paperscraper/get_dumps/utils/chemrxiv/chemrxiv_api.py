@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 from typing import Dict, Optional
+from urllib.parse import urljoin
 
 import requests
 
@@ -18,7 +19,7 @@ class ChemrxivAPI:
     Adapted from https://github.com/fxcoudert/tools/blob/master/chemRxiv/chemRxiv.py.
     """
 
-    base = "https://chemrxiv.org/engage/chemrxiv/public-api/v1"
+    base = "https://chemrxiv.org/engage/chemrxiv/public-api/v1/"
 
     def __init__(
         self,
@@ -78,9 +79,8 @@ class ChemrxivAPI:
 
     def query(self, query, method="get", params=None):
         """Perform a direct query."""
-        r = self.request(
-            os.path.join(f"{self.base}", f"{query}"), method, params=params
-        )
+
+        r = self.request(urljoin(self.base, query), method, params=params)
         r.raise_for_status()
         return r.json()
 
@@ -97,7 +97,7 @@ class ChemrxivAPI:
                     "searchDateTo": self.end_date,
                 }
             )
-            r = self.request(os.path.join(self.base, query), method, params=params)
+            r = self.request(urljoin(self.base, query), method, params=params)
             if r.status_code == 400:
                 raise ValueError(r.json()["message"])
             r.raise_for_status()
