@@ -1,7 +1,7 @@
 arxiv>=1.4.7
 pymed==0.8.9
 pandas>=1.0.4
-requests==2.24.0
+requests==2.31.0
 tqdm>=4.51.0
 scholarly==0.5.1
 seaborn>=0.11.0
