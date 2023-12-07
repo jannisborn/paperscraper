@@ -1,6 +1,6 @@
 """Initialize the module."""
 __name__ = "paperscraper"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 
 import logging
 import os
