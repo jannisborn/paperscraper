@@ -1,10 +1,14 @@
 """API for bioRxiv and medRXiv."""
+import logging
 from datetime import datetime
+from time import sleep
 from typing import Generator, List, Optional
 
 import requests
+from requests.exceptions import ConnectionError, Timeout
 
 launch_dates = {"biorxiv": "2013-01-01", "medrxiv": "2019-06-01"}
+logger = logging.getLogger(__name__)
 
 
 class XRXivApi:
@@ -38,15 +42,17 @@ class XRXivApi:
         begin_date: Optional[str] = None,
         end_date: Optional[str] = None,
         fields: List[str] = ["title", "doi", "authors", "abstract", "date", "journal"],
+        max_retries: int = 10,
     ) -> Generator:
         """
         Get paper metadata.
 
         Args:
-            begin_date (Optional[str], optional): begin date. Defaults to None, a.k.a. launch date.
-            end_date (Optional[str], optional): end date. Defaults to None, a.k.a. today.
+            begin_date (Optional[str]): begin date. Defaults to None, a.k.a. launch date.
+            end_date (Optional[str]): end date. Defaults to None, a.k.a. today.
             fields (List[str], optional): fields to return per paper.
                 Defaults to ['title', 'doi', 'authors', 'abstract', 'date', 'journal'].
+            max_retries (int): Number of retries on connection failure. Defaults to 10.
 
         Yields:
             Generator: a generator of paper metadata (dict) with the desired fields.
@@ -68,20 +74,41 @@ class XRXivApi:
             do_loop = True
             cursor = 0
             while do_loop:
-                json_response = requests.get(
-                    self.get_papers_url.format(
-                        begin_date=begin_date, end_date=end_date, cursor=cursor
-                    )
-                ).json()
-                do_loop = json_response["messages"][0]["status"] == "ok"
-                if do_loop:
-                    cursor += json_response["messages"][0]["count"]
-                    for paper in json_response["collection"]:
-                        processed_paper = {
-                            field: paper.get(field, "") for field in fields
-                        }
-                        yield processed_paper
+                papers = []
+                for attempt in range(max_retries):
+                    try:
+                        json_response = requests.get(
+                            self.get_papers_url.format(
+                                begin_date=begin_date, end_date=end_date, cursor=cursor
+                            )
+                        ).json()
+                        do_loop = json_response["messages"][0]["status"] == "ok"
+                        if do_loop:
+                            cursor += json_response["messages"][0]["count"]
+                            for paper in json_response["collection"]:
+                                processed_paper = {
+                                    field: paper.get(field, "") for field in fields
+                                }
+                                papers.append(processed_paper)
+
+                        if do_loop:
+                            yield from papers
+                            break
+                    except (ConnectionError, Timeout) as e:
+                        logger.error(
+                            f"Connection error: {e}. Retrying ({attempt + 1}/{max_retries})"
+                        )
+                        sleep(5)
+                        continue
+                    except Exception as exc:
+                        logger.exception(f"Failed getting papers: {exc}")
+                        raise RuntimeError(
+                            "Failed getting papers: {} - {}".format(
+                                exc.__class__.__name__, exc
+                            )
+                        )
         except Exception as exc:
+            logger.exception(f"Failed getting papers: {exc}")
             raise RuntimeError(
                 "Failed getting papers: {} - {}".format(exc.__class__.__name__, exc)
             )

@@ -28,11 +28,11 @@ def chemrxiv(
     stored in jsonl format in save_path.
 
     Args:
-        begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
+        begin_date (Optional[str]): begin date expressed as YYYY-MM-DD.
             Defaults to None.
-        end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
+        end_date (Optional[str]): end date expressed as YYYY-MM-DD.
             Defaults to None.
-        save_path (str, optional): Path where the dump is stored.
+        save_path (str): Path where the dump is stored.
             Defaults to save_path.
     """
 
