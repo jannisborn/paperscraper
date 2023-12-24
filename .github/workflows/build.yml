@@ -14,3 +14,7 @@ jobs:
           python -m pip install --upgrade pip
           pip3 install -e .
           python -c "import paperscraper"
+      - name: Run test suite
+        run: |
+          python -m pytest -sv paperscraper
+
