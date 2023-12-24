@@ -149,14 +149,41 @@ get_citations_from_title(title)
 *NOTE*: The scholar endpoint does not require authentification but since it regularly
 prompts with captchas, it's difficult to apply large scale.
 
-#### Journal impact factor
+### Journal impact factor
 
-You can also retrieve the impact factor for all journals indexed by citefactor:
+You can also retrieve the impact factor for all journals:
 ```py
-from paperscraper.journal_if import Impactor
-i = Impactor()
+>>>from paperscraper.impact import Impactor
+>>>i = Impactor()
+>>>i.search("Nat Comms", threshold=85, sort_by='impact') 
+[
+    {'journal': 'Nature Communications', 'factor': 17.694, 'score': 94}, 
+    {'journal': 'Natural Computing', 'factor': 1.504, 'score': 88}
+]
 ```
-Then, `i.journal_to_if` should give you a dictionary wit journal to IF mappings for >9000 journals as of 2014.
+This performs a fuzzy search with a threshold of 85. `threshold` defaults to 100 in which case an exact search
+is performed. You can also search by journal abbreviation, [E-ISSN](https://portal.issn.org) or [NLM ID](https://portal.issn.org).
+```py
+i.search("Nat Rev Earth Environ") # [{'journal': 'Nature Reviews Earth & Environment', 'factor': 37.214, 'score': 100}]
+i.search("101771060") # [{'journal': 'Nature Reviews Earth & Environment', 'factor': 37.214, 'score': 100}]
+i.search('2662-138X') # [{'journal': 'Nature Reviews Earth & Environment', 'factor': 37.214, 'score': 100}]
+
+# Filter results by impact factor
+i.search("Neural network", threshold=85, min_impact=1.5, max_impact=20)
+# [
+#   {'journal': 'IEEE Transactions on Neural Networks and Learning Systems', 'factor': 14.255, 'score': 93}, 
+#   {'journal': 'NEURAL NETWORKS', 'factor': 9.657, 'score': 91},
+#   {'journal': 'WORK-A Journal of Prevention Assessment & Rehabilitation', 'factor': 1.803, 'score': 86}, 
+#   {'journal': 'NETWORK-COMPUTATION IN NEURAL SYSTEMS', 'factor': 1.5, 'score': 92}
+# ]
+
+# Show all fields
+i.search("quantum information", threshold=90, return_all=True)
+# [
+#   {'factor': 10.758, 'jcr': 'Q1', 'journal_abbr': 'npj Quantum Inf', 'eissn': '2056-6387', 'journal': 'npj Quantum Information', 'nlm_id': '101722857', 'issn': '', 'score': 92},
+#   {'factor': 1.577, 'jcr': 'Q3', 'journal_abbr': 'Nation', 'eissn': '0027-8378', 'journal': 'NATION', 'nlm_id': '9877123', 'issn': '0027-8378', 'score': 91}
+# ]
+```
 
 ### Plotting
 
