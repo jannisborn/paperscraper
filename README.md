@@ -185,8 +185,6 @@ i.search("quantum information", threshold=90, return_all=True)
 # ]
 ```
 
-Then, `i.journal_to_if` should give you a dictionary wit journal to IF mappings for >9000 journals as of 2014.
-
 ### Plotting
 
 When multiple query searches are performed, two types of plots can be generated

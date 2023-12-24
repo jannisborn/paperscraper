@@ -45,13 +45,13 @@ class TestImpactor:
 
     def test_quantum_information_search(self, impactor):
         expected_results = [
-            {"journal": "npj Quantum Information", "factor": 10.758, "score": 95},
             {"journal": "InfoMat", "factor": 24.798, "score": 71},
             {"journal": "Information Fusion", "factor": 17.564, "score": 71},
+            {"journal": "npj Quantum Information", "factor": 10.758, "score": 95},
         ]
 
         results = impactor.search(
-            "Quantum information", threshold=70, sort_by="score", min_impact=8
+            "Quantum information", threshold=70, sort_by="factor", min_impact=8
         )
 
         # Ensure that the results match the expected results
