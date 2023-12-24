@@ -149,7 +149,7 @@ get_citations_from_title(title)
 *NOTE*: The scholar endpoint does not require authentification but since it regularly
 prompts with captchas, it's difficult to apply large scale.
 
-#### Journal impact factor
+### Journal impact factor
 
 You can also retrieve the impact factor for all journals:
 ```py
