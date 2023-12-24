@@ -7,6 +7,7 @@ from thefuzz import fuzz
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+logging.disable(logging.INFO)
 
 
 class Impactor:
