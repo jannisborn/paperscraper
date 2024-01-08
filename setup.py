@@ -1,9 +1,9 @@
 """Install package."""
-import os
-from setuptools import setup
-from setuptools import find_packages
 import io
+import os
 import re
+
+from setuptools import find_packages, setup
 
 __version__ = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -36,6 +36,9 @@ setup(
         "matplotlib",
         "matplotlib_venn",
         "bs4",
+        "impact-factor>=1.1.0",
+        "thefuzz",
+        "pytest",
     ],
     keywords=[
         "Academics",
@@ -47,6 +50,7 @@ setup(
         "Medrxiv",
         "Biorxiv",
         "Chemrxiv",
+        "Google Scholar",
     ],
     packages=find_packages("."),
     package_data={"paperscraper.server_dumps": ["*"]},
