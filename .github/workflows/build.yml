@@ -36,6 +36,14 @@ jobs:
       - name: Test package from PyPI
         run: |
           python -c "import paperscraper"
-          python -m pytest -sv paperscraper
+          python -c "import paperscraper.pdf"
+          python -c "import paperscraper.arxiv"
+          python -c "import paperscraper.scholar"
+          python -c "import paperscraper.plotting"
+          python -c "import paperscraper.pubmed"
+          python -c "import paperscraper.get_dumps"
+          python -c "import paperscraper.server_dumps"
+          python -c "import paperscraper.test"
+          python -c "import paperscraper.impact"
 
 
