@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+
 from paperscraper.impact import Impactor
 
 logging.disable(logging.INFO)
