@@ -33,8 +33,12 @@ jobs:
 
     - name: Install from built distribution
       run: |
-        pip install dist/*
-
+        # Check if a wheel exists, and install it if available, otherwise install the source distribution
+        if [ -e dist/*.whl ]; then
+          pip install dist/*.whl
+        else
+          pip install dist/*
+        fi
     - name: Run tests
       run: |
         python -m pytest paperscraper
