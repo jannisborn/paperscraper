@@ -2,16 +2,20 @@
 name: PyPI
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - '*'
 
 jobs:
-  verify-master-for-potential-pypi-release:
+  verify-for-potential-pypi-release:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
