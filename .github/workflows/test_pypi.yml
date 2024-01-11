@@ -1,6 +1,7 @@
 ---
 name: PyPI
 on: [push, release]
+jobs:
   verify-current-pypi:
     runs-on: ubuntu-latest
     steps:
