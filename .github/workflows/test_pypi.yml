@@ -1,44 +1,29 @@
 ---
 name: PyPI
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '*'
-
-jobs:
-  verify-for-potential-pypi-release:
+on: [push, release]
+  verify-current-pypi:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.ref }}
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install package from PyPI
+        run: |
+          python -m pip install --upgrade pip
+          pip install paperscraper
+          pip install pytest
+      - name: Test package from PyPI
+        run: |
+          python -c "import paperscraper"
+          python -c "import paperscraper.pdf"
+          python -c "import paperscraper.arxiv"
+          python -c "import paperscraper.scholar"
+          python -c "import paperscraper.plotting"
+          python -c "import paperscraper.pubmed"
+          python -c "import paperscraper.get_dumps"
+          python -c "import paperscraper.server_dumps"
+          python -c "import paperscraper.tests"
+          python -c "import paperscraper.impact"
 
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-
-    - name: Build package
-      run: |
-        python setup.py sdist bdist_wheel
-
-    - name: Install from built distribution
-      run: |
-        # Check if a wheel exists, and install it if available, otherwise install the source distribution
-        if [ -e dist/*.whl ]; then
-          pip install dist/*.whl
-        else
-          pip install dist/*
-        fi
-    - name: Run tests
-      run: |
-        python -m pytest paperscraper

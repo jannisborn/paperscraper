@@ -1,4 +1,6 @@
-[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/build.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/build.yml)
+
+[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml)
+[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
