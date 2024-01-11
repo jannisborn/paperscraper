@@ -48,7 +48,7 @@ class TestImpactor:
         expected_results = [
             {"journal": "InfoMat", "factor": 24.798, "score": 71},
             {"journal": "Information Fusion", "factor": 17.564, "score": 71},
-            {"journal": "npj Quanfsdfsdtum Information", "factor": 10.758, "score": 95},
+            {"journal": "npj Quantum Information", "factor": 10.758, "score": 95},
         ]
 
         results = impactor.search(
