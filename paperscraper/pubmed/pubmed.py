@@ -28,7 +28,7 @@ process_fields = {
 def get_pubmed_papers(
     query: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
-    max_results: int = 999999,
+    max_results: int = 9999,
     *args,
     **kwargs
 ) -> pd.DataFrame:
@@ -49,7 +49,6 @@ def get_pubmed_papers(
 
     """
     raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
-
     get_mails = "emails" in fields
     if get_mails:
         fields.pop(fields.index("emails"))
