@@ -33,7 +33,7 @@ process_fields = {
 def get_pubmed_papers(
     query: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
-    max_results: int = 9999,
+    max_results: int = 9998,
     *args,
     **kwargs,
 ) -> pd.DataFrame:
@@ -46,7 +46,10 @@ def get_pubmed_papers(
         fields (list[str]): List of strings with fields to keep in output.
             NOTE: If 'emails' is passed, an attempt is made to extract author mail
             addresses.
-        max_results (int): Maximal number of results retrieved from DB.
+        max_results (int): Maximal number of results retrieved from DB. Defaults
+            to 9998, higher values likely raise problems due to PubMedAPI, see:
+            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit
+
         NOTE: *args, **kwargs are additional arguments for pubmed.query
 
     Returns:
