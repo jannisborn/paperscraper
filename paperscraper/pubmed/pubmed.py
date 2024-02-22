@@ -10,7 +10,6 @@ from .utils import get_emails, get_query_from_keywords_and_date
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logging.disable(logging.INFO)
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
