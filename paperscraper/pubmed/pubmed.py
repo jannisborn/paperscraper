@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import List, Union
 
 import pandas as pd
@@ -6,6 +7,9 @@ from pymed import PubMed
 
 from ..utils import dump_papers
 from .utils import get_emails, get_query_from_keywords_and_date
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
 
@@ -28,9 +32,9 @@ process_fields = {
 def get_pubmed_papers(
     query: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
-    max_results: int = 999999,
+    max_results: int = 9998,
     *args,
-    **kwargs
+    **kwargs,
 ) -> pd.DataFrame:
     """
     Performs PubMed API request of a query and returns list of papers with
@@ -41,13 +45,24 @@ def get_pubmed_papers(
         fields (list[str]): List of strings with fields to keep in output.
             NOTE: If 'emails' is passed, an attempt is made to extract author mail
             addresses.
-        max_results (int): Maximal number of results retrieved from DB.
+        max_results (int): Maximal number of results retrieved from DB. Defaults
+            to 9998, higher values likely raise problems due to PubMedAPI, see:
+            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit
+
         NOTE: *args, **kwargs are additional arguments for pubmed.query
 
     Returns:
         pd.DataFrame. One paper per row.
 
     """
+    if max_results > 9998:
+        logger.warning(
+            f"\nmax_results cannot be larger than 9998, received {max_results}."
+            "This will likely result in a JSONDecodeError. Considering lowering `max_results`.\n"
+            "For PubMed, ESearch can only retrieve the first 9,999 records matching the query. "
+            "To obtain more than 9,999 PubMed records, consider using EDirect that contains additional"
+            "logic to batch PubMed search results automatically so that an arbitrary number can be retrieved"
+        )
     raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
 
     get_mails = "emails" in fields
@@ -78,7 +93,7 @@ def get_and_dump_pubmed_papers(
     start_date: str = "None",
     end_date: str = "None",
     *args,
-    **kwargs
+    **kwargs,
 ) -> None:
     """
     Combines get_pubmed_papers and dump_papers.
