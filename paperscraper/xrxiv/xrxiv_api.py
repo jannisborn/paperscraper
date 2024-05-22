@@ -1,14 +1,41 @@
 """API for bioRxiv and medRXiv."""
 import logging
+import time
 from datetime import datetime
+from functools import wraps
 from time import sleep
 from typing import Generator, List, Optional
+from urllib.error import HTTPError
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
 launch_dates = {"biorxiv": "2013-01-01", "medrxiv": "2019-06-01"}
 logger = logging.getLogger(__name__)
+
+
+def retry_multi(max_retries):
+    """ Retry a function `max_retries` times. """
+    def retry(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            num_retries = 0
+            while num_retries <= max_retries:
+                try:
+                    ret = func(*args, **kwargs)
+                    if ret == None:
+                        # timeout and repeat
+                        time.sleep(5)
+                        continue
+                    break
+                except HTTPError:
+                    if num_retries == max_retries:
+                        raise
+                    num_retries += 1
+                    time.sleep(5)
+            return ret
+        return wrapper
+    return retry
 
 
 class XRXivApi:
@@ -36,6 +63,21 @@ class XRXivApi:
             "{}/details/{}".format(self.api_base_url, self.server)
             + "/{begin_date}/{end_date}/{cursor}"
         )
+
+    @retry_multi(10)
+    def call_api(self, begin_date, end_date, cursor):
+        try:
+            json_response = requests.get(
+                self.get_papers_url.format(
+                    begin_date=begin_date, end_date=end_date, cursor=cursor
+                ), timeout=10
+            ).json()
+        except requests.exceptions.Timeout:
+            print("Timed out, will retry")
+            return None
+
+        return json_response
+
 
     def get_papers(
         self,
@@ -77,11 +119,7 @@ class XRXivApi:
                 papers = []
                 for attempt in range(max_retries):
                     try:
-                        json_response = requests.get(
-                            self.get_papers_url.format(
-                                begin_date=begin_date, end_date=end_date, cursor=cursor
-                            )
-                        ).json()
+                        json_response = self.call_api(begin_date, end_date, cursor)
                         do_loop = json_response["messages"][0]["status"] == "ok"
                         if do_loop:
                             cursor += json_response["messages"][0]["count"]
@@ -102,16 +140,8 @@ class XRXivApi:
                         continue
                     except Exception as exc:
                         logger.exception(f"Failed getting papers: {exc}")
-                        raise RuntimeError(
-                            "Failed getting papers: {} - {}".format(
-                                exc.__class__.__name__, exc
-                            )
-                        )
         except Exception as exc:
             logger.exception(f"Failed getting papers: {exc}")
-            raise RuntimeError(
-                "Failed getting papers: {} - {}".format(exc.__class__.__name__, exc)
-            )
 
 
 class BioRxivApi(XRXivApi):
