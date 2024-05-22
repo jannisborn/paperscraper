@@ -17,7 +17,6 @@ publication metadata as well as full PDF files from **PubMed** or from preprint 
 **medRxiv**, **bioRxiv** and **chemRxiv**. It provides a streamlined interface to scrape metadata and comes
 with simple postprocessing functions and plotting routines for meta-analysis.
 
-Since v0.2.4 `paperscraper` also supports scraping PDF files directly! Thanks to [@daenuprobst](https://github.com/daenuprobst) for suggestions!
 
 ## Getting started
 
@@ -37,8 +36,8 @@ medrxiv()  #  Takes ~30min and should result in ~35 MB file
 biorxiv()  # Takes ~1h and should result in ~350 MB file
 chemrxiv()  #  Takes ~45min and should result in ~20 MB file
 ```
-*NOTE*: Once the dumps are stored, please make sure to restart the python interpreter
-so that the changes take effect. 
+*NOTE*: Once the dumps are stored, please make sure to restart the python interpreter so that the changes take effect. 
+*NOTE*: If you experience API connection issues (`ConnectionError`), since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`, thanks to [@memray](https://github.com/memray) for contributions!
 
 Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates! Thanks to [@achouhan93 ](https://github.com/achouhan93 ) for contributions!
 ```py
