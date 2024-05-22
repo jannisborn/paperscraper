@@ -71,7 +71,7 @@ class ChemrxivAPI:
         """Send an API request to open Engage."""
 
         if method.casefold() == "get":
-            return requests.get(url, params=params)
+            return requests.get(url, params=params, timeout=10)
         elif method.casefold() == "post":
             return requests.post(url, json=params)
         else:
