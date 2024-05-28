@@ -1,4 +1,5 @@
 """Dump bioRxiv data in JSONL format."""
+
 import json
 import os
 from datetime import datetime
@@ -20,6 +21,7 @@ def biorxiv(
     begin_date: Optional[str] = None,
     end_date: Optional[str] = None,
     save_path: str = save_path,
+    max_retries: int = 10,
 ):
     """Fetches papers from biorxiv based on time range, i.e., begin_date and end_date.
     If the begin_date and end_date are not provided, papers will be fetched from biorxiv
@@ -27,15 +29,17 @@ def biorxiv(
     stored in jsonl format in save_path.
 
     Args:
+        begin_date (str, optional): begin date expressed as YYYY-MM-DD.
+            Defaults to None, i.e., earliest possible.
+        end_date (str, optional): end date expressed as YYYY-MM-DD.
+            Defaults to None, i.e., today.
         save_path (str, optional): Path where the dump is stored.
             Defaults to save_path.
-        begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
-            Defaults to None.
-        end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
-            Defaults to None.
+        max_retries (int, optional): Number of retries when API shows connection issues.
+            Defaults to 10.
     """
     # create API client
-    api = BioRxivApi()
+    api = BioRxivApi(max_retries=max_retries)
 
     # dump all papers
     with open(save_path, "w") as fp:

@@ -38,7 +38,7 @@ def save_pdf(paper_metadata: Dict[str, Any], filepath: str) -> None:
 
     url = f"https://doi.org/{paper_metadata['doi']}"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=60)
     except Exception:
         logger.warning(f"Could not download {url}.")
         return
@@ -55,7 +55,7 @@ def save_pdf(paper_metadata: Dict[str, Any], filepath: str) -> None:
     pdf_url = metas.attrs.get("content")
 
     try:
-        response = requests.get(pdf_url)
+        response = requests.get(pdf_url, timeout=60)
     except Exception:
         logger.warning(f"Could not download {pdf_url}.")
         return

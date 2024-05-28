@@ -1,4 +1,5 @@
 """Dump chemRxiv data in JSONL format."""
+
 import logging
 import os
 import sys
@@ -28,11 +29,11 @@ def chemrxiv(
     stored in jsonl format in save_path.
 
     Args:
-        begin_date (Optional[str]): begin date expressed as YYYY-MM-DD.
-            Defaults to None.
-        end_date (Optional[str]): end date expressed as YYYY-MM-DD.
-            Defaults to None.
-        save_path (str): Path where the dump is stored.
+        begin_date (str, optional): begin date expressed as YYYY-MM-DD.
+            Defaults to None, i.e., earliest possible.
+        end_date (str, optional): end date expressed as YYYY-MM-DD.
+            Defaults to None, i.e., today.
+        save_path (str, optional): Path where the dump is stored.
             Defaults to save_path.
     """
 
