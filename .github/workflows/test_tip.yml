@@ -3,7 +3,7 @@ name: Source
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
       - '*'
