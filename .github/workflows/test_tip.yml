@@ -59,7 +59,9 @@ jobs:
         else
           pip install dist/*
         fi
-    - name: Run tests
+    - name: Import package
       run: |
         python -c "import paperscraper"
+    - name: Run tests
+      run: |
         python -m pytest paperscraper
