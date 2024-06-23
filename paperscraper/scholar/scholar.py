@@ -105,7 +105,7 @@ def get_citations_from_title(title: str) -> int:
     title = '"' + title.strip() + '"'
 
     matches = scholarly.search_pubs(title)
-    counts = list(map(lambda p: int(p.bib["cites"]), matches))
+    counts = list(map(lambda p: int(p["num_citations"]), matches))
     if len(counts) == 0:
         logger.warning(f"Found no match for {title}.")
         return 0
