@@ -1,5 +1,7 @@
 import logging
 import pandas as pd
+import pytest
+from scholarly._proxy_generator import MaxTriesExceededException
 
 
 from paperscraper.scholar import (
@@ -9,6 +11,16 @@ from paperscraper.scholar import (
 )
 
 logging.disable(logging.INFO)
+
+
+@pytest.fixture(autouse=True)
+def handle_scholar_exceptions(caplog):
+    caplog.set_level(logging.INFO)
+    try:
+        yield
+    except MaxTriesExceededException as e:
+        logging.info(f"MaxTriesExceededException caught: {e}")
+        pytest.skip("Skipping test due to MaxTriesExceededException")
 
 
 class TestScholar:
