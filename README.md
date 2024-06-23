@@ -1,6 +1,6 @@
 
-[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml)
-[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml/badge.svg)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml)
+[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml/badge.svg?branch=main)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml?query=branch%3Amain)
+[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml/badge.svg?branch=main)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml?query=branch%3Amain)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
@@ -37,9 +37,9 @@ biorxiv()  # Takes ~1h and should result in ~350 MB file
 chemrxiv()  #  Takes ~45min and should result in ~20 MB file
 ```
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter so that the changes take effect. 
-*NOTE*: If you experience API connection issues (`ConnectionError`), since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`, thanks to [@memray](https://github.com/memray) for contributions!
+*NOTE*: If you experience API connection issues (`ConnectionError`), since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`.
 
-Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates! Thanks to [@achouhan93 ](https://github.com/achouhan93 ) for contributions!
+Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates.
 ```py
 medrxiv(begin_date="2023-04-01", end_date="2023-04-08")
 ```
@@ -317,3 +317,12 @@ If you use `paperscraper`, please cite the papers that motivated our development
 	author = {Jannis Born and David Beymer and Deepta Rajan and Adam Coy and Vandana V. Mukherjee and Matteo Manica and Prasanth Prasanna and Deddeh Ballah and Michal Guindy and Dorith Shaham and Pallav L. Shah and Emmanouil Karteris and Jan L. Robertus and Maria Gabrani and Michal Rosen-Zvi}
 }
 ```
+
+## Contributions
+Thanks to the following contributors:
+- @memray: Since `v0.2.12` there are automatic retries when downloading the {med/bio/chem}rxiv dumps.
+- @achouhan93: Since `v0.2.5` {med/bio/chem}rxiv can be scraped for specific dates!
+- @daenuprobst: Since  `v0.2.4` PDF files can be scraped directly (`paperscraper.pdf.save_pdf`)
+- @oppih: Since `v0.2.3` chemRxiv API also provides DOI and URL if available
+- @lukasschwab: Bumped `arxiv` dependency to >`1.4.2` in paperscraper `v0.1.0`.
+- @juliusbierk: Bugfixes

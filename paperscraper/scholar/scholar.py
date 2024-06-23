@@ -15,6 +15,7 @@ scholar_field_mapper = {
     "venue": "journal",
     "author": "authors",
     "cites": "citations",
+    "pub_year": "year",
 }
 process_fields = {"year": lambda x: int(x) if x.isdigit() else -1, "citations": int}
 
@@ -46,16 +47,21 @@ def get_scholar_papers(
 
     matches = scholarly.search_pubs(title)
 
-    processed = [
-        {
+    processed = []
+    for paper in matches:
+
+        # Extracts title, author, year, journal, abstract
+        entry = {
             scholar_field_mapper.get(key, key): process_fields.get(
                 scholar_field_mapper.get(key, key), lambda x: x
             )(value)
-            for key, value in paper.bib.items()
+            for key, value in paper["bib"].items()
             if scholar_field_mapper.get(key, key) in fields
         }
-        for paper in matches
-    ]
+
+        entry["citations"] = paper["num_citations"]
+        processed.append(entry)
+
     return pd.DataFrame(processed)
 
 
@@ -99,7 +105,7 @@ def get_citations_from_title(title: str) -> int:
     title = '"' + title.strip() + '"'
 
     matches = scholarly.search_pubs(title)
-    counts = list(map(lambda p: int(p.bib["cites"]), matches))
+    counts = list(map(lambda p: int(p["num_citations"]), matches))
     if len(counts) == 0:
         logger.warning(f"Found no match for {title}.")
         return 0
