@@ -1,4 +1,5 @@
 """Install package."""
+
 import io
 import os
 import re
@@ -23,7 +24,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Jannis Born, Matteo Manica",
     author_email=("jannis.born@gmx.de, drugilsberg@gmail.com"),
-    url="https://github.com/PhosphorylatedRabbits/paperscraper",
+    url="https://github.com/jannisborn/paperscraper",
     license="MIT",
     install_requires=[
         "arxiv>=1.4.2",
@@ -31,7 +32,7 @@ setup(
         "pandas",
         "requests",
         "tqdm",
-        "scholarly==0.5.1",
+        "scholarly>=1.0.0",
         "seaborn",
         "matplotlib",
         "matplotlib_venn",
