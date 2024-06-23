@@ -320,9 +320,9 @@ If you use `paperscraper`, please cite the papers that motivated our development
 
 ## Contributions
 Thanks to the following contributors:
-- @memray: Since `v0.2.12` there are automatic retries when downloading the {med/bio/chem}rxiv dumps.
-- @achouhan93: Since `v0.2.5` {med/bio/chem}rxiv can be scraped for specific dates!
-- @daenuprobst: Since  `v0.2.4` PDF files can be scraped directly (`paperscraper.pdf.save_pdf`)
-- @oppih: Since `v0.2.3` chemRxiv API also provides DOI and URL if available
-- @lukasschwab: Bumped `arxiv` dependency to >`1.4.2` in paperscraper `v0.1.0`.
-- @juliusbierk: Bugfixes
+- [@memray](https://github.com/memray): Since `v0.2.12` there are automatic retries when downloading the {med/bio/chem}rxiv dumps.
+- [@achouhan93](https://github.com/achouhan93): Since `v0.2.5` {med/bio/chem}rxiv can be scraped for specific dates!
+- [@daenuprobst](https://github.com/daenuprobst): Since  `v0.2.4` PDF files can be scraped directly (`paperscraper.pdf.save_pdf`)
+- [@oppih](https://github.com/oppih): Since `v0.2.3` chemRxiv API also provides DOI and URL if available
+- [@lukasschwab](https://github.com/lukasschwab): Bumped `arxiv` dependency to >`1.4.2` in paperscraper `v0.1.0`.
+- [@juliusbierk](https://github.com/juliusbierk): Bugfixes
