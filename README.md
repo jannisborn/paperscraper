@@ -7,15 +7,15 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper/month)](https://pepy.tech/project/paperscraper)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![codecov](https://codecov.io/github/jannisborn/paperscraper/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
 
 # paperscraper
 
-## Overview
-
-`paperscraper` is a `python` package that ships via `pypi` and facilitates scraping
-publication metadata as well as full PDF files from **PubMed** or from preprint servers such as **arXiv**,
-**medRxiv**, **bioRxiv** and **chemRxiv**. It provides a streamlined interface to scrape metadata and comes
-with simple postprocessing functions and plotting routines for meta-analysis.
+`paperscraper` is a `python` package for scraping publication metadata or full PDF files from
+**PubMed** or preprint servers such as **arXiv**, **medRxiv**, **bioRxiv** and **chemRxiv**.
+It provides a streamlined interface to scrape metadata, allows to retrieve citation counts
+from Google Scholar, impact factors from journals and comes with simple postprocessing functions
+and plotting routines for meta-analysis.
 
 
 ## Getting started
