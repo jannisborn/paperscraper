@@ -38,6 +38,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}  # Use the token here
           fail_ci_if_error: true
 
   test-potential-wheel-install:
