@@ -1,33 +1,46 @@
 ---
 name: Source
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - '*'
+on: [push, release]
 
 jobs:
   test-source-install:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+          - "3.10"
+          - "3.11"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install coverage pytest-cov
       - name: Install package from source
         run: pip install -e .
       - name: Test package from source
         run: |
           python -c "import paperscraper"
-          python -m pytest -sv paperscraper
+          coverage run -m pytest -sv paperscraper
+          coverage report
+          coverage xml -o coverage.xml
+      - name: Upload to Codecov
+        if: matrix.python-version == '3.9'
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}  # Use the token here
+          fail_ci_if_error: true
+
   test-potential-wheel-install:
     runs-on: ubuntu-latest
     steps:

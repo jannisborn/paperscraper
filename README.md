@@ -1,21 +1,21 @@
 
-[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml/badge.svg?branch=main)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_tip.yml?query=branch%3Amain)
-[![build](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml/badge.svg?branch=main)](https://github.com/PhosphorylatedRabbits/paperscraper/actions/workflows/test_pypi.yml?query=branch%3Amain)
+[![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml?query=branch%3Amain)
+[![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml?query=branch%3Amain)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper/month)](https://pepy.tech/project/paperscraper)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![codecov](https://codecov.io/github/jannisborn/paperscraper/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
 
 # paperscraper
 
-## Overview
-
-`paperscraper` is a `python` package that ships via `pypi` and facilitates scraping
-publication metadata as well as full PDF files from **PubMed** or from preprint servers such as **arXiv**,
-**medRxiv**, **bioRxiv** and **chemRxiv**. It provides a streamlined interface to scrape metadata and comes
-with simple postprocessing functions and plotting routines for meta-analysis.
+`paperscraper` is a `python` package for scraping publication metadata or full PDF files from
+**PubMed** or preprint servers such as **arXiv**, **medRxiv**, **bioRxiv** and **chemRxiv**.
+It provides a streamlined interface to scrape metadata, allows to retrieve citation counts
+from Google Scholar, impact factors from journals and comes with simple postprocessing functions
+and plotting routines for meta-analysis.
 
 
 ## Getting started
@@ -246,7 +246,7 @@ plot_comparison(
 )
 ```
 
-![molreps](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/molreps.png "MolReps")
+![molreps](https://github.com/jannisborn/paperscraper/blob/master/assets/molreps.png "MolReps")
 
 
 #### Venn Diagrams
@@ -264,7 +264,7 @@ labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 ```
 
-![2019](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging.png "2019")
+![2019](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging.png "2019")
 
 
 ```py
@@ -273,7 +273,7 @@ plot_venn_three(
 )
 ```
 
-![2020](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
+![2020](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
 
 Or plot both together:
 
@@ -286,7 +286,7 @@ plot_multiple_venn(
 )
 ```
 
-![both](https://github.com/PhosphorylatedRabbits/paperscraper/blob/master/assets/both.png "Both")
+![both](https://github.com/jannisborn/paperscraper/blob/master/assets/both.png "Both")
 
 
 
