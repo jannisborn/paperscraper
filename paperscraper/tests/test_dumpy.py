@@ -4,9 +4,15 @@ import threading
 import pytest
 
 from paperscraper.get_dumps import biorxiv, medrxiv
+from paperscraper import dump_queries
+from paperscraper.arxiv import get_and_dump_arxiv_papers
+
 
 logging.disable(logging.INFO)
 
+covid19 = ['COVID-19', 'SARS-CoV-2']
+ai = ['Artificial intelligence', 'Deep learning', 'Machine learning']
+mi = ['Medical imaging']
 
 class TestDumper:
     @pytest.fixture
@@ -46,3 +52,15 @@ class TestDumper:
         assert self.run_function_with_timeout(
             setup_biorxiv, 15
         ), "biorxiv should still be running after 15 seconds"
+
+
+    def test_dumping(self):
+        queries = [[covid19, ai, mi]]
+        dump_queries(queries, 'tmpdir')
+        assert os.path.exists('tmpdir/pubmed')
+
+    def test_arxiv_dumping(self):
+        
+        query = [covid19, ai, mi]
+        get_and_dump_arxiv_papers(query, output_filepath='covid19_ai_imaging.jsonl')
+        assert os.path.exists('covid19_ai_imaging.jsonl')

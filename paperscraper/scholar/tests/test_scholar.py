@@ -58,3 +58,8 @@ class TestScholar:
                 ]
             ]
         )
+    
+    @handle_scholar_exception
+    def test_bad_search(self):
+        results = get_scholar_papers("GT4SDfsdhfiobfpsdfbsdp")
+        assert len(results) == 0  
