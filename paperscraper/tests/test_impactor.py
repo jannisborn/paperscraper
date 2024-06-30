@@ -81,7 +81,7 @@ class TestImpactor:
             impactor.search("Nature", threshold=-1)
 
     def test_nlm_id(self, impactor: Impactor):
-        results = impactor.search("101589524", return_all=True)
+        results = impactor.search("101528555", return_all=True)
         assert len(results) > 0
         
 
