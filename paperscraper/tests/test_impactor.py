@@ -40,7 +40,7 @@ class TestImpactor:
 
     def test_return_all_fields(self, impactor: Impactor):
         results = impactor.search("nature chem", return_all=True)
-        for sorting in ['impact', 'journal', 'score']:
+        for sorting in ["impact", "journal", "score"]:
             assert all(
                 len(r) > 3 for r in results
             )  # Check if more than the basic fields are returned
@@ -69,7 +69,6 @@ class TestImpactor:
                 expected["score"] == actual["score"]
             ), f"Score does not match for {expected['journal']}"
 
-
     def test_type_error(self, impactor: Impactor):
         with pytest.raises(TypeError):
             impactor.search(123, threshold=99)  # query is not a str
@@ -83,5 +82,3 @@ class TestImpactor:
     def test_nlm_id(self, impactor: Impactor):
         results = impactor.search("101528555", return_all=True)
         assert len(results) > 0
-        
-
