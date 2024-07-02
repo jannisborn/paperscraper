@@ -23,7 +23,7 @@ class TestDumper:
     @pytest.fixture
     def setup_biorxiv(self):
         return lambda: biorxiv(max_retries=2)
-   
+
     @pytest.fixture
     def setup_chemrxiv(self):
         return chemrxiv
@@ -78,4 +78,5 @@ class TestDumper:
 
     def test_dump_existence(self):
         from paperscraper.load_dumps import QUERY_FN_DICT
+
         assert len(QUERY_FN_DICT) > 2

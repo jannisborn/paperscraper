@@ -304,8 +304,10 @@ def plot_single(
             plt.bar(ind, np.zeros((len(ind),)), color="k", bottom=bottom)
         )
 
-    plt.ylabel("Counts", size=17) if not logscale else plt.ylabel(
-        "Counts (log scale)", size=17
+    (
+        plt.ylabel("Counts", size=17)
+        if not logscale
+        else plt.ylabel("Counts (log scale)", size=17)
     )
     plt.xlabel("Years", size=17)
     plt.title(title_text, size=17)

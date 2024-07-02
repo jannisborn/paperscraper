@@ -1,8 +1,8 @@
 import logging
 import os
+import shutil
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
-import shutil
 
 import pytest
 

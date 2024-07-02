@@ -97,13 +97,15 @@ class Impactor:
 
         # Prepare the final result
         results = [
-            row.to_dict()
-            if return_all
-            else {
-                "journal": row["journal"],
-                "factor": row["factor"],
-                "score": row["score"],
-            }
+            (
+                row.to_dict()
+                if return_all
+                else {
+                    "journal": row["journal"],
+                    "factor": row["factor"],
+                    "score": row["score"],
+                }
+            )
             for _, row in matched_df.iterrows()
         ]
 

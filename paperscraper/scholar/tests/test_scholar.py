@@ -1,8 +1,9 @@
+import functools
 import logging
+
 import pandas as pd
 import pytest
 from scholarly._proxy_generator import MaxTriesExceededException
-import functools
 
 from paperscraper.scholar import (
     get_and_dump_scholar_papers,
@@ -58,8 +59,8 @@ class TestScholar:
                 ]
             ]
         )
-    
+
     @handle_scholar_exception
     def test_bad_search(self):
         results = get_scholar_papers("GT4SDfsdhfiobfpsdfbsdp")
-        assert len(results) == 0  
+        assert len(results) == 0

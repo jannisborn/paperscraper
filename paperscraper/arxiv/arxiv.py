@@ -1,9 +1,8 @@
 from typing import Dict, List, Union
 
+import arxiv
 import pandas as pd
 from tqdm import tqdm
-
-import arxiv
 
 from ..utils import dump_papers
 from .utils import get_query_from_keywords
