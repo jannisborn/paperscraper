@@ -23,10 +23,18 @@ class TestDumper:
     @pytest.fixture
     def setup_biorxiv(self):
         return lambda: biorxiv(max_retries=2)
-
+   
     @pytest.fixture
     def setup_chemrxiv(self):
+        return chemrxiv
+
+    @pytest.fixture
+    def setup_chemrxiv_date(self):
         return lambda: chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
+
+    @pytest.fixture
+    def setup_biorxiv_date(self):
+        return lambda: biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def run_function_with_timeout(self, func, timeout):
         # Define the target function for the thread
@@ -64,7 +72,10 @@ class TestDumper:
         assert os.path.exists("tmpdir/pubmed")
 
     def test_arxiv_dumping(self):
-
         query = [covid19, ai, mi]
         get_and_dump_arxiv_papers(query, output_filepath="covid19_ai_imaging.jsonl")
         assert os.path.exists("covid19_ai_imaging.jsonl")
+
+    def test_dump_existence(self):
+        from paperscraper.load_dumps import QUERY_FN_DICT
+        assert len(QUERY_FN_DICT) > 2
