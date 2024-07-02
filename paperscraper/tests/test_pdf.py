@@ -26,7 +26,7 @@ class TestPDF:
         paper_data = {"doi": "10.48550/arXiv.2207.03928"}
         save_pdf(paper_data, filepath="gt4sd_paper.pdf")
         assert os.path.exists("gt4sd_paper.pdf")
-        shutil.rmtree("gt4sd_paper.pdf")
+        os.remove("gt4sd_paper.pdf")
 
     def test_missing_doi(self):
         with pytest.raises(KeyError):
