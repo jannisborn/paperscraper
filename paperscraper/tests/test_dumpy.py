@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from paperscraper.get_dumps import biorxiv, medrxiv
+from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
 from paperscraper import dump_queries
 from paperscraper.arxiv import get_and_dump_arxiv_papers
 
@@ -23,6 +23,10 @@ class TestDumper:
     @pytest.fixture
     def setup_biorxiv(self):
         return lambda: biorxiv(max_retries=2)
+
+    @pytest.fixture
+    def setup_chemrxiv(self):
+        return lambda: chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def run_function_with_timeout(self, func, timeout):
         # Define the target function for the thread
