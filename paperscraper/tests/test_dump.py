@@ -28,14 +28,6 @@ class TestDumper:
     def setup_chemrxiv(self):
         return chemrxiv
 
-    @pytest.fixture
-    def setup_chemrxiv_date(self):
-        return lambda: chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
-
-    @pytest.fixture
-    def setup_biorxiv_date(self):
-        return lambda: biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
-
     def run_function_with_timeout(self, func, timeout):
         # Define the target function for the thread
         def target():
@@ -65,6 +57,19 @@ class TestDumper:
         assert self.run_function_with_timeout(
             setup_biorxiv, 15
         ), "biorxiv should still be running after 15 seconds"
+
+    @pytest.mark.timeout(30)
+    def test_chemrxiv(self, setup_chemrxiv):
+        # Check that the function runs for at least 15 seconds
+        assert self.run_function_with_timeout(
+            setup_chemrxiv, 15
+        ), "chemrxiv should still be running after 15 seconds"
+
+    def test_chemrxiv_date(self):
+        chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
+    
+    def test_biorxiv_date(self):
+        biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def test_dumping(self):
         queries = [[covid19, ai, mi]]
