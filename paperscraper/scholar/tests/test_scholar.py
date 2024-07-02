@@ -31,8 +31,7 @@ class TestScholar:
     @handle_scholar_exception
     def test_citations(self):
         num = get_citations_from_title("GT4SD")
-        assert isinstance(num, int)
-        assert num > 0
+        assert isinstance(num, int) and num > 0
 
     @handle_scholar_exception
     def test_dump_search(self, tmpdir):
@@ -44,8 +43,7 @@ class TestScholar:
     @handle_scholar_exception
     def test_basic_search(self):
         results = get_scholar_papers("GT4SD")
-        assert len(results) > 0  # Ensure we get some results
-        assert isinstance(results, pd.DataFrame)
+        assert len(results) > 0 and isinstance(results, pd.DataFrame)
         assert all(
             [
                 x in results.columns
