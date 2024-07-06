@@ -1,4 +1,5 @@
 """Query dumps from bioRxiv and medRXiv."""
+
 import logging
 import sys
 from typing import List, Union

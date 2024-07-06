@@ -34,11 +34,11 @@ jobs:
           coverage report
           coverage xml -o coverage.xml
       - name: Upload to Codecov
-        if: matrix.python-version == '3.9'
+        if: matrix.python-version == '3.8'
         uses: codecov/codecov-action@v2
         with:
           files: coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}  # Use the token here
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
   test-potential-wheel-install:

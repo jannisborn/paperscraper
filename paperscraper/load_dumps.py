@@ -40,6 +40,6 @@ for db in ["biorxiv", "chemrxiv", "medrxiv"]:
 
 if len(QUERY_FN_DICT) == 2:
     logger.warning(
-        " No dumps found for either biorxiv or medrxiv."
+        " No dumps found for either biorxiv, medrxiv and chemrxiv."
         " Consider using paperscraper.get_dumps.* to fetch the dumps."
     )

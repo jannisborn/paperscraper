@@ -40,9 +40,10 @@ class TestImpactor:
 
     def test_return_all_fields(self, impactor: Impactor):
         results = impactor.search("nature chem", return_all=True)
-        assert all(
-            len(r) > 3 for r in results
-        )  # Check if more than the basic fields are returned
+        for sorting in ["impact", "journal", "score"]:
+            assert all(
+                len(r) > 3 for r in results
+            )  # Check if more than the basic fields are returned
 
     def test_quantum_information_search(self, impactor):
         expected_results = [
@@ -67,3 +68,17 @@ class TestImpactor:
             assert (
                 expected["score"] == actual["score"]
             ), f"Score does not match for {expected['journal']}"
+
+    def test_type_error(self, impactor: Impactor):
+        with pytest.raises(TypeError):
+            impactor.search(123, threshold=99)  # query is not a str
+        with pytest.raises(TypeError):
+            impactor.search("Nature", threshold="99")  # threshold is not an int
+
+    def test_value_error(self, impactor: Impactor):
+        with pytest.raises(ValueError):
+            impactor.search("Nature", threshold=-1)
+
+    def test_nlm_id(self, impactor: Impactor):
+        results = impactor.search("101528555", return_all=True)
+        assert len(results) > 0
