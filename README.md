@@ -1,4 +1,3 @@
-
 [![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml?query=branch%3Amain)
 [![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml?query=branch%3Amain)
 [![License:
@@ -245,7 +244,7 @@ plot_comparison(
 )
 ```
 
-![molreps](https://github.com/jannisborn/paperscraper/blob/master/assets/molreps.png "MolReps")
+![molreps](https://github.com/jannisborn/paperscraper/blob/master/assets/molreps.png?raw=true "MolReps")
 
 
 #### Venn Diagrams
@@ -263,7 +262,7 @@ labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 ```
 
-![2019](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging.png "2019")
+![2019](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging.png?raw=true "2019")
 
 
 ```py
@@ -272,7 +271,7 @@ plot_venn_three(
 )
 ```
 
-![2020](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging_covid.png "2020"))
+![2020](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging_covid.png?raw=true "2020"))
 
 Or plot both together:
 
@@ -285,12 +284,12 @@ plot_multiple_venn(
 )
 ```
 
-![both](https://github.com/jannisborn/paperscraper/blob/master/assets/both.png "Both")
+![both](https://github.com/jannisborn/paperscraper/blob/main/assets/both.png?raw=true "Both")
 
 
 
 ## Citation
-If you use `paperscraper`, please cite the papers that motivated our development of this tool.
+If you use `paperscraper`, please cite a paper that motivated our development of this tool.
 
 ```bib
 @article{born2021trends,
@@ -302,18 +301,6 @@ If you use `paperscraper`, please cite the papers that motivated our development
   pages={7862--7886},
   year={2021},
   publisher={Bentham Science Publishers}
-}
-
-@article{born2021on,
-	title = {On the role of artificial intelligence in medical imaging of COVID-19},
-	journal = {Patterns},
-	volume = {2},
-	number = {6},
-	pages = {100269},
-	year = {2021},
-	issn = {2666-3899},
-	url = {https://doi.org/10.1016/j.patter.2021.100269},
-	author = {Jannis Born and David Beymer and Deepta Rajan and Adam Coy and Vandana V. Mukherjee and Matteo Manica and Prasanth Prasanna and Deddeh Ballah and Michal Guindy and Dorith Shaham and Pallav L. Shah and Emmanouil Karteris and Jan L. Robertus and Maria Gabrani and Michal Rosen-Zvi}
 }
 ```
 
