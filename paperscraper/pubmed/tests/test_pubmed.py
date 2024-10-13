@@ -1,8 +1,5 @@
 import os
 import tempfile
-from unittest.mock import patch
-
-import pytest
 
 from paperscraper.pubmed import get_and_dump_pubmed_papers, get_pubmed_papers
 from paperscraper.pubmed.utils import get_query_from_keywords_and_date
@@ -32,3 +29,9 @@ class TestPubMed:
         )
         df = get_pubmed_papers(query, fields=["emails", "title", "authors"])
         assert "emails" in df.columns
+
+
+if __name__ == "__main__":
+    t = TestPubMed()
+    t.test_get_and_dump_pubmed()
+    t.test_email()
