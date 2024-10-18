@@ -45,8 +45,7 @@ But watch out. The resulting `.jsonl` file will be labelled according to the cur
 
 ## Examples
 
-`paperscraper` is build on top of the packages [pymed](https://pypi.org/project/pymed/),
-[arxiv](https://pypi.org/project/arxiv/) and [scholarly](https://pypi.org/project/scholarly/). 
+`paperscraper` is build on top of the packages [arxiv](https://pypi.org/project/arxiv/), [pymed](https://pypi.org/project/pymed-paperscraper/), and [scholarly](https://pypi.org/project/scholarly/). 
 
 ### Publication keyword search
 
