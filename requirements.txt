@@ -1,5 +1,5 @@
 arxiv>=1.4.7
-pybmed-paperscraper==1.0.0
+pymed-paperscraper
 pandas>=1.0.4
 requests==2.32.0
 tqdm>=4.51.0
