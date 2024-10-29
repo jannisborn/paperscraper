@@ -52,7 +52,7 @@ def aggregate_paper(
     if not isinstance(bins_per_year, int):
         raise ValueError(f"Expected int, received {type(bins_per_year)}")
     if 12 % bins_per_year != 0:
-        raise ValueError(f"Cant split year into {bins_per_year} bins")
+        raise ValueError(f"Can't split year into {bins_per_year} bins")
 
     num_years = last_year - start_year + 1
     bins = np.zeros((num_years * bins_per_year))
