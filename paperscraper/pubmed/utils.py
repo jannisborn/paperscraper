@@ -1,7 +1,7 @@
 import warnings
 from typing import List, Union
 
-from pymed.article import PubMedArticle
+from pymed_paperscraper.article import PubMedArticle
 
 finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
 finalize_conjunction = lambda x: x[:-5]

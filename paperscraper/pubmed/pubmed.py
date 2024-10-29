@@ -3,7 +3,7 @@ import logging
 from typing import List, Union
 
 import pandas as pd
-from pymed import PubMed
+from pymed_paperscraper import PubMed
 
 from ..utils import dump_papers
 from .utils import get_emails, get_query_from_keywords_and_date

@@ -45,8 +45,7 @@ But watch out. The resulting `.jsonl` file will be labelled according to the cur
 
 ## Examples
 
-`paperscraper` is build on top of the packages [pymed](https://pypi.org/project/pymed/),
-[arxiv](https://pypi.org/project/arxiv/) and [scholarly](https://pypi.org/project/scholarly/). 
+`paperscraper` is build on top of the packages [arxiv](https://pypi.org/project/arxiv/), [pymed](https://pypi.org/project/pymed-paperscraper/), and [scholarly](https://pypi.org/project/scholarly/). 
 
 ### Publication keyword search
 
@@ -244,7 +243,7 @@ plot_comparison(
 )
 ```
 
-![molreps](https://github.com/jannisborn/paperscraper/blob/master/assets/molreps.png?raw=true "MolReps")
+![molreps](https://github.com/jannisborn/paperscraper/blob/main/assets/molreps.png?raw=true "MolReps")
 
 
 #### Venn Diagrams
@@ -262,7 +261,7 @@ labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 ```
 
-![2019](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging.png?raw=true "2019")
+![2019](https://github.com/jannisborn/paperscraper/blob/main/assets/ai_imaging.png?raw=true "2019")
 
 
 ```py
@@ -271,7 +270,7 @@ plot_venn_three(
 )
 ```
 
-![2020](https://github.com/jannisborn/paperscraper/blob/master/assets/ai_imaging_covid.png?raw=true "2020"))
+![2020](https://github.com/jannisborn/paperscraper/blob/main/assets/ai_imaging_covid.png?raw=true "2020")
 
 Or plot both together:
 
