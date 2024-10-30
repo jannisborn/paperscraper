@@ -144,7 +144,7 @@ title = 'Über formal unentscheidbare Sätze der Principia Mathematica und verwa
 get_citations_from_title(title)
 ```
 
-*NOTE*: The scholar endpoint does not require authentification but since it regularly
+*NOTE*: The scholar endpoint does not require authentication but since it regularly
 prompts with captchas, it's difficult to apply large scale.
 
 ### Journal impact factor
