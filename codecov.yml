@@ -4,6 +4,3 @@ coverage:
       default:
         target: 90%
         threshold: 2% # Up to 2% drop/fluctuation is OK
-    patch:
-      default:
-        threshold: 2%
