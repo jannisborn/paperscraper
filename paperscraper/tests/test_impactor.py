@@ -47,9 +47,10 @@ class TestImpactor:
 
     def test_quantum_information_search(self, impactor):
         expected_results = [
-            {"journal": "InfoMat", "factor": 24.798, "score": 71},
-            {"journal": "Information Fusion", "factor": 17.564, "score": 71},
-            {"journal": "npj Quantum Information", "factor": 10.758, "score": 95},
+            {"journal": "Innovation", "factor": 33.2, "score": 70},
+            {"journal": "InfoMat", "factor": 22.7, "score": 71},
+            {"journal": "Information Fusion", "factor": 14.7, "score": 71},
+            {"journal": "PRX Quantum", "factor": 9.3, "score": 78},
         ]
 
         results = impactor.search(

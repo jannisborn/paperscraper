@@ -7,6 +7,9 @@ from thefuzz import fuzz
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+# Disable sqlalchemy logging
+logging.getLogger("sqlalchemy").propagate = False
+logger.propagate = True
 
 
 class Impactor:

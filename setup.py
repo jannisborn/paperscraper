@@ -37,7 +37,7 @@ setup(
         "matplotlib",
         "matplotlib_venn",
         "bs4",
-        "impact-factor>=1.1.0",
+        "impact-factor>=1.1.1",
         "thefuzz",
         "pytest",
     ],
