@@ -40,6 +40,7 @@ setup(
         "impact-factor>=1.1.1",
         "thefuzz",
         "pytest",
+        "tldextract",
     ],
     keywords=[
         "Academics",
