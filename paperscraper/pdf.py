@@ -97,7 +97,6 @@ def save_pdf(
     for key in abstract_keys:
         abstract_tag = soup.find("meta", {"name": key})
         if abstract_tag:
-            print(type(abstract_tag["content"]))
             raw_abstract = BeautifulSoup(
                 abstract_tag["content"], "html.parser"
             ).get_text(separator="\n")

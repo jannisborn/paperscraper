@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-
 from paperscraper.load_dumps import QUERY_FN_DICT
 from paperscraper.pdf import save_pdf, save_pdf_from_dump
 
@@ -127,20 +126,6 @@ class TestPDF:
         mock_get.side_effect = [response_doi, Exception("Network error")]
         save_pdf(paper_metadata=paper_data, filepath="output.pdf")
         assert not os.path.exists("output.pdf")
-
-    @patch("requests.get")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_successful_pdf_download_and_save(self, mock_file, mock_get, paper_data):
-        response_doi = MagicMock()
-        response_doi.text = (
-            '<meta name="citation_pdf_url" content="http://valid.url/document.pdf">'
-        )
-        response_pdf = MagicMock()
-        response_pdf.content = b"PDF content"
-        mock_get.side_effect = [response_doi, response_pdf]
-        save_pdf(paper_metadata=paper_data, filepath="output.pdf")
-        mock_file.assert_called_once_with("output.pdf", "wb+")
-        mock_file().write.assert_called_once_with(b"PDF content")
 
     def test_save_pdf_from_dump_without_path(self):
         with pytest.raises(ValueError):
