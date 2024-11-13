@@ -11,3 +11,4 @@ bs4>=0.0.1
 impact-factor>=1.1.1
 thefuzz>=0.20.0
 pytest
+tldextract
