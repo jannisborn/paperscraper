@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 
 import pytest
 
@@ -53,3 +55,30 @@ class TestSelfReferences:
     def test_not_implemented_error(self):
         with pytest.raises(NotImplementedError):
             self_references("John Jumper")
+
+    def test_compare_async_and_sync_performance(self, dois):
+        """
+        Compares the execution time of asynchronous and synchronous `self_references`
+        for a list of DOIs.
+        """
+
+        start_time = time.perf_counter()
+        self_references(dois)
+        async_duration = time.perf_counter() - start_time
+
+        # Measure synchronous execution time (three independent calls)
+        start_time = time.perf_counter()
+        for doi in dois:
+            self_references(doi)
+        sync_duration = time.perf_counter() - start_time
+
+        print(f"Asynchronous execution time (batch): {async_duration:.2f} seconds")
+        print(
+            f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
+        )
+
+        # Assert that async execution (batch) is faster or at least not slower
+        assert async_duration <= sync_duration, (
+            f"Async execution ({async_duration:.2f}s) is slower than sync execution "
+            f"({sync_duration:.2f}s)"
+        )

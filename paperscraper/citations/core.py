@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 import sys
@@ -40,19 +41,26 @@ async def self_references(
 
     results: Dict[str, Dict[str, Union[float, int]]] = {}
 
+    tasks = []
+
     for sample in inputs:
         dois = re.findall(doi_pattern, sample, re.IGNORECASE)
         if len(dois) == 1:
             # This is a DOI
-            results[sample] = await self_references_paper(
-                dois[0], verbose=verbose, relative=relative
+            tasks.append(
+                (
+                    sample,
+                    self_references_paper(dois[0], verbose=verbose, relative=relative),
+                )
             )
         elif len(dois) == 0:
             # TODO: Check that it is a proper name or an ORCID ID
             raise NotImplementedError(
                 "Analyzing self-references of whole authors is not yet implemented."
             )
-        # TODO: Collect all tasks and then run asynchronously
+    completed_tasks = await asyncio.gather(*[task[1] for task in tasks])
+    for sample, task_result in zip(tasks, completed_tasks):
+        results[sample[0]] = task_result
 
     return results
 
