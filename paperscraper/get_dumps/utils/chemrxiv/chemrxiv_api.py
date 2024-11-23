@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 import requests
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 now_datetime = datetime.now()

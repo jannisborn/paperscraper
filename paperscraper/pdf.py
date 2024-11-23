@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from .utils import load_jsonl
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ABSTRACT_ATTRIBUTE = {

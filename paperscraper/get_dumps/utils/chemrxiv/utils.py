@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from .chemrxiv_api import ChemrxivAPI
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 today = datetime.today().strftime("%Y-%m-%d")
@@ -90,7 +90,6 @@ def parse_dump(source_path: str, target_path: str) -> None:
     dump = []
     # Read source dump
     for file_name in tqdm(os.listdir(source_path)):
-
         if not file_name.endswith(".json"):
             continue
         filepath = os.path.join(source_path, file_name)
@@ -131,7 +130,6 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
 
     os.makedirs(save_dir, exist_ok=True)
     for preprint in tqdm(api.all_preprints()):
-
         path = os.path.join(save_dir, f"{preprint['item']['id']}.json")
         if os.path.exists(path):
             continue
