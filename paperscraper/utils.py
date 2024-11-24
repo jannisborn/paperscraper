@@ -1,11 +1,13 @@
+import asyncio
 import json
 import logging
 import sys
+from functools import wraps
 from typing import Dict, List
 
 import pandas as pd
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -68,3 +70,18 @@ def load_jsonl(filepath: str) -> List[Dict[str, str]]:
     with open(filepath, "r") as f:
         data = [json.loads(line) for line in f.readlines()]
     return data
+
+
+def optional_async(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Check if there's an active event loop
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're in an async context, await the function
+            return func(*args, **kwargs)
+        except RuntimeError:
+            # Otherwise, run it synchronously using asyncio.run
+            return asyncio.run(func(*args, **kwargs))
+
+    return wrapper

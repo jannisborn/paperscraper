@@ -7,7 +7,7 @@ from scholarly import scholarly
 
 from ..utils import dump_papers
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +49,6 @@ def get_scholar_papers(
 
     processed = []
     for paper in matches:
-
         # Extracts title, author, year, journal, abstract
         entry = {
             scholar_field_mapper.get(key, key): process_fields.get(
