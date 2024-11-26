@@ -11,7 +11,7 @@ from typing import List, Union
 from .load_dumps import QUERY_FN_DICT
 from .utils import get_filename_from_query
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Set urllib logging depth

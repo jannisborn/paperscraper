@@ -9,7 +9,7 @@ from .arxiv import get_and_dump_arxiv_papers
 from .pubmed import get_and_dump_pubmed_papers
 from .xrxiv.xrxiv_query import XRXivQuery
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Set up the query dictionary

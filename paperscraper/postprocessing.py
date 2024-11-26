@@ -5,7 +5,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -75,7 +75,6 @@ def aggregate_paper(
         # At least one synonym per keyword needs to be in either title or
         # abstract.
         if filtering and filter_keys != list():
-
             # Filter out papers which undesired terms
             unwanted = False
             for unwanted_key in unwanted_keys:

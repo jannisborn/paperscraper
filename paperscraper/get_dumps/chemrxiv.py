@@ -10,7 +10,7 @@ import pkg_resources
 
 from .utils.chemrxiv import ChemrxivAPI, download_full, parse_dump
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 today = datetime.today().strftime("%Y-%m-%d")
