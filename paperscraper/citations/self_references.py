@@ -13,7 +13,7 @@ from .utils import check_overlap, doi_pattern
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
-ModeType = Literal[MODES := ("doi", "name", "orcid", "ssid")]
+ModeType = Literal[tuple(MODES := ("doi", "name", "orcid", "ssid"))]
 
 
 @optional_async

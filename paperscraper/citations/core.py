@@ -15,7 +15,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-ModeType = Literal[MODES := ("paper", "author")]
+ModeType = Literal[tuple(MODES := ("paper", "author"))]
 
 
 class SelfLinkClient:

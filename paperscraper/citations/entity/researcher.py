@@ -12,7 +12,7 @@ class ResearcherResult(EntityResult):
     # TODO: the ratios will be averaged across all papers for that author
 
 
-ModeType = Literal[MODES := ("name", "orcid", "ssid")]
+ModeType = Literal[tuple(MODES := ("doi", "name", "orcid", "ssid"))]
 
 sch = SemanticScholar()
 
