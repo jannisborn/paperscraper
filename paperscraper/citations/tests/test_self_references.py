@@ -52,10 +52,6 @@ class TestSelfReferences:
                         assert isinstance(self_cites, int)
                         assert self_cites >= 0
 
-    def test_not_implemented_error(self):
-        with pytest.raises(NotImplementedError):
-            self_references("John Jumper")
-
     def test_compare_async_and_sync_performance(self, dois):
         """
         Compares the execution time of asynchronous and synchronous `self_references`
