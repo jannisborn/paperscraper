@@ -92,18 +92,18 @@ class TestDumper:
         get_and_dump_arxiv_papers(
             [["MPEGO"]],
             output_filepath="mpego.jsonl",
-            begin_date="2020-06-01",
+            start_date="2020-06-01",
             end_date="2024-06-02",
         )
         get_and_dump_arxiv_papers(
             [["PaccMann"]],
             output_filepath="paccmann.jsonl",
-            end_date="2024-06-02",
+            end_date="2023-06-02",
         )
         get_and_dump_arxiv_papers(
             [["QontOT"]],
             output_filepath="qontot.jsonl",
-            begin_date="2024-06-02",
+            start_date="2023-01-02",
         )
 
     def test_dump_existence(self):
