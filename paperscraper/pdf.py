@@ -47,7 +47,7 @@ def save_pdf(
     output_path = Path(filepath)
 
     if not Path(output_path).parent.exists():
-        raise ValueError(f"The folder: {output_path.parent} seems to not exist.")
+        raise ValueError(f"The folder: {output_path} seems to not exist.")
 
     url = f"https://doi.org/{paper_metadata['doi']}"
     try:
