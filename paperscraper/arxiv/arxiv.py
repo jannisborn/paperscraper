@@ -29,6 +29,7 @@ def get_arxiv_papers(
     max_results: int = 99999,
     client_options: Dict = {"num_retries": 10},
     search_options: Dict = dict(),
+    verbose: bool = True,
 ) -> pd.DataFrame:
     """
     Performs arxiv API request of a given query and returns list of papers with
@@ -62,7 +63,7 @@ def get_arxiv_papers(
                 for key, value in vars(paper).items()
                 if arxiv_field_mapper.get(key, key) in fields and key != "doi"
             }
-            for paper in tqdm(results, desc=f"Processing {query}")
+            for paper in tqdm(results, desc=f"Processing {query}", disable=not verbose)
         ]
     )
     return processed
@@ -72,6 +73,8 @@ def get_and_dump_arxiv_papers(
     keywords: List[Union[str, List[str]]],
     output_filepath: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
+    start_date: str = "None",
+    end_date: str = "None",
     *args,
     **kwargs,
 ):
@@ -86,9 +89,13 @@ def get_and_dump_arxiv_papers(
         fields (List, optional): List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
+        start_date (str): Start date for the search. Needs to be in format:
+            YYYY/MM/DD, e.g. '2020/07/20'. Defaults to 'None', i.e. no specific
+            dates are used.
+        end_date (str): End date for the search. Same notation as start_date.
         *args, **kwargs are additional arguments for `get_arxiv_papers`.
     """
     # Translate keywords into query.
-    query = get_query_from_keywords(keywords)
+    query = get_query_from_keywords(keywords, start_date=start_date, end_date=end_date)
     papers = get_arxiv_papers(query, fields, *args, **kwargs)
     dump_papers(papers, output_filepath)

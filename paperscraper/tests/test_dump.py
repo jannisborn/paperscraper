@@ -1,16 +1,15 @@
-import logging
 import importlib
+import logging
 import os
 import threading
 
 import pytest
 
+import paperscraper.load_dumps as load_dumps_module
 from paperscraper import dump_queries
 from paperscraper.arxiv import get_and_dump_arxiv_papers
 from paperscraper.get_dumps import biorxiv, chemrxiv, medrxiv
 from paperscraper.load_dumps import QUERY_FN_DICT
-import paperscraper.load_dumps as load_dumps_module
-
 
 logging.disable(logging.INFO)
 
@@ -20,11 +19,9 @@ mi = ["Medical imaging"]
 
 
 class TestDumper:
-
     def test_dump_existence_initial(self):
         # This test checks the initial state, should be run first if order matters
         assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
-
 
     @pytest.fixture
     def setup_medrxiv(self):
@@ -77,7 +74,7 @@ class TestDumper:
 
     def test_chemrxiv_date(self):
         chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
-    
+
     def test_biorxiv_date(self):
         biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
@@ -91,7 +88,28 @@ class TestDumper:
         get_and_dump_arxiv_papers(query, output_filepath="covid19_ai_imaging.jsonl")
         assert os.path.exists("covid19_ai_imaging.jsonl")
 
+    def test_arxiv_date(self):
+        get_and_dump_arxiv_papers(
+            [["MPEGO"]],
+            output_filepath="mpego.jsonl",
+            start_date="2020-06-01",
+            end_date="2024-06-02",
+        )
+        get_and_dump_arxiv_papers(
+            [["PaccMann"]],
+            output_filepath="paccmann.jsonl",
+            end_date="2023-06-02",
+        )
+        get_and_dump_arxiv_papers(
+            [["QontOT"]],
+            output_filepath="qontot.jsonl",
+            start_date="2023-01-02",
+        )
+
     def test_dump_existence(self):
         importlib.reload(load_dumps_module)
         from paperscraper.load_dumps import QUERY_FN_DICT
-        assert len(QUERY_FN_DICT) > 2, "Expected QUERY_FN_DICT to be updated by previous tests"
+
+        assert (
+            len(QUERY_FN_DICT) > 2
+        ), "Expected QUERY_FN_DICT to be updated by previous tests"
