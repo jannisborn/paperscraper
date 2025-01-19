@@ -43,6 +43,7 @@ medrxiv(begin_date="2023-04-01", end_date="2023-04-08")
 ```
 But watch out. The resulting `.jsonl` file will be labelled according to the current date and all your subsequent searches will be based on this file **only**. If you use this option you might want to keep an eye on the source files (`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata for all papers you're interested in.
 
+
 ## Examples
 
 `paperscraper` is build on top of the packages [arxiv](https://pypi.org/project/arxiv/), [pymed](https://pypi.org/project/pymed-paperscraper/), and [scholarly](https://pypi.org/project/scholarly/). 
@@ -181,6 +182,22 @@ i.search("quantum information", threshold=90, return_all=True)
 #   {'factor': 10.758, 'jcr': 'Q1', 'journal_abbr': 'npj Quantum Inf', 'eissn': '2056-6387', 'journal': 'npj Quantum Information', 'nlm_id': '101722857', 'issn': '', 'score': 92},
 #   {'factor': 1.577, 'jcr': 'Q3', 'journal_abbr': 'Nation', 'eissn': '0027-8378', 'journal': 'NATION', 'nlm_id': '9877123', 'issn': '0027-8378', 'score': 91}
 # ]
+```
+
+## Arxiv local dump
+If you prefer local search rather than using the arxiv API:
+
+```py
+from paperscraper.get_dumps import arxiv
+arxiv(begin_date='2024-01-01', end_date=None) # scrapes all metadata from 2024 until today.
+```
+
+Afterwards you can search the local arxiv dump just like the other x-rxiv dumps.
+The direct endpoint is `paperscraper.arxiv.get_arxiv_papers_local`. You can also specify the
+backend directly in the `get_and_dump_arxiv_papers` function:
+```py
+from paperscraper.arxiv import get_and_dump_arxiv_papers
+get_and_dump_arxiv_papers(..., backend='local')
 ```
 
 ### Plotting

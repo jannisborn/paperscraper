@@ -88,12 +88,12 @@ class TestDumper:
             setup_chemrxiv, 15
         ), "chemrxiv should still be running after 15 seconds"
 
-    @pytest.mark.timeout(30)
+    @pytest.mark.timeout(120)
     def test_arxiv(self, setup_arxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(
-            setup_arxiv, 15
-        ), "arxiv should still be running after 15 seconds"
+            setup_arxiv, 90
+        ), "arxiv should still be running after 90 seconds"
 
     def test_chemrxiv_date(self):
         chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
