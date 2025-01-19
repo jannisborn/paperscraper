@@ -18,15 +18,22 @@ logger = logging.getLogger(__name__)
 
 dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
 
+global ARXIV_QUERIER
 ARXIV_QUERIER = None
-dump_paths = glob.glob(os.path.join(dump_root, "arxiv*"))
 
-if len(dump_paths) > 0:
-    path = sorted(dump_paths, reverse=True)[0]
-    querier = XRXivQuery(path)
-    if not querier.errored:
-        ARXIV_QUERIER = querier.search_keywords
-        logger.info(f"Loaded arxiv dump with {len(querier.df)} entries")
+
+def search_local_arxiv():
+    global ARXIV_QUERIER
+    if ARXIV_QUERIER is not None:
+        return
+    dump_paths = glob.glob(os.path.join(dump_root, "arxiv*"))
+
+    if len(dump_paths) > 0:
+        path = sorted(dump_paths, reverse=True)[0]
+        querier = XRXivQuery(path)
+        if not querier.errored:
+            ARXIV_QUERIER = querier.search_keywords
+            logger.info(f"Loaded arxiv dump with {len(querier.df)} entries")
 
 
 arxiv_field_mapper = {
@@ -64,7 +71,11 @@ def get_arxiv_papers_local(
     Returns:
         pd.DataFrame: A dataframe with one paper per row.
     """
-
+    search_local_arxiv()
+    if ARXIV_QUERIER is None:
+        raise ValueError(
+            "Could not find local arxiv dump. Use `backend=api` or download dump via `paperscraper.get_dumps.arxiv"
+        )
     return ARXIV_QUERIER(
         keywords=keywords, fields=fields, output_filepath=output_filepath
     )

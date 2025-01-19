@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import time
 from datetime import datetime, timedelta
+from functools import partial
 
 import pytest
 
@@ -20,6 +21,14 @@ ai = ["Artificial intelligence", "Deep learning", "Machine learning"]
 mi = ["Medical imaging"]
 
 
+def target_func(queue, func):
+    try:
+        func()
+        queue.put(True)  # Function completed (this should never happen)
+    except Exception as e:
+        queue.put(e)
+
+
 class TestDumper:
     def test_dump_existence_initial(self):
         # This test checks the initial state, should be run first if order matters
@@ -31,7 +40,7 @@ class TestDumper:
 
     @pytest.fixture
     def setup_biorxiv(self):
-        return lambda: biorxiv(max_retries=2)
+        return partial(biorxiv, max_retries=2)
 
     @pytest.fixture
     def setup_chemrxiv(self):
@@ -42,15 +51,8 @@ class TestDumper:
         return arxiv
 
     def run_function_with_timeout(self, func, timeout):
-        def target(queue):
-            try:
-                func()
-                queue.put(True)  # Function completed (this should never happen)
-            except Exception as e:
-                queue.put(e)
-
         queue = multiprocessing.Queue()
-        process = multiprocessing.Process(target=target, args=(queue,))
+        process = multiprocessing.Process(target=target_func, args=(queue, func))
         process.start()
         time.sleep(timeout)
 
