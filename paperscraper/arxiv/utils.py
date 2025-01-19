@@ -1,5 +1,9 @@
+import glob
+import os
 from datetime import datetime
 from typing import List, Union
+
+import pkg_resources
 
 finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
 finalize_conjunction = lambda x: x[:-5]
@@ -52,3 +56,9 @@ def get_query_from_keywords(
     end = format_date(end_date)
     date_filter = f" AND submittedDate:[{start} TO {end}]"
     return query + date_filter
+
+
+def infer_backend():
+    dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+    dump_paths = glob.glob(os.path.join(dump_root, "arxiv" + "*"))
+    return "api" if not dump_paths else "local"

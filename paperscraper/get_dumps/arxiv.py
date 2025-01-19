@@ -8,7 +8,7 @@ from typing import Optional
 import pkg_resources
 from tqdm import tqdm
 
-from ..arxiv import get_arxiv_papers
+from ..arxiv import get_arxiv_papers_api
 
 today = datetime.today().strftime("%Y-%m-%d")
 save_folder = pkg_resources.resource_filename("paperscraper", "server_dumps")
@@ -60,7 +60,7 @@ def arxiv(
             # Format dates for query
             query = f"submittedDate:[{current_date.strftime('%Y%m%d0000')} TO {next_date.strftime('%Y%m%d0000')}]"
             try:
-                papers = get_arxiv_papers(
+                papers = get_arxiv_papers_api(
                     query=query,
                     fields=["title", "authors", "date", "abstract", "journal", "doi"],
                     verbose=False,

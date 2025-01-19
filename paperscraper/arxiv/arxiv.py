@@ -1,11 +1,33 @@
-from typing import Dict, List, Union
+import glob
+import logging
+import os
+import sys
+from typing import Dict, List, Literal, Union
 
 import arxiv
 import pandas as pd
+import pkg_resources
 from tqdm import tqdm
 
 from ..utils import dump_papers
-from .utils import get_query_from_keywords
+from ..xrxiv.xrxiv_query import XRXivQuery
+from .utils import get_query_from_keywords, infer_backend
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+
+ARXIV_QUERIER = None
+dump_paths = glob.glob(os.path.join(dump_root, "arxiv*"))
+
+if len(dump_paths) > 0:
+    path = sorted(dump_paths, reverse=True)[0]
+    querier = XRXivQuery(path)
+    if not querier.errored:
+        ARXIV_QUERIER = querier.search_keywords
+        logger.info(f"Loaded arxiv dump with {len(querier.df)} entries")
+
 
 arxiv_field_mapper = {
     "published": "date",
@@ -23,7 +45,32 @@ process_fields = {
 }
 
 
-def get_arxiv_papers(
+def get_arxiv_papers_local(
+    keywords: List[Union[str, List[str]]],
+    fields: List[str] = None,
+    output_filepath: str = None,
+) -> pd.DataFrame:
+    """
+    Search for papers in the dump using keywords.
+
+    Args:
+        keywords: Items will be AND separated. If items
+            are lists themselves, they will be OR separated.
+        fields: fields to be used in the query search.
+            Defaults to None, a.k.a. search in all fields excluding date.
+        output_filepath: optional output filepath where to store the hits in JSONL format.
+            Defaults to None, a.k.a., no export to a file.
+
+    Returns:
+        pd.DataFrame: A dataframe with one paper per row.
+    """
+
+    return ARXIV_QUERIER(
+        keywords=keywords, fields=fields, output_filepath=output_filepath
+    )
+
+
+def get_arxiv_papers_api(
     query: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     max_results: int = 99999,
@@ -36,14 +83,14 @@ def get_arxiv_papers(
     fields as desired.
 
     Args:
-        query (str): Query to arxiv API. Needs to match the arxiv API notation.
-        fields (List[str]): List of strings with fields to keep in output.
-        max_results (int): Maximal number of results, defaults to 99999.
-        client_options (Dict): Optional arguments for `arxiv.Client`. E.g.:
+        query Query to arxiv API. Needs to match the arxiv API notation.
+        fields: List of strings with fields to keep in output.
+        max_results: Maximal number of results, defaults to 99999.
+        client_options: Optional arguments for `arxiv.Client`. E.g.:
             page_size (int), delay_seconds (int), num_retries (int).
             NOTE: Decreasing 'num_retries' will speed up processing but might
             result in more frequent 'UnexpectedEmptyPageErrors'.
-        search_options (Dict): Optional arguments for `arxiv.Search`. E.g.:
+        search_options: Optional arguments for `arxiv.Search`. E.g.:
             id_list (List), sort_by, or sort_order.
 
     Returns:
@@ -75,6 +122,7 @@ def get_and_dump_arxiv_papers(
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     start_date: str = "None",
     end_date: str = "None",
+    backend: Literal["api", "local", "infer"] = "api",
     *args,
     **kwargs,
 ):
@@ -82,20 +130,35 @@ def get_and_dump_arxiv_papers(
     Combines get_arxiv_papers and dump_papers.
 
     Args:
-        keywords (List[str, List[str]]): List of keywords to request arxiv API.
+        keywords: List of keywords for arxiv search.
             The outer list level will be considered as AND separated keys, the
             inner level as OR separated.
-        filepath (str): Path where the dump will be saved.
-        fields (List, optional): List of strings with fields to keep in output.
+        filepath: Path where the dump will be saved.
+        fields: List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
-        start_date (str): Start date for the search. Needs to be in format:
+        start_date: Start date for the search. Needs to be in format:
             YYYY/MM/DD, e.g. '2020/07/20'. Defaults to 'None', i.e. no specific
             dates are used.
-        end_date (str): End date for the search. Same notation as start_date.
+        end_date: End date for the search. Same notation as start_date.
+        backend: If `api`, the arXiv API is queried. If `local` the local arXiv dump
+            is queried (has to be downloaded before). If `infer` the local dump will
+            be used if exists, otherwise API will be queried. Defaults to `api`
+            since it is faster.
         *args, **kwargs are additional arguments for `get_arxiv_papers`.
     """
     # Translate keywords into query.
     query = get_query_from_keywords(keywords, start_date=start_date, end_date=end_date)
-    papers = get_arxiv_papers(query, fields, *args, **kwargs)
+
+    if backend not in {"api", "local", "infer"}:
+        raise ValueError(
+            f"Invalid backend: {backend}. Must be one of ['api', 'local', 'infer']"
+        )
+    elif backend == "infer":
+        backend = infer_backend()
+
+    if backend == "api":
+        papers = get_arxiv_papers_api(query, fields, *args, **kwargs)
+    elif backend == "local":
+        papers = get_arxiv_papers_local(keywords, fields, *args, **kwargs)
     dump_papers(papers, output_filepath)

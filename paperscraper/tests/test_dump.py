@@ -2,7 +2,6 @@ import importlib
 import logging
 import multiprocessing
 import os
-import threading
 import time
 from datetime import datetime, timedelta
 
@@ -59,14 +58,12 @@ class TestDumper:
         process.terminate()
         process.join()
 
-        if not was_alive:
-            if not queue.empty():
-                result = queue.get()
-                if isinstance(result, Exception):
-                    raise result
+        if not was_alive and not queue.empty():
+            raise queue.get()
+        elif not was_alive:
             return False
-
-        return True
+        else:
+            return True
 
     @pytest.mark.timeout(30)
     def test_medrxiv(self, setup_medrxiv):
@@ -129,16 +126,19 @@ class TestDumper:
             output_filepath="mpego.jsonl",
             start_date="2020-06-01",
             end_date="2024-06-02",
+            backend="api",
         )
         get_and_dump_arxiv_papers(
             [["PaccMann"]],
             output_filepath="paccmann.jsonl",
             end_date="2023-06-02",
+            backend="infer",
         )
         get_and_dump_arxiv_papers(
             [["QontOT"]],
             output_filepath="qontot.jsonl",
             start_date="2023-01-02",
+            backend="local",
         )
 
     def test_dump_existence(self):
