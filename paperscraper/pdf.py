@@ -81,7 +81,7 @@ def save_pdf(
     metadata = {}
     # Extract title
     title_tag = soup.find("meta", {"name": "citation_title"})
-    metadata["title"] = title_tag["content"] if title_tag else "Title not found"
+    metadata["title"] = title_tag.get("content") if title_tag else "Title not found"
 
     # Extract authors
     authors = []
@@ -98,7 +98,7 @@ def save_pdf(
         abstract_tag = soup.find("meta", {"name": key})
         if abstract_tag:
             raw_abstract = BeautifulSoup(
-                abstract_tag["content"], "html.parser"
+                abstract_tag.get("content", "None"), "html.parser"
             ).get_text(separator="\n")
             if raw_abstract.strip().startswith("Abstract"):
                 raw_abstract = raw_abstract.strip()[8:]

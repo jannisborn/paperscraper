@@ -69,8 +69,6 @@ def arxiv(
                     for paper in papers.to_dict(orient="records"):
                         fp.write(json.dumps(paper) + "\n")
             except Exception as e:
-                print(
-                    f"Error while fetching data for {current_date.strftime('%Y-%m-%d')}: {e}"
-                )
+                print(f"Arxiv scraping error: {current_date.strftime('%Y-%m-%d')}: {e}")
             current_date = next_date
             progress_bar.update(1)

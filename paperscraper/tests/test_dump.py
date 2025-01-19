@@ -1,7 +1,9 @@
 import importlib
 import logging
+import multiprocessing
 import os
 import threading
+import time
 from datetime import datetime, timedelta
 
 import pytest
@@ -20,9 +22,9 @@ mi = ["Medical imaging"]
 
 
 class TestDumper:
-    # def test_dump_existence_initial(self):
-    #     # This test checks the initial state, should be run first if order matters
-    #     assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
+    def test_dump_existence_initial(self):
+        # This test checks the initial state, should be run first if order matters
+        assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
 
     @pytest.fixture
     def setup_medrxiv(self):
@@ -41,18 +43,30 @@ class TestDumper:
         return arxiv
 
     def run_function_with_timeout(self, func, timeout):
-        # Define the target function for the thread
-        def target():
-            func()
+        def target(queue):
+            try:
+                func()
+                queue.put(True)  # Function completed (this should never happen)
+            except Exception as e:
+                queue.put(e)
 
-        # Create a daemon thread that runs the target function
-        thread = threading.Thread(target=target)
-        thread.daemon = True  # This makes the thread exit when the main thread exits
-        thread.start()
-        thread.join(timeout=timeout)
-        if thread.is_alive():
-            return True
-        return False
+        queue = multiprocessing.Queue()
+        process = multiprocessing.Process(target=target, args=(queue,))
+        process.start()
+        time.sleep(timeout)
+
+        was_alive = process.is_alive()
+        process.terminate()
+        process.join()
+
+        if not was_alive:
+            if not queue.empty():
+                result = queue.get()
+                if isinstance(result, Exception):
+                    raise result
+            return False
+
+        return True
 
     @pytest.mark.timeout(30)
     def test_medrxiv(self, setup_medrxiv):
