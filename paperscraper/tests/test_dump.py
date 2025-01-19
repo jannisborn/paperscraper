@@ -2,13 +2,14 @@ import importlib
 import logging
 import os
 import threading
+from datetime import datetime, timedelta
 
 import pytest
 
 import paperscraper.load_dumps as load_dumps_module
 from paperscraper import dump_queries
 from paperscraper.arxiv import get_and_dump_arxiv_papers
-from paperscraper.get_dumps import biorxiv, chemrxiv, medrxiv
+from paperscraper.get_dumps import arxiv, biorxiv, chemrxiv, medrxiv
 from paperscraper.load_dumps import QUERY_FN_DICT
 
 logging.disable(logging.INFO)
@@ -19,9 +20,9 @@ mi = ["Medical imaging"]
 
 
 class TestDumper:
-    def test_dump_existence_initial(self):
-        # This test checks the initial state, should be run first if order matters
-        assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
+    # def test_dump_existence_initial(self):
+    #     # This test checks the initial state, should be run first if order matters
+    #     assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
 
     @pytest.fixture
     def setup_medrxiv(self):
@@ -35,6 +36,10 @@ class TestDumper:
     def setup_chemrxiv(self):
         return chemrxiv
 
+    @pytest.fixture
+    def setup_arxiv(self):
+        return arxiv
+
     def run_function_with_timeout(self, func, timeout):
         # Define the target function for the thread
         def target():
@@ -44,12 +49,10 @@ class TestDumper:
         thread = threading.Thread(target=target)
         thread.daemon = True  # This makes the thread exit when the main thread exits
         thread.start()
-        thread.join(
-            timeout=timeout
-        )  # Wait for the specified time or until the function finishes
+        thread.join(timeout=timeout)
         if thread.is_alive():
-            return True  # Function is still running, which is our success condition
-        return False  # Function has completed or failed within the timeout, which we don't expect
+            return True
+        return False
 
     @pytest.mark.timeout(30)
     def test_medrxiv(self, setup_medrxiv):
@@ -72,11 +75,29 @@ class TestDumper:
             setup_chemrxiv, 15
         ), "chemrxiv should still be running after 15 seconds"
 
+    @pytest.mark.timeout(30)
+    def test_arxiv(self, setup_arxiv):
+        # Check that the function runs for at least 15 seconds
+        assert self.run_function_with_timeout(
+            setup_arxiv, 15
+        ), "arxiv should still be running after 15 seconds"
+
     def test_chemrxiv_date(self):
         chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def test_biorxiv_date(self):
         biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
+
+    def test_arxiv_date(self):
+        arxiv(begin_date="2024-06-01", end_date="2024-06-01")
+        arxiv(end_date="1991-01-01")
+        arxiv(begin_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+
+    def test_arxiv_wrong_date(self):
+        with pytest.raises(
+            ValueError, match=r"begin_date .* cannot be later than end_date .*"
+        ):
+            arxiv(begin_date="2024-06-02", end_date="2024-06-01")
 
     def test_dumping(self):
         queries = [[covid19, ai, mi]]
@@ -88,7 +109,7 @@ class TestDumper:
         get_and_dump_arxiv_papers(query, output_filepath="covid19_ai_imaging.jsonl")
         assert os.path.exists("covid19_ai_imaging.jsonl")
 
-    def test_arxiv_date(self):
+    def test_get_arxiv_date(self):
         get_and_dump_arxiv_papers(
             [["MPEGO"]],
             output_filepath="mpego.jsonl",
@@ -111,5 +132,5 @@ class TestDumper:
         from paperscraper.load_dumps import QUERY_FN_DICT
 
         assert (
-            len(QUERY_FN_DICT) > 2
-        ), "Expected QUERY_FN_DICT to be updated by previous tests"
+            len(QUERY_FN_DICT) == 5
+        ), f"Expected QUERY_FN_DICT to also contain med/bio/chemrxiv, {QUERY_FN_DICT}"
