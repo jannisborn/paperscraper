@@ -102,7 +102,10 @@ class TestDumper:
         biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def test_arxiv_date(self):
-        arxiv(begin_date=(datetime.today() - timedelta(days=4)).strftime("%Y-%m-%d"))
+        # Result of this may be empty because arxiv updates not daily.
+        # With days=4 it should never be empty.
+        arxiv(begin_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+
         arxiv(end_date="1991-01-01")
         arxiv(begin_date="1993-04-01", end_date="1993-04-03")
 
