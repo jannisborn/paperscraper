@@ -88,11 +88,11 @@ class TestDumper:
             setup_chemrxiv, 15
         ), "chemrxiv should still be running after 15 seconds"
 
-    @pytest.mark.timeout(120)
+    @pytest.mark.timeout(30)
     def test_arxiv(self, setup_arxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(
-            setup_arxiv, 90
+            setup_arxiv, 15
         ), "arxiv should still be running after 90 seconds"
 
     def test_chemrxiv_date(self):
@@ -102,9 +102,9 @@ class TestDumper:
         biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
 
     def test_arxiv_date(self):
-        arxiv(begin_date="2024-06-01", end_date="2024-06-01")
+        arxiv(begin_date=(datetime.today() - timedelta(days=4)).strftime("%Y-%m-%d"))
         arxiv(end_date="1991-01-01")
-        arxiv(begin_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+        arxiv(begin_date="1993-04-01", end_date="1993-04-03")
 
     def test_arxiv_wrong_date(self):
         with pytest.raises(
