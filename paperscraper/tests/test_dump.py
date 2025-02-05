@@ -96,24 +96,24 @@ class TestDumper:
         ), "arxiv should still be running after 90 seconds"
 
     def test_chemrxiv_date(self):
-        chemrxiv(begin_date="2024-06-01", end_date="2024-06-02")
+        chemrxiv(start_date="2024-06-01", end_date="2024-06-02")
 
     def test_biorxiv_date(self):
-        biorxiv(begin_date="2024-06-01", end_date="2024-06-02")
+        biorxiv(start_date="2024-06-01", end_date="2024-06-02")
 
     def test_arxiv_date(self):
         # Result of this may be empty because arxiv updates not daily.
         # With days=4 it should never be empty.
-        arxiv(begin_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+        arxiv(start_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
 
         arxiv(end_date="1991-01-01")
-        arxiv(begin_date="1993-04-01", end_date="1993-04-03")
+        arxiv(start_date="1993-04-01", end_date="1993-04-03")
 
     def test_arxiv_wrong_date(self):
         with pytest.raises(
-            ValueError, match=r"begin_date .* cannot be later than end_date .*"
+            ValueError, match=r"start_date .* cannot be later than end_date .*"
         ):
-            arxiv(begin_date="2024-06-02", end_date="2024-06-01")
+            arxiv(start_date="2024-06-02", end_date="2024-06-01")
 
     def test_dumping(self):
         queries = [[covid19, ai, mi]]

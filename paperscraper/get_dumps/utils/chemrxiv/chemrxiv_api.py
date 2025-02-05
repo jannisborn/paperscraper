@@ -23,7 +23,7 @@ class ChemrxivAPI:
 
     def __init__(
         self,
-        begin_date: Optional[str] = None,
+        start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         page_size: Optional[int] = None,
     ):
@@ -31,7 +31,7 @@ class ChemrxivAPI:
         Initialize API class.
 
         Args:
-            begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
+            start_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
                 Defaults to None.
             end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
                 Defaults to None.
@@ -44,17 +44,17 @@ class ChemrxivAPI:
         launch_date = launch_dates["chemrxiv"]
         launch_datetime = datetime.fromisoformat(launch_date)
 
-        if begin_date:
-            begin_datetime = datetime.fromisoformat(begin_date)
-            if begin_datetime < launch_datetime:
-                self.begin_date = launch_date
+        if start_date:
+            start_datetime = datetime.fromisoformat(start_date)
+            if start_datetime < launch_datetime:
+                self.start_date = launch_date
                 logger.warning(
-                    f"Begin date {begin_date} is before chemrxiv launch date. Will use {launch_date} instead."
+                    f"Begin date {start_date} is before chemrxiv launch date. Will use {launch_date} instead."
                 )
             else:
-                self.begin_date = begin_date
+                self.start_date = start_date
         else:
-            self.begin_date = launch_date
+            self.start_date = launch_date
         if end_date:
             end_datetime = datetime.fromisoformat(end_date)
             if end_datetime > now_datetime:
@@ -93,7 +93,7 @@ class ChemrxivAPI:
                 {
                     "limit": self.page_size,
                     "skip": page * self.page_size,
-                    "searchDateFrom": self.begin_date,
+                    "searchDateFrom": self.start_date,
                     "searchDateTo": self.end_date,
                 }
             )
