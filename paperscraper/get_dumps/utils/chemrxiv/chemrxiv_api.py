@@ -2,10 +2,12 @@ import logging
 import os
 import sys
 from datetime import datetime
+from time import time
 from typing import Dict, Optional
 from urllib.parse import urljoin
 
 import requests
+from requests.exceptions import ChunkedEncodingError
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ class ChemrxivAPI:
         begin_date: Optional[str] = None,
         end_date: Optional[str] = None,
         page_size: Optional[int] = None,
+        max_retries: int = 10,
     ):
         """
         Initialize API class.
@@ -36,9 +39,11 @@ class ChemrxivAPI:
             end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
                 Defaults to None.
             page_size (int, optional): The batch size used to fetch the records from chemrxiv.
+            max_retries (int): Number of retries in case of error
         """
 
         self.page_size = page_size or 50
+        self.max_retries = max_retries
 
         # Begin Date and End Date of the search
         launch_date = launch_dates["chemrxiv"]
@@ -70,12 +75,19 @@ class ChemrxivAPI:
     def request(self, url, method, params=None):
         """Send an API request to open Engage."""
 
-        if method.casefold() == "get":
-            return requests.get(url, params=params, timeout=10)
-        elif method.casefold() == "post":
-            return requests.post(url, json=params, timeout=10)
-        else:
-            raise ConnectionError(f"Unknown method for query: {method}")
+        for attempt in range(self.max_retries):
+            try:
+                if method.casefold() == "get":
+                    return requests.get(url, params=params, timeout=10)
+                elif method.casefold() == "post":
+                    return requests.post(url, json=params, timeout=10)
+                else:
+                    raise ConnectionError(f"Unknown method for query: {method}")
+            except ChunkedEncodingError as e:
+                logger.warning(f"ChunkedEncodingError occurred for {url}: {e}")
+                if attempt + 1 == self.max_retries:
+                    raise e
+                time.sleep(3)
 
     def query(self, query, method="get", params=None):
         """Perform a direct query."""
