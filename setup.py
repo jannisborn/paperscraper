@@ -28,7 +28,7 @@ setup(
     license="MIT",
     install_requires=[
         "arxiv>=1.4.2",
-        "pymed-paperscraper>=1.0.1",
+        "pymed-paperscraper>=1.0.2",
         "pandas",
         "requests",
         "tqdm",
