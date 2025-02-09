@@ -39,7 +39,7 @@ chemrxiv()  #  Takes ~45min and should result in ~20 MB file
 
 Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates.
 ```py
-medrxiv(begin_date="2023-04-01", end_date="2023-04-08")
+medrxiv(start_date="2023-04-01", end_date="2023-04-08")
 ```
 But watch out. The resulting `.jsonl` file will be labelled according to the current date and all your subsequent searches will be based on this file **only**. If you use this option you might want to keep an eye on the source files (`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata for all papers you're interested in.
 
@@ -189,7 +189,7 @@ If you prefer local search rather than using the arxiv API:
 
 ```py
 from paperscraper.get_dumps import arxiv
-arxiv(begin_date='2024-01-01', end_date=None) # scrapes all metadata from 2024 until today.
+arxiv(start_date='2024-01-01', end_date=None) # scrapes all metadata from 2024 until today.
 ```
 
 Afterwards you can search the local arxiv dump just like the other x-rxiv dumps.
