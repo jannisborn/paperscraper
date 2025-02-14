@@ -16,34 +16,34 @@ save_path = os.path.join(save_folder, f"arxiv_{today}.jsonl")
 
 
 def arxiv(
-    begin_date: Optional[str] = None,
+    start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     save_path: str = save_path,
 ):
     """
-    Fetches papers from arXiv based on time range, i.e., begin_date and end_date.
-    If the begin_date and end_date are not provided, fetches papers from the earliest
+    Fetches papers from arXiv based on time range, i.e., start_date and end_date.
+    If the start_date and end_date are not provided, fetches papers from the earliest
     possible date to the current date. The fetched papers are stored in JSONL format.
 
     Args:
-        begin_date (str, optional): Start date in format YYYY-MM-DD. Defaults to None.
+        start_date (str, optional): Start date in format YYYY-MM-DD. Defaults to None.
         end_date (str, optional): End date in format YYYY-MM-DD. Defaults to None.
         save_path (str, optional): Path to save the JSONL dump. Defaults to save_path.
     """
     # Set default dates
     EARLIEST_START = "1991-01-01"
-    if begin_date is None:
-        begin_date = EARLIEST_START
+    if start_date is None:
+        start_date = EARLIEST_START
     if end_date is None:
         end_date = datetime.today().strftime("%Y-%m-%d")
 
     # Convert dates to datetime objects
-    start_date = datetime.strptime(begin_date, "%Y-%m-%d")
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
     if start_date > end_date:
         raise ValueError(
-            f"begin_date {begin_date} cannot be later than end_date {end_date}"
+            f"start_date {start_date} cannot be later than end_date {end_date}"
         )
 
     # Open file for writing results
