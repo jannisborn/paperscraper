@@ -26,7 +26,7 @@ process_fields = {
     "date": lambda date: (
         date.strftime("%Y-%m-%d") if isinstance(date, datetime.date) else date
     ),
-    "doi": lambda doi: doi.split("\n")[0],
+    "doi": lambda doi: doi.split("\n")[0] if isinstance(doi, str) else doi,
 }
 
 
