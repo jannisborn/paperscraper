@@ -8,7 +8,6 @@ KEYWORDS = [["machine learning", "deep learning"], ["zoology"]]
 
 
 class TestPubMed:
-
     def test_get_and_dump_pubmed(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output_filepath = os.path.join(temp_dir, "tmp.jsonl")
@@ -30,3 +29,8 @@ class TestPubMed:
         df = get_pubmed_papers(query, fields=["emails", "title", "authors"])
         assert "emails" in df.columns
 
+    def test_doi(self):
+        query = "CRISPR-based gene editing in plants: Focus on reagents and their delivery tools"
+        df = get_pubmed_papers(query, fields=["doi", "title", "authors"])
+        for i, r in df.iterrows():
+            assert "\n" not in r.doi
