@@ -73,7 +73,7 @@ def save_pdf(
             if "elife" in str(e).lower(): # elife has an open XML repository on GitHub
                 logger.info("Detected download error of an eLife journal XML, attempting alternative eLife XML repository approach.")
                 fallback_elife_xml(paper_metadata["doi"], output_path, logger)
-            elif ("wiley" in str(e).lower()) and ("WILEY_TDM_API_TOKEN" in api_keys):
+            elif ("wiley" in str(e).lower()) and api_keys and ("WILEY_TDM_API_TOKEN" in api_keys):
                 logger.info("Detected download error of a Wiley journal PDF, attempting alternative Wiley TDM API approach.")
                 fallback_wiley_api(paper_metadata, output_path, logger, api_keys)
         return
@@ -101,7 +101,7 @@ def save_pdf(
             if not fallback_elife_xml(paper_metadata["doi"], output_path, logger):
                 logger.warning(f"eLife XML fallback failed for {paper_metadata['doi']}.")
         else:
-            if "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
+            if api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
                 logger.warning(f"No citation_pdf_url meta tag found for {url}, checking for download via Elsevier API.")
                 fallback_elsevier_api(paper_metadata, output_path, logger, api_keys)
 
@@ -301,10 +301,6 @@ def fallback_bioc_pmc(doi, output_path, logger):
     """
     ncbi_tool = 'paperscraper'
     ncbi_email = 'your_email@example.com'
-    
-    if not ncbi_email:
-        logger.error("NCBI_EMAIL environment variables not set. Cannot use BioC-PMC fallback.")
-        return False
 
     converter_url = "https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/"
     params = {
