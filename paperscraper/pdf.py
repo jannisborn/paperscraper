@@ -100,10 +100,11 @@ def save_pdf(
             logger.info(f"DOI contains eLife, attempting fallback to eLife XML repository on GitHub.")
             if not fallback_elife_xml(paper_metadata["doi"], output_path, logger):
                 logger.warning(f"eLife XML fallback failed for {paper_metadata['doi']}.")
+        elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
+            logger.warning(f"No citation_pdf_url meta tag found for {url}, checking for download via Elsevier API.")
+            fallback_elsevier_api(paper_metadata, output_path, logger, api_keys)
         else:
-            if api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
-                logger.warning(f"No citation_pdf_url meta tag found for {url}, checking for download via Elsevier API.")
-                fallback_elsevier_api(paper_metadata, output_path, logger, api_keys)
+            logger.warning(f"No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available. Retrieval failed.")
 
     if not save_metadata:
         return
