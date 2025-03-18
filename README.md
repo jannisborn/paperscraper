@@ -19,12 +19,12 @@ and plotting routines for meta-analysis.
 
 1. [Getting Started](#getting-started)
    - [Download X-rxiv Dumps](#download-x-rxiv-dumps)
+   - [Arxiv Local Dump](#arxiv-local-dump)
 2. [Examples](#examples)
    - [Publication Keyword Search](#publication-keyword-search)
    - [Full-Text Retrieval (PDFs & XMLs)](#full-text-retrieval-pdfs--xmls)
    - [Citation Search](#citation-search)
    - [Journal Impact Factor](#journal-impact-factor)
-   - [Arxiv Local Dump](#arxiv-local-dump)
 3. [Plotting](#plotting)
    - [Barplots](#barplots)
    - [Venn Diagrams](#venn-diagrams)
@@ -58,6 +58,21 @@ medrxiv(start_date="2023-04-01", end_date="2023-04-08")
 ```
 But watch out. The resulting `.jsonl` file will be labelled according to the current date and all your subsequent searches will be based on this file **only**. If you use this option you might want to keep an eye on the source files (`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata for all papers you're interested in.
 
+#### Arxiv local dump
+If you prefer local search rather than using the arxiv API:
+
+```py
+from paperscraper.get_dumps import arxiv
+arxiv(start_date='2024-01-01', end_date=None) # scrapes all metadata from 2024 until today.
+```
+
+Afterwards you can search the local arxiv dump just like the other x-rxiv dumps.
+The direct endpoint is `paperscraper.arxiv.get_arxiv_papers_local`. You can also specify the
+backend directly in the `get_and_dump_arxiv_papers` function:
+```py
+from paperscraper.arxiv import get_and_dump_arxiv_papers
+get_and_dump_arxiv_papers(..., backend='local')
+```
 
 ## Examples
 
@@ -243,28 +258,13 @@ i.search("quantum information", threshold=90, return_all=True)
 # ]
 ```
 
-## Arxiv local dump
-If you prefer local search rather than using the arxiv API:
 
-```py
-from paperscraper.get_dumps import arxiv
-arxiv(start_date='2024-01-01', end_date=None) # scrapes all metadata from 2024 until today.
-```
-
-Afterwards you can search the local arxiv dump just like the other x-rxiv dumps.
-The direct endpoint is `paperscraper.arxiv.get_arxiv_papers_local`. You can also specify the
-backend directly in the `get_and_dump_arxiv_papers` function:
-```py
-from paperscraper.arxiv import get_and_dump_arxiv_papers
-get_and_dump_arxiv_papers(..., backend='local')
-```
-
-### Plotting
+## Plotting
 
 When multiple query searches are performed, two types of plots can be generated
 automatically: Venn diagrams and bar plots.
 
-#### Barplots
+### Barplots
 
 Compare the temporal evolution of different queries across different servers.
 
@@ -322,7 +322,7 @@ plot_comparison(
 ![molreps](https://github.com/jannisborn/paperscraper/blob/main/assets/molreps.png?raw=true "MolReps")
 
 
-#### Venn Diagrams
+### Venn Diagrams
 
 ```py
 from paperscraper.plotting import (
