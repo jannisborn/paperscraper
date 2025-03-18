@@ -9,7 +9,7 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [![codecov](https://codecov.io/github/jannisborn/paperscraper/branch/main/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
 # paperscraper
 
-`paperscraper` is a `python` package for scraping publication metadata or full PDF files from
+`paperscraper` is a `python` package for scraping publication metadata or full text files (PDF or XML) from
 **PubMed** or preprint servers such as **arXiv**, **medRxiv**, **bioRxiv** and **chemRxiv**.
 It provides a streamlined interface to scrape metadata, allows to retrieve citation counts
 from Google Scholar, impact factors from journals and comes with simple postprocessing functions
@@ -112,9 +112,13 @@ topic = 'Machine Learning'
 get_and_dump_scholar_papers(topic)
 ```
 
-### Scrape PDFs
+### Full-Text Retrieval (PDFs & XMLs)
 
-`paperscraper` also allows you to download the PDF files.
+`paperscraper` allows you to download full text of publications using DOIs. The basic functionality works reliably for preprint servers (arXiv, bioRxiv, medRxiv, chemRxiv), but retrieving papers from PubMed dumps is more challenging due to publisher restrictions and paywalls.
+
+#### Standard Usage
+
+The main download functions work for all paper types with automatic fallbacks:
 
 ```py
 from paperscraper.pdf import save_pdf
@@ -122,17 +126,57 @@ paper_data = {'doi': "10.48550/arXiv.2207.03928"}
 save_pdf(paper_data, filepath='gt4sd_paper.pdf')
 ```
 
-If you want to batch download all PDFs for your previous metadata search, use the wrapper.
-Here we scrape the PDFs for the metadata obtained in the previous example.
+To batch download full texts from your metadata search results:
 
 ```py
 from paperscraper.pdf import save_pdf_from_dump
 
-# Save PDFs in current folder and name the files by their DOI
+# Save PDFs/XMLs in current folder and name the files by their DOI
 save_pdf_from_dump('medrxiv_covid_ai_imaging.jsonl', pdf_path='.', key_to_save='doi')
 ```
-*NOTE*: This works robustly for preprint servers, but if you use it on a PubMed dump, dont expect to obtain all PDFs. 
-Many publishers detect and block scraping and many publications are simply behind paywalls.
+
+#### Automatic Fallback Mechanisms
+
+When the standard text retrieval fails, `paperscraper` automatically tries these fallbacks:
+
+- **BioC-PMC**: For biomedical papers in [PubMed Central](https://pmc.ncbi.nlm.nih.gov/) (open-access repository), it retrieves open-access full-text XML from the [BioC-PMC API](https://www.ncbi.nlm.nih.gov/research/bionlp/APIs/BioC-PMC/).
+- **eLife Papers**: For [eLife](https://elifesciences.org/) journal papers, it fetches XML files from eLife's open [GitHub repository](https://github.com/elifesciences/elife-article-xml).
+
+These fallbacks are tried automatically without requiring any additional configuration.
+
+#### Enhanced Retrieval with Publisher APIs
+
+For more comprehensive access to papers from major publishers, you can provide API keys for:
+
+- **Wiley TDM API**: Enables access to [Wiley](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining) publications (2,000+ journals).
+- **Elsevier TDM API**: Enables access to [Elsevier](https://www.elsevier.com/about/policies-and-standards/text-and-data-mining) publications (The Lancet, Cell, ...).
+
+To use publisher APIs:
+
+1. Create a file with your API keys:
+```
+WILEY_TDM_API_TOKEN=your_wiley_token_here
+ELSEVIER_TDM_API_KEY=your_elsevier_key_here
+```
+
+2. Pass the file path when calling retrieval functions:
+
+```py
+from paperscraper.pdf import save_pdf_from_dump
+
+save_pdf_from_dump(
+    'pubmed_query_results.jsonl',
+    pdf_path='./papers',
+    key_to_save='doi',
+    api_keys='path/to/your/api_keys.txt'
+)
+```
+
+For obtaining API keys:
+- Wiley TDM API: Visit [Wiley Text and Data Mining](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining) (free for academic users with institutional subscription)
+- Elsevier TDM API: Visit [Elsevier's Text and Data Mining](https://www.elsevier.com/about/policies-and-standards/text-and-data-mining) (free for academic users with institutional subscription)
+
+*NOTE*: While these fallback mechanisms improve retrieval success rates, they cannot guarantee access to all papers due to various access restrictions.
 
 
 ### Citation search
