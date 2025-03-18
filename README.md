@@ -15,6 +15,21 @@ It provides a streamlined interface to scrape metadata, allows to retrieve citat
 from Google Scholar, impact factors from journals and comes with simple postprocessing functions
 and plotting routines for meta-analysis.
 
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+   - [Download X-rxiv Dumps](#download-x-rxiv-dumps)
+2. [Examples](#examples)
+   - [Publication Keyword Search](#publication-keyword-search)
+   - [Full-Text Retrieval (PDFs & XMLs)](#full-text-retrieval-pdfs--xmls)
+   - [Citation Search](#citation-search)
+   - [Journal Impact Factor](#journal-impact-factor)
+   - [Arxiv Local Dump](#arxiv-local-dump)
+3. [Plotting](#plotting)
+   - [Barplots](#barplots)
+   - [Venn Diagrams](#venn-diagrams)
+4. [Citation](#citation)
+5. [Contributions](#contributions)
 
 ## Getting started
 
