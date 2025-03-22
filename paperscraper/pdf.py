@@ -29,7 +29,7 @@ DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
 
 
 def save_pdf(
-    paper_metadata: Dict[str, Any], filepath: str, save_metadata: bool = False, api_keys: Any = None
+    paper_metadata: Dict[str, Any], filepath: str, save_metadata: bool = False, api_keys: Optional[Union[str, Dict[str, str]]] = None
 ) -> None:
     """
     Save a PDF file of a paper.
@@ -62,7 +62,7 @@ def save_pdf(
         response = requests.get(url, timeout=60)
         response.raise_for_status()
     except Exception as e:
-        logger.error(f"Error downloading from DOI URL {url}: {e}")
+        logger.warning(f"Could not download from: {url} - {e}")
         # always first try fallback to BioC-PMC (open access papers on PubMed Central)
         logger.info("Attempting download via BioC-PMC fallback.")
         success = fallback_bioc_pmc(paper_metadata["doi"], output_path, logger)
@@ -151,7 +151,7 @@ def save_pdf(
 
 
 def save_pdf_from_dump(
-    dump_path: str, pdf_path: str, key_to_save: str = "doi", save_metadata: bool = False, api_keys: str = None
+    dump_path: str, pdf_path: str, key_to_save: str = "doi", save_metadata: bool = False, api_keys: Optional[str] = None
 ) -> None:
     """
     Receives a path to a `.jsonl` dump with paper metadata and saves the PDF files of
@@ -207,7 +207,7 @@ def save_pdf_from_dump(
             api_keys=api_keys_dict
         )
 
-def load_api_keys(filepath):
+def load_api_keys(filepath:str) -> Dict[str, str]:
     """
     Reads API keys from a file and returns them as a dictionary.
     The file should have each API key on a separate line in the format:
@@ -231,7 +231,7 @@ def load_api_keys(filepath):
                     key, value = line.strip().split("=", 1)
                     api_keys[key] = value
     except Exception as e:
-        print(f"Error reading API keys file: {e}")
+        logger.error(f"Error reading API keys file: {e}")
     return api_keys
 
 def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, logger: logging.Logger, api_keys: Dict[str, str]):
