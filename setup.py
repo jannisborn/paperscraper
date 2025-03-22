@@ -41,7 +41,8 @@ setup(
         "thefuzz",
         "pytest",
         "tldextract",
-        "semanticscholar"
+        "semanticscholar",
+        "pydantic",
     ],
     keywords=[
         "Academics",
