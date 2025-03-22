@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 from scholarly import scholarly
 
+from ..citations.citations import get_citations_from_title  # noqa
 from ..utils import dump_papers
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -83,31 +84,3 @@ def get_and_dump_scholar_papers(
     """
     papers = get_scholar_papers(title, fields)
     dump_papers(papers, output_filepath)
-
-
-def get_citations_from_title(title: str) -> int:
-    """
-    Args:
-        title (str): Title of paper to be searched on Scholar.
-
-    Raises:
-        TypeError: If sth else than str is passed.
-
-    Returns:
-        int: Number of citations of paper.
-    """
-
-    if not isinstance(title, str):
-        raise TypeError(f"Pass str not {type(title)}")
-
-    # Search for exact match
-    title = '"' + title.strip() + '"'
-
-    matches = scholarly.search_pubs(title)
-    counts = list(map(lambda p: int(p["num_citations"]), matches))
-    if len(counts) == 0:
-        logger.warning(f"Found no match for {title}.")
-        return 0
-    if len(counts) > 1:
-        logger.warning(f"Found {len(counts)} matches for {title}.")
-    return counts[0]
