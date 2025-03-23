@@ -9,10 +9,9 @@ mi = ["Medical imaging"]
 
 
 class TestXRXiv:
-
     def test_get_medrxiv(self):
         medrxiv(
-            begin_date="2020-05-01",
+            start_date="2020-05-01",
             end_date="2020-05-10",
             save_path="medrix_tmp_dump.jsonl",
         )

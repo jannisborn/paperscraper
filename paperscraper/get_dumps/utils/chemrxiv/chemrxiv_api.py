@@ -2,10 +2,12 @@ import logging
 import os
 import sys
 from datetime import datetime
+from time import time
 from typing import Dict, Optional
 from urllib.parse import urljoin
 
 import requests
+from requests.exceptions import ChunkedEncodingError
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,38 +25,41 @@ class ChemrxivAPI:
 
     def __init__(
         self,
-        begin_date: Optional[str] = None,
+        start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         page_size: Optional[int] = None,
+        max_retries: int = 10,
     ):
         """
         Initialize API class.
 
         Args:
-            begin_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
+            start_date (Optional[str], optional): begin date expressed as YYYY-MM-DD.
                 Defaults to None.
             end_date (Optional[str], optional): end date expressed as YYYY-MM-DD.
                 Defaults to None.
             page_size (int, optional): The batch size used to fetch the records from chemrxiv.
+            max_retries (int): Number of retries in case of error
         """
 
         self.page_size = page_size or 50
+        self.max_retries = max_retries
 
         # Begin Date and End Date of the search
         launch_date = launch_dates["chemrxiv"]
         launch_datetime = datetime.fromisoformat(launch_date)
 
-        if begin_date:
-            begin_datetime = datetime.fromisoformat(begin_date)
-            if begin_datetime < launch_datetime:
-                self.begin_date = launch_date
+        if start_date:
+            start_datetime = datetime.fromisoformat(start_date)
+            if start_datetime < launch_datetime:
+                self.start_date = launch_date
                 logger.warning(
-                    f"Begin date {begin_date} is before chemrxiv launch date. Will use {launch_date} instead."
+                    f"Begin date {start_date} is before chemrxiv launch date. Will use {launch_date} instead."
                 )
             else:
-                self.begin_date = begin_date
+                self.start_date = start_date
         else:
-            self.begin_date = launch_date
+            self.start_date = launch_date
         if end_date:
             end_datetime = datetime.fromisoformat(end_date)
             if end_datetime > now_datetime:
@@ -70,12 +75,19 @@ class ChemrxivAPI:
     def request(self, url, method, params=None):
         """Send an API request to open Engage."""
 
-        if method.casefold() == "get":
-            return requests.get(url, params=params, timeout=10)
-        elif method.casefold() == "post":
-            return requests.post(url, json=params, timeout=10)
-        else:
-            raise ConnectionError(f"Unknown method for query: {method}")
+        for attempt in range(self.max_retries):
+            try:
+                if method.casefold() == "get":
+                    return requests.get(url, params=params, timeout=10)
+                elif method.casefold() == "post":
+                    return requests.post(url, json=params, timeout=10)
+                else:
+                    raise ConnectionError(f"Unknown method for query: {method}")
+            except ChunkedEncodingError as e:
+                logger.warning(f"ChunkedEncodingError occurred for {url}: {e}")
+                if attempt + 1 == self.max_retries:
+                    raise e
+                time.sleep(3)
 
     def query(self, query, method="get", params=None):
         """Perform a direct query."""
@@ -93,7 +105,7 @@ class ChemrxivAPI:
                 {
                     "limit": self.page_size,
                     "skip": page * self.page_size,
-                    "searchDateFrom": self.begin_date,
+                    "searchDateFrom": self.start_date,
                     "searchDateTo": self.end_date,
                 }
             )

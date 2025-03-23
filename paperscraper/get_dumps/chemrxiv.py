@@ -19,17 +19,17 @@ save_path = os.path.join(save_folder, f"chemrxiv_{today}.jsonl")
 
 
 def chemrxiv(
-    begin_date: Optional[str] = None,
+    start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     save_path: str = save_path,
 ) -> None:
-    """Fetches papers from bichemrxiv based on time range, i.e., begin_date and end_date.
-    If the begin_date and end_date are not provided, papers will be fetched from chemrxiv
+    """Fetches papers from bichemrxiv based on time range, i.e., start_date and end_date.
+    If the start_date and end_date are not provided, papers will be fetched from chemrxiv
     from the launch date of chemrxiv until the current date. The fetched papers will be
     stored in jsonl format in save_path.
 
     Args:
-        begin_date (str, optional): begin date expressed as YYYY-MM-DD.
+        start_date (str, optional): begin date expressed as YYYY-MM-DD.
             Defaults to None, i.e., earliest possible.
         end_date (str, optional): end date expressed as YYYY-MM-DD.
             Defaults to None, i.e., today.
@@ -38,7 +38,7 @@ def chemrxiv(
     """
 
     # create API client
-    api = ChemrxivAPI(begin_date, end_date)
+    api = ChemrxivAPI(start_date, end_date)
     # Download the data
     download_full(save_folder, api)
     # Convert to JSONL format.

@@ -68,16 +68,16 @@ class XRXivApi:
         self.launch_datetime = datetime.fromisoformat(self.launch_date)
         self.get_papers_url = (
             "{}/details/{}".format(self.api_base_url, self.server)
-            + "/{begin_date}/{end_date}/{cursor}"
+            + "/{start_date}/{end_date}/{cursor}"
         )
         self.max_retries = max_retries
 
     @retry_multi()
-    def call_api(self, begin_date, end_date, cursor):
+    def call_api(self, start_date, end_date, cursor):
         try:
             json_response = requests.get(
                 self.get_papers_url.format(
-                    begin_date=begin_date, end_date=end_date, cursor=cursor
+                    start_date=start_date, end_date=end_date, cursor=cursor
                 ),
                 timeout=10,
             ).json()
@@ -89,7 +89,7 @@ class XRXivApi:
 
     def get_papers(
         self,
-        begin_date: Optional[str] = None,
+        start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         fields: List[str] = ["title", "doi", "authors", "abstract", "date", "journal"],
         max_retries: int = 10,
@@ -98,7 +98,7 @@ class XRXivApi:
         Get paper metadata.
 
         Args:
-            begin_date (Optional[str]): begin date. Defaults to None, a.k.a. launch date.
+            start_date (Optional[str]): begin date. Defaults to None, a.k.a. launch date.
             end_date (Optional[str]): end date. Defaults to None, a.k.a. today.
             fields (List[str], optional): fields to return per paper.
                 Defaults to ['title', 'doi', 'authors', 'abstract', 'date', 'journal'].
@@ -109,12 +109,12 @@ class XRXivApi:
         """
         try:
             now_datetime = datetime.now()
-            if begin_date:
-                begin_datetime = datetime.fromisoformat(begin_date)
-                if begin_datetime < self.launch_datetime:
-                    begin_date = self.launch_date
+            if start_date:
+                start_datetime = datetime.fromisoformat(start_date)
+                if start_datetime < self.launch_datetime:
+                    start_date = self.launch_date
             else:
-                begin_date = self.launch_date
+                start_date = self.launch_date
             if end_date:
                 end_datetime = datetime.fromisoformat(end_date)
                 if end_datetime > now_datetime:
@@ -127,7 +127,7 @@ class XRXivApi:
                 papers = []
                 for attempt in range(max_retries):
                     try:
-                        json_response = self.call_api(begin_date, end_date, cursor)
+                        json_response = self.call_api(start_date, end_date, cursor)
                         do_loop = json_response["messages"][0]["status"] == "ok"
                         if do_loop:
                             cursor += json_response["messages"][0]["count"]
