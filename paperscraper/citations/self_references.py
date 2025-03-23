@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import sys
-from typing import Dict, Iterable, Literal, Optional, Union
+from typing import Dict, Iterable, Literal, Union
 
 import httpx
 import numpy as np
@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from semanticscholar import SemanticScholar
 
 from ..utils import optional_async
-from .utils import DOI_PATTERN, check_overlap
+from .utils import DOI_PATTERN, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -152,11 +152,9 @@ async def self_references_paper(input: str, verbose: bool = False) -> ReferenceR
         return authors
 
     for ref in paper["references"]:
-        ref_authors = {a["name"] for a in ref["authors"]}
-        for author in authors:
-            # TODO: Make sure to expand names given as J. Doe to John Doe
-            if any(check_overlap(author, ra) for ra in ref_authors):
-                authors[author] += 1
+        # For every reference, find matching names and increase
+        for author in find_matching(paper["authors"], ref["authors"]):
+            authors[author] += 1
     total = len(paper["references"])
 
     if verbose:

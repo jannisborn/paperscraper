@@ -149,6 +149,34 @@ async def get_papers_for_author(author_id: str) -> List[str]:
     return papers
 
 
+def find_matching(
+    first: List[Dict[str, str]], second: List[Dict[str, str]]
+) -> List[str]:
+    """
+    Ingests two sets of authors and returns a list of those that match (either based on name
+        or on author ID).
+
+    Args:
+        first: First set of authors given as list of dict with two keys (`authorID` and `name`).
+        second: Second set of authors given as list of dict with two same keys.
+
+    Returns:
+        List of names of authors in first list where a match was found.
+    """
+    # Check which author IDs overlap
+    second_names = set(map(lambda x: x["authorId"], second))
+    overlap_ids = {f["name"] for f in first if f["authorId"] in second_names}
+
+    overlap_names = {
+        f["name"]
+        for f in first
+        if f["authorId"] not in overlap_ids
+        and any([check_overlap(f["name"], s["name"]) for s in second])
+    }
+
+    return list(overlap_ids | overlap_names)
+
+
 def check_overlap(n1: str, n2: str) -> bool:
     """
     Check whether two author names are identical.

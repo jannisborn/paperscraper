@@ -2,18 +2,19 @@ import asyncio
 import logging
 import re
 import sys
-from typing import Dict, Iterable, Literal, Optional, Union
+from typing import Dict
 
 import httpx
 import numpy as np
 from pydantic import BaseModel
 
 from ..utils import optional_async
-from .utils import DOI_PATTERN, check_overlap
+from .utils import DOI_PATTERN, check_overlap, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
+
 
 class CitationResult(BaseModel):
     id: str  # semantic scholar paper id
@@ -58,17 +59,17 @@ async def self_citations_paper(input: str, verbose: bool = False) -> CitationRes
         return authors
 
     for citation in paper["citations"]:
-        citation_authors = {a["name"] for a in citation["authors"]}
-        for author in authors:
-            if any(check_overlap(author, ca) for ca in citation_authors):
-                authors[author] += 1
+        # For every reference, find matching names and increase
+        for author in find_matching(paper["authors"], citation["authors"]):
+            authors[author] += 1
+
     total = len(paper["citations"])
 
     if verbose:
-        logger.info(f"Self-citations in \"{paper['title']}\"")
+        logger.info(f'Self-citations in "{paper["title"]}"')
         logger.info(f" N = {len(paper['citations'])}")
         for author, self_cites in authors.items():
-            logger.info(f" {author}: {100*(self_cites/total):.2f}% self-citations")
+            logger.info(f" {author}: {100 * (self_cites / total):.2f}% self-citations")
 
     for author, self_cites in authors.items():
         ratios[author] = round(100 * self_cites / total, 2)
@@ -76,7 +77,7 @@ async def self_citations_paper(input: str, verbose: bool = False) -> CitationRes
     result = CitationResult(
         id=input,
         num_citations=total,
-        self_citations=ratios, 
+        self_citations=ratios,
         citation_score=round(np.mean(list(ratios.values())), 3),
     )
 
