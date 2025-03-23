@@ -7,12 +7,8 @@ from typing import Dict, Iterable, Union
 import httpx
 
 from ..utils import optional_async
-<<<<<<< Updated upstream
-from .utils import check_overlap, doi_pattern
-=======
 from .entity import Paper, Researcher
 from .utils import check_overlap
->>>>>>> Stashed changes
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,7 +66,6 @@ async def self_references(
     return results
 
 
-<<<<<<< Updated upstream
 @optional_async
 async def self_references_paper(
     doi: str,
@@ -99,24 +94,6 @@ async def self_references_paper(
         )
         response.raise_for_status()
         paper = response.json()
-=======
-class SelfLinkClient:
-    def __init__(self, entity: str, mode: ModeType = "paper") -> None:
-        if mode.lower() == "paper":
-            self.object = Paper(entity)
-        elif mode.lower() == "author":
-            self.object = Researcher(entity)
-        else:
-            raise ValueError(f"Unknown mode {mode}, chose from {'paper', 'author'}.")
-
-        self.mode = mode
-
-    def extract_self_citations(self):
-        return self.object.self_citations()
-
-    def extract_self_references(self):
-        return self.object.self_references()
->>>>>>> Stashed changes
 
     if not paper["references"]:
         raise ValueError("Could not find citations from Semantic Scholar")
@@ -131,10 +108,10 @@ class SelfLinkClient:
     total = len(paper["references"])
 
     if verbose:
-        logger.info(f"Self references in \"{paper['title']}\"")
+        logger.info(f'Self references in "{paper["title"]}"')
         logger.info(f" N = {len(paper['references'])}")
         for author, self_cites in authors.items():
-            logger.info(f" {author}: {100*(self_cites/total):.2f}% self-references")
+            logger.info(f" {author}: {100 * (self_cites / total):.2f}% self-references")
 
     if relative:
         for author, self_cites in authors.items():
