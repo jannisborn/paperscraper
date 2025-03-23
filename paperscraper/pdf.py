@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Union
 import re
 
 import requests
@@ -65,17 +65,17 @@ def save_pdf(
         logger.warning(f"Could not download from: {url} - {e}")
         # always first try fallback to BioC-PMC (open access papers on PubMed Central)
         logger.info("Attempting download via BioC-PMC fallback.")
-        success = fallback_bioc_pmc(paper_metadata["doi"], output_path, logger)
+        success = fallback_bioc_pmc(paper_metadata["doi"], output_path)
         
         # if BioC-PMC fails, try other fallbacks
         if not success:
             # check for specific publishers
             if "elife" in str(e).lower(): # elife has an open XML repository on GitHub
                 logger.info("Detected download error of an eLife journal XML, attempting alternative eLife XML repository approach.")
-                fallback_elife_xml(paper_metadata["doi"], output_path, logger)
+                fallback_elife_xml(paper_metadata["doi"], output_path)
             elif ("wiley" in str(e).lower()) and api_keys and ("WILEY_TDM_API_TOKEN" in api_keys):
                 logger.info("Detected download error of a Wiley journal PDF, attempting alternative Wiley TDM API approach.")
-                fallback_wiley_api(paper_metadata, output_path, logger, api_keys)
+                fallback_wiley_api(paper_metadata, output_path, api_keys)
         return
 
     soup = BeautifulSoup(response.text, features="lxml")
@@ -98,11 +98,11 @@ def save_pdf(
     else:  # if no citation_pdf_url meta tag found, try other fallbacks
         if "elife" in paper_metadata["doi"].lower():
             logger.info(f"DOI contains eLife, attempting fallback to eLife XML repository on GitHub.")
-            if not fallback_elife_xml(paper_metadata["doi"], output_path, logger):
+            if not fallback_elife_xml(paper_metadata["doi"], output_path):
                 logger.warning(f"eLife XML fallback failed for {paper_metadata['doi']}.")
         elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
             logger.warning(f"No citation_pdf_url meta tag found for {url}, checking for download via Elsevier API.")
-            fallback_elsevier_api(paper_metadata, output_path, logger, api_keys)
+            fallback_elsevier_api(paper_metadata, output_path, api_keys)
         else:
             logger.warning(f"No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available. Retrieval failed.")
 
@@ -207,7 +207,7 @@ def save_pdf_from_dump(
             api_keys=api_keys_dict
         )
 
-def load_api_keys(filepath:str) -> Dict[str, str]:
+def load_api_keys(filepath: str) -> Dict[str, str]:
     """
     Reads API keys from a file and returns them as a dictionary.
     The file should have each API key on a separate line in the format:
@@ -234,7 +234,7 @@ def load_api_keys(filepath:str) -> Dict[str, str]:
         logger.error(f"Error reading API keys file: {e}")
     return api_keys
 
-def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, logger: logging.Logger, api_keys: Dict[str, str]):
+def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, api_keys: Dict[str, str], max_attempts: int = 2):
     """
     Attempt to download the PDF via the Wiley TDM API (popular publisher which blocks standard scraping attempts; API access free for academic users).
 
@@ -245,8 +245,8 @@ def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, logger
     Args:
         paper_metadata (dict): Dictionary containing paper metadata. Must include the 'doi' key.
         output_path (Path): A pathlib.Path object representing the path where the PDF will be saved.
-        logger (logging.Logger): Logger instance used for logging information and errors.
         api_keys (dict): Preloaded API keys.
+        max_attempts (int): The maximum number of attempts to retry API call.
     """
 
     WILEY_TDM_API_TOKEN = api_keys.get("WILEY_TDM_API_TOKEN")
@@ -254,7 +254,6 @@ def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, logger
     api_url = f"https://api.wiley.com/onlinelibrary/tdm/v1/articles/{encoded_doi}"
     headers = {"Wiley-TDM-Client-Token": WILEY_TDM_API_TOKEN}
 
-    max_attempts = 2
     attempt = 0
 
     while attempt < max_attempts:
@@ -281,7 +280,7 @@ def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, logger
     time.sleep(10)
 
 
-def fallback_bioc_pmc(doi, output_path, logger):
+def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
     """
     Attempt to download the XML via the BioC-PMC fallback.
 
@@ -295,7 +294,6 @@ def fallback_bioc_pmc(doi, output_path, logger):
     Args:
         doi (str): The DOI of the paper to retrieve.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
-        logger (logging.Logger): Logger instance used for logging information and errors.
 
     Returns:
         bool: True if the XML file was successfully downloaded, False otherwise.
@@ -345,7 +343,7 @@ def fallback_bioc_pmc(doi, output_path, logger):
         return False
 
 
-def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, logger: logging.Logger, api_keys: Dict[str, str]) -> None:
+def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, api_keys: Dict[str, str]) -> None:
     """
     Attempt to download the full text via the Elsevier TDM API.
     For more information, see:
@@ -355,7 +353,6 @@ def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, log
     Args:
         paper_metadata (Dict[str, Any]): Dictionary containing paper metadata. Must include the 'doi' key.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
-        logger (logging.Logger): Logger instance used for logging information and errors.
         api_keys (Dict[str, str]): A dictionary containing API keys. Must include the key "ELSEVIER_TDM_API_KEY".
     """
     elsevier_api_key = api_keys.get("ELSEVIER_TDM_API_KEY")
@@ -382,7 +379,7 @@ def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, log
     except Exception as e:
         logger.error(f"Could not download via Elsevier XML API: {e}")
 
-def fallback_elife_xml(doi: str, output_path: Path, logger) -> bool:
+def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     """
     Attempt to download the XML via the eLife XML repository on GitHub.
     
@@ -392,7 +389,6 @@ def fallback_elife_xml(doi: str, output_path: Path, logger) -> bool:
     Args:
         doi (str): The DOI of the eLife paper to download.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
-        logger (logging.Logger): Logger instance used for logging information and errors.
 
     Returns:
         bool: True if the XML file was successfully downloaded, False otherwise.
@@ -403,7 +399,7 @@ def fallback_elife_xml(doi: str, output_path: Path, logger) -> bool:
         return False
     article_num = parts[1].strip()
 
-    index = get_elife_xml_index(logger)
+    index = get_elife_xml_index()
     if article_num not in index:
         logger.warning(f"No eLife XML found for DOI {doi}.")
         return False
@@ -424,7 +420,7 @@ def fallback_elife_xml(doi: str, output_path: Path, logger) -> bool:
     return True
     
 ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
-def get_elife_xml_index(logger) -> dict:
+def get_elife_xml_index() -> dict:
     """
     Fetch the eLife XML index from GitHub and return it as a dictionary.
     
@@ -432,9 +428,6 @@ def get_elife_xml_index(logger) -> dict:
     from the eLife GitHub repository. It ensures that the latest version of each article 
     is accessible for downloading. The index is cached in memory to avoid repeated 
     network requests when processing multiple eLife papers.
-
-    Args:
-        logger (logging.Logger): Logger instance used for logging information and errors.
 
     Returns:
         dict: A dictionary where keys are article numbers (as strings) and values are 
