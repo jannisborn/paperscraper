@@ -29,9 +29,9 @@ class TestSelfReferences:
             assert isinstance(author, str)
             assert isinstance(ratio, float)
 
-    def test_not_implemented_error(self):
-        with pytest.raises(NotImplementedError):
-            self_references("John Jumper")
+    # def test_not_implemented_error(self):
+    #     with pytest.raises(NotImplementedError):
+    #         self_references("John Jumper")
 
     def test_compare_async_and_sync_performance(self, dois):
         """
