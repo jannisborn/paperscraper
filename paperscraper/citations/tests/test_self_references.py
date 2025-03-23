@@ -1,10 +1,10 @@
-import asyncio
 import logging
 import time
 
 import pytest
 
-from paperscraper.citations import self_references
+from paperscraper.citations import self_references, self_references_paper
+from paperscraper.citations.self_references import ReferenceResult
 
 logging.disable(logging.INFO)
 
@@ -19,38 +19,15 @@ class TestSelfReferences:
         ]
 
     def test_single_doi(self, dois):
-        for relative in [True, False]:
-            result = self_references(dois[0], relative=relative)
-            assert isinstance(result, dict)
-            assert len(result) > 0
-            for doi, self_cite_dict in result.items():
-                assert isinstance(doi, str)
-                assert isinstance(self_cite_dict, dict)
-                for author, self_cites in self_cite_dict.items():
-                    assert isinstance(author, str)
-                    if relative:
-                        assert isinstance(self_cites, float)
-                        assert self_cites >= 0 and self_cites <= 100
-                    else:
-                        assert isinstance(self_cites, int)
-                        assert self_cites >= 0
-
-    def test_multiple_dois(self, dois):
-        for relative in [True, False]:
-            result = self_references(dois[1:], relative=relative)
-            assert isinstance(result, dict)
-            assert len(result) == len(dois[1:])
-            for doi, self_cite_dict in result.items():
-                assert isinstance(doi, str)
-                assert isinstance(self_cite_dict, dict)
-                for author, self_cites in self_cite_dict.items():
-                    assert isinstance(author, str)
-                    if relative:
-                        assert isinstance(self_cites, float)
-                        assert self_cites >= 0 and self_cites <= 100
-                    else:
-                        assert isinstance(self_cites, int)
-                        assert self_cites >= 0
+        result = self_references_paper(dois[0])
+        assert isinstance(result, ReferenceResult)
+        assert isinstance(result.num_references, int)
+        assert result.num_references > 0
+        assert isinstance(result.id, str)
+        assert isinstance(result.reference_score, float)
+        for author, ratio in result.self_references.items():
+            assert isinstance(author, str)
+            assert isinstance(ratio, float)
 
     def test_not_implemented_error(self):
         with pytest.raises(NotImplementedError):
