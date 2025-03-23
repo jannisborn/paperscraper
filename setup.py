@@ -42,6 +42,7 @@ setup(
         "pytest",
         "tldextract",
         "semanticscholar",
+        "pydantic",
     ],
     keywords=[
         "Academics",
