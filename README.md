@@ -111,6 +111,7 @@ from paperscraper.scholar import get_and_dump_scholar_papers
 topic = 'Machine Learning'
 get_and_dump_scholar_papers(topic)
 ```
+*NOTE*: The scholar endpoint does not require authentication but since it regularly prompts with captchas, it's difficult to apply large scale.
 
 ### Scrape PDFs
 
@@ -137,16 +138,16 @@ Many publishers detect and block scraping and many publications are simply behin
 
 ### Citation search
 
-A plus of the Scholar endpoint is that the number of citations of a paper can be fetched:
+You can fetch the number of citations of a paper from its title or DOI
 
 ```py
-from paperscraper.scholar import get_citations_from_title
+from paperscraper.citations import get_citations_from_title, get_citations_by_doi
 title = 'Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I.'
-get_citations_from_title(title)
-```
+print(get_citations_from_title(title))
 
-*NOTE*: The scholar endpoint does not require authentication but since it regularly
-prompts with captchas, it's difficult to apply large scale.
+doi = '10.1021/acs.jcim.3c00132'
+get_citations_by_doi(doi)
+```
 
 ### Journal impact factor
 
