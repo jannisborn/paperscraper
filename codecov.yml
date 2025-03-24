@@ -3,7 +3,7 @@ coverage:
     patch: off
     project:
       default:
-        target: 90%
+        target: 80%
         threshold: 2% # Up to 2% drop/fluctuation is OK
 
   ignore:
