@@ -13,3 +13,4 @@ thefuzz>=0.20.0
 pytest
 tldextract
 semanticscholar>=0.8.4
+pydantic
