@@ -381,6 +381,7 @@ If you use `paperscraper`, please cite a paper that motivated our development of
 
 ## Contributions
 Thanks to the following contributors:
+- [@mathinic](https://github.com/mathinic): Since `v0.3.0` improved PubMed full text retrieval with additional fallback mechanisms (BioC-PMC, eLife and optional Wiley/Elsevier APIs).
 - [@memray](https://github.com/memray): Since `v0.2.12` there are automatic retries when downloading the {med/bio/chem}rxiv dumps.
 - [@achouhan93](https://github.com/achouhan93): Since `v0.2.5` {med/bio/chem}rxiv can be scraped for specific dates!
 - [@daenuprobst](https://github.com/daenuprobst): Since  `v0.2.4` PDF files can be scraped directly (`paperscraper.pdf.save_pdf`)
