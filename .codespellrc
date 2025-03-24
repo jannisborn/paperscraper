@@ -3,4 +3,4 @@
 skip = .git*,.codespellrc
 check-hidden = true
 # ignore-regex = 
-ignore-words-list = vor
+ignore-words-list = vor,smll
