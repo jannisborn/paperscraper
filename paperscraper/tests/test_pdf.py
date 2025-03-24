@@ -2,12 +2,18 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from paperscraper.load_dumps import QUERY_FN_DICT
-from paperscraper.pdf import (save_pdf, save_pdf_from_dump, fallback_bioc_pmc,
-                             fallback_elife_xml, fallback_wiley_api, fallback_elsevier_api)
+
+from paperscraper.pdf import (
+    fallback_bioc_pmc,
+    fallback_elife_xml,
+    fallback_elsevier_api,
+    fallback_wiley_api,
+    save_pdf,
+    save_pdf_from_dump,
+)
 
 logging.disable(logging.INFO)
 
@@ -17,7 +23,6 @@ SAVE_PATH = "tmp_pdf_storage"
 
 
 class TestPDF:
-
     @pytest.fixture
     def paper_data(self):
         return {"doi": "10.48550/arXiv.2207.03928"}
@@ -30,7 +35,7 @@ class TestPDF:
         os.remove("gt4sd.pdf")
         os.remove("gt4sd.json")
 
-        # # chemrxiv
+        # chemrxiv
         paper_data = {"doi": "10.26434/chemrxiv-2021-np7xj-v4"}
         save_pdf(paper_data, filepath="kinases.pdf", save_metadata=True)
         assert os.path.exists("kinases.pdf")
@@ -46,7 +51,7 @@ class TestPDF:
         os.remove("taskload.pdf")
         os.remove("taskload.json")
 
-        # # medrxiv
+        # medrxiv
         paper_data = {"doi": "10.1101/2020.09.02.20187096"}
         save_pdf(paper_data, filepath="covid_review.pdf", save_metadata=True)
         assert os.path.exists("covid_review.pdf")
@@ -54,7 +59,7 @@ class TestPDF:
         os.remove("covid_review.pdf")
         os.remove("covid_review.json")
 
-        # # journal with OA paper
+        # ournal with OA paper
         paper_data = {"doi": "10.1038/s42256-023-00639-z"}
         save_pdf(paper_data, filepath="regression_transformer", save_metadata=True)
         assert os.path.exists("regression_transformer.pdf")
@@ -160,16 +165,18 @@ class TestPDF:
         os.makedirs(SAVE_PATH, exist_ok=True)
         save_pdf_from_dump(TEST_FILE_PATH, pdf_path=SAVE_PATH, key_to_save="doi")
         shutil.rmtree(SAVE_PATH)
-        
+
     def test_fallback_bioc_pmc_real_api(self):
         """Test the BioC-PMC fallback with a real API call."""
-        test_doi = "10.1038/s41587-022-01613-7" # Use a DOI known to be in PMC
+        test_doi = "10.1038/s41587-022-01613-7"  # Use a DOI known to be in PMC
         output_path = Path("test_bioc_pmc_output")
         try:
             result = fallback_bioc_pmc(test_doi, output_path)
             assert result == True
             assert (output_path.with_suffix(".xml")).exists()
-            with open(output_path.with_suffix(".xml"), "r") as f: # Check if the file contains XML data
+            with open(
+                output_path.with_suffix(".xml"), "r"
+            ) as f:  # Check if the file contains XML data
                 content = f.read()
                 assert "<" in content and ">" in content  # Basic XML check
                 assert len(content) > 100  # Should have substantial content
@@ -179,7 +186,7 @@ class TestPDF:
 
     def test_fallback_bioc_pmc_no_pmcid(self):
         """Test BioC-PMC fallback when no PMCID is available."""
-        test_doi = "10.1002/smll.202309431" # This DOI should not have a PMCID
+        test_doi = "10.1002/smll.202309431"  # This DOI should not have a PMCID
         output_path = Path("test_bioc_pmc_no_pmcid")
         result = fallback_bioc_pmc(test_doi, output_path)
         assert result == False
@@ -193,7 +200,9 @@ class TestPDF:
             result = fallback_elife_xml(test_doi, output_path)
             assert result == True
             assert (output_path.with_suffix(".xml")).exists()
-            with open(output_path.with_suffix(".xml"), "r") as f: # Check if the file contains XML data
+            with open(
+                output_path.with_suffix(".xml"), "r"
+            ) as f:  # Check if the file contains XML data
                 content = f.read()
                 assert "<" in content and ">" in content  # Basic XML check
                 assert len(content) > 100  # Should have substantial content
@@ -203,15 +212,17 @@ class TestPDF:
 
     def test_fallback_elife_nonexistent_article(self):
         """Test eLife XML fallback with a DOI that looks like eLife but doesn't exist."""
-        test_doi = "10.7554/eLife.00001"  # Article that doesn't exist in eLife repository
+        test_doi = (
+            "10.7554/eLife.00001"  # Article that doesn't exist in eLife repository
+        )
         output_path = Path("test_elife_nonexistent")
         result = fallback_elife_xml(test_doi, output_path)
         # Assertions - should return False and not create a file
         assert result == False
         assert not os.path.exists(output_path.with_suffix(".xml"))
 
-    @patch('requests.get')
-    @patch('time.sleep')
+    @patch("requests.get")
+    @patch("time.sleep")
     def test_fallback_wiley_api(self, mock_sleep, mock_get):
         """Test Wiley API fallback with mocked response."""
         mock_response = MagicMock()
@@ -228,7 +239,7 @@ class TestPDF:
                 "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fsmll.202309431",
                 headers={"Wiley-TDM-Client-Token": "test_token"},
                 allow_redirects=True,
-                timeout=60
+                timeout=60,
             )
             pdf_path = output_path.with_suffix(".pdf")
             assert os.path.exists(pdf_path)
@@ -238,9 +249,9 @@ class TestPDF:
         finally:
             if os.path.exists(output_path.with_suffix(".pdf")):
                 os.remove(output_path.with_suffix(".pdf"))
-    
-    @patch('requests.get')
-    @patch('lxml.etree.fromstring')
+
+    @patch("requests.get")
+    @patch("lxml.etree.fromstring")
     def test_fallback_elsevier_api(self, mock_fromstring, mock_get):
         """Test Elsevier API fallback with mocked response."""
         mock_response = MagicMock()
@@ -256,7 +267,7 @@ class TestPDF:
             mock_get.assert_called_with(
                 "https://api.elsevier.com/content/article/doi/10.1016/j.xops.2024.100504?apiKey=test_key&httpAccept=text%2Fxml",
                 headers={"Accept": "application/xml"},
-                timeout=60
+                timeout=60,
             )
             xml_path = output_path.with_suffix(".xml")
             assert os.path.exists(xml_path)

@@ -3,17 +3,17 @@
 import json
 import logging
 import os
+import re
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-import re
 
 import requests
 import tldextract
 from bs4 import BeautifulSoup
-from tqdm import tqdm
-import time
 from lxml import etree
+from tqdm import tqdm
 
 from .utils import load_jsonl
 
@@ -29,7 +29,10 @@ DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
 
 
 def save_pdf(
-    paper_metadata: Dict[str, Any], filepath: str, save_metadata: bool = False, api_keys: Optional[Union[str, Dict[str, str]]] = None
+    paper_metadata: Dict[str, Any],
+    filepath: str,
+    save_metadata: bool = False,
+    api_keys: Optional[Union[str, Dict[str, str]]] = None,
 ) -> None:
     """
     Save a PDF file of a paper.
@@ -54,7 +57,8 @@ def save_pdf(
     if not Path(output_path).parent.exists():
         raise ValueError(f"The folder: {output_path} seems to not exist.")
 
-    if isinstance(api_keys, str):  # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
+    # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
+    if isinstance(api_keys, str):
         api_keys = load_api_keys(api_keys)
 
     url = f"https://doi.org/{paper_metadata['doi']}"
@@ -62,19 +66,25 @@ def save_pdf(
         response = requests.get(url, timeout=60)
         response.raise_for_status()
     except Exception as e:
-        logger.warning(f"Could not download from: {url} - {e}")
+        logger.warning(
+            f"Could not download from: {url} - {e}. Attempting download via BioC-PMC fallback"
+        )
         # always first try fallback to BioC-PMC (open access papers on PubMed Central)
-        logger.info("Attempting download via BioC-PMC fallback.")
         success = fallback_bioc_pmc(paper_metadata["doi"], output_path)
-        
+
         # if BioC-PMC fails, try other fallbacks
         if not success:
             # check for specific publishers
-            if "elife" in str(e).lower(): # elife has an open XML repository on GitHub
-                logger.info("Detected download error of an eLife journal XML, attempting alternative eLife XML repository approach.")
-                fallback_elife_xml(paper_metadata["doi"], output_path)
-            elif ("wiley" in str(e).lower()) and api_keys and ("WILEY_TDM_API_TOKEN" in api_keys):
-                logger.info("Detected download error of a Wiley journal PDF, attempting alternative Wiley TDM API approach.")
+            if "elife" in str(e).lower():  # elife has an open XML repository on GitHub
+                if fallback_elife_xml(paper_metadata["doi"], output_path):
+                    logger.info(
+                        f"Successfully downloaded XML of paper via eLife fallback."
+                    )
+            elif (
+                ("wiley" in str(e).lower())
+                and api_keys
+                and ("WILEY_TDM_API_TOKEN" in api_keys)
+            ):
                 fallback_wiley_api(paper_metadata, output_path, api_keys)
         return
 
@@ -97,14 +107,21 @@ def save_pdf(
             logger.warning(f"Could not download {pdf_url}: {e}")
     else:  # if no citation_pdf_url meta tag found, try other fallbacks
         if "elife" in paper_metadata["doi"].lower():
-            logger.info(f"DOI contains eLife, attempting fallback to eLife XML repository on GitHub.")
+            logger.info(
+                f"DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
+            )
             if not fallback_elife_xml(paper_metadata["doi"], output_path):
-                logger.warning(f"eLife XML fallback failed for {paper_metadata['doi']}.")
-        elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
-            logger.warning(f"No citation_pdf_url meta tag found for {url}, checking for download via Elsevier API.")
+                logger.warning(
+                    f"eLife XML fallback failed for {paper_metadata['doi']}."
+                )
+        elif (
+            api_keys and "ELSEVIER_TDM_API_KEY" in api_keys
+        ):  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
             fallback_elsevier_api(paper_metadata, output_path, api_keys)
         else:
-            logger.warning(f"No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available. Retrieval failed.")
+            logger.warning(
+                f"Retrieval failed. No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available."
+            )
 
     if not save_metadata:
         return
@@ -151,7 +168,11 @@ def save_pdf(
 
 
 def save_pdf_from_dump(
-    dump_path: str, pdf_path: str, key_to_save: str = "doi", save_metadata: bool = False, api_keys: Optional[str] = None
+    dump_path: str,
+    pdf_path: str,
+    key_to_save: str = "doi",
+    save_metadata: bool = False,
+    api_keys: Optional[str] = None,
 ) -> None:
     """
     Receives a path to a `.jsonl` dump with paper metadata and saves the PDF files of
@@ -185,7 +206,7 @@ def save_pdf_from_dump(
 
     pbar = tqdm(papers, total=len(papers), desc="Processing")
     for i, paper in enumerate(pbar):
-        pbar.set_description(f"Processing paper {i+1}/{len(papers)}")
+        pbar.set_description(f"Processing paper {i + 1}/{len(papers)}")
 
         if "doi" not in paper.keys() or paper["doi"] is None:
             logger.warning(f"Skipping {paper['title']} since no DOI available.")
@@ -201,11 +222,9 @@ def save_pdf_from_dump(
             continue
         output_path = str(pdf_file)
         save_pdf(
-            paper,
-            output_path,
-            save_metadata=save_metadata,
-            api_keys=api_keys_dict
+            paper, output_path, save_metadata=save_metadata, api_keys=api_keys_dict
         )
+
 
 def load_api_keys(filepath: str) -> Dict[str, str]:
     """
@@ -234,7 +253,13 @@ def load_api_keys(filepath: str) -> Dict[str, str]:
         logger.error(f"Error reading API keys file: {e}")
     return api_keys
 
-def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, api_keys: Dict[str, str], max_attempts: int = 2):
+
+def fallback_wiley_api(
+    paper_metadata: Dict[str, Any],
+    output_path: Path,
+    api_keys: Dict[str, str],
+    max_attempts: int = 2,
+) -> bool:
     """
     Attempt to download the PDF via the Wiley TDM API (popular publisher which blocks standard scraping attempts; API access free for academic users).
 
@@ -247,6 +272,9 @@ def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, api_ke
         output_path (Path): A pathlib.Path object representing the path where the PDF will be saved.
         api_keys (dict): Preloaded API keys.
         max_attempts (int): The maximum number of attempts to retry API call.
+
+    Returns:
+        Whether or not download was successful
     """
 
     WILEY_TDM_API_TOKEN = api_keys.get("WILEY_TDM_API_TOKEN")
@@ -255,29 +283,42 @@ def fallback_wiley_api(paper_metadata: Dict[str, Any], output_path: Path, api_ke
     headers = {"Wiley-TDM-Client-Token": WILEY_TDM_API_TOKEN}
 
     attempt = 0
+    success = False
 
     while attempt < max_attempts:
         try:
-            api_response = requests.get(api_url, headers=headers, allow_redirects=True, timeout=60)
+            api_response = requests.get(
+                api_url, headers=headers, allow_redirects=True, timeout=60
+            )
             api_response.raise_for_status()
             if api_response.content[:4] != b"%PDF":
-                logger.warning(f"API returned content that is not a valid PDF for {paper_metadata['doi']}.")
+                logger.warning(
+                    f"API returned content that is not a valid PDF for {paper_metadata['doi']}."
+                )
             else:
                 with open(output_path.with_suffix(".pdf"), "wb+") as f:
                     f.write(api_response.content)
-                logger.info(f"Successfully downloaded via Wiley API for {paper_metadata['doi']}.")
+                logger.info(
+                    f"Successfully downloaded PDF via Wiley API for {paper_metadata['doi']}."
+                )
+                success = True
                 break
         except Exception as e2:
             if attempt < max_attempts - 1:
                 logger.info("Waiting 20 seconds before retrying...")
                 time.sleep(20)
-            logger.error(f"Could not download via Wiley API (attempt {attempt+1}/{max_attempts}): {e2}")
+            logger.error(
+                f"Could not download via Wiley API (attempt {attempt + 1}/{max_attempts}): {e2}"
+            )
 
         attempt += 1
 
     # **Mandatory delay of 10 seconds to comply with Wiley API rate limits**
-    logger.info("Waiting 10 seconds before next request to comply with Wiley API rate limits...")
+    logger.info(
+        "Waiting 10 seconds before next request to comply with Wiley API rate limits..."
+    )
     time.sleep(10)
+    return success
 
 
 def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
@@ -285,10 +326,10 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
     Attempt to download the XML via the BioC-PMC fallback.
 
     This function first converts a given DOI to a PMCID using the NCBI ID Converter API.
-    If a PMCID is found, it constructs the corresponding PMC XML URL and attempts to 
+    If a PMCID is found, it constructs the corresponding PMC XML URL and attempts to
     download the full-text XML.
 
-    PubMed Central® (PMC) is a free full-text archive of biomedical and life sciences 
+    PubMed Central® (PMC) is a free full-text archive of biomedical and life sciences
     journal literature at the U.S. National Institutes of Health's National Library of Medicine (NIH/NLM).
 
     Args:
@@ -298,8 +339,8 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
     Returns:
         bool: True if the XML file was successfully downloaded, False otherwise.
     """
-    ncbi_tool = 'paperscraper'
-    ncbi_email = 'your_email@example.com'
+    ncbi_tool = "paperscraper"
+    ncbi_email = "your_email@example.com"
 
     converter_url = "https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/"
     params = {
@@ -315,7 +356,9 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
         data = conv_response.json()
         records = data.get("records", [])
         if not records or "pmcid" not in records[0]:
-            logger.warning(f"No PMCID available for DOI {doi}. Fallback via PMC therefore not possible.")
+            logger.warning(
+                f"No PMCID available for DOI {doi}. Fallback via PMC therefore not possible."
+            )
             return False
         pmcid = records[0]["pmcid"]
         logger.info(f"Converted DOI {doi} to PMCID {pmcid}.")
@@ -331,7 +374,9 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
         xml_response.raise_for_status()
         xml_path = output_path.with_suffix(".xml")
         # check for xml error:
-        if xml_response.content.startswith(b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"):
+        if xml_response.content.startswith(
+            b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"
+        ):
             logger.warning(f"No XML found for DOI {doi} at BioC-PMC URL {xml_url}.")
             return False
         with open(xml_path, "wb+") as f:
@@ -343,7 +388,9 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
         return False
 
 
-def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, api_keys: Dict[str, str]) -> None:
+def fallback_elsevier_api(
+    paper_metadata: Dict[str, Any], output_path: Path, api_keys: Dict[str, str]
+) -> bool:
     """
     Attempt to download the full text via the Elsevier TDM API.
     For more information, see:
@@ -354,12 +401,16 @@ def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, api
         paper_metadata (Dict[str, Any]): Dictionary containing paper metadata. Must include the 'doi' key.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
         api_keys (Dict[str, str]): A dictionary containing API keys. Must include the key "ELSEVIER_TDM_API_KEY".
+
+    Returns:
+        Whether the download was successful.
     """
     elsevier_api_key = api_keys.get("ELSEVIER_TDM_API_KEY")
     doi = paper_metadata["doi"]
-    api_url = (f"https://api.elsevier.com/content/article/doi/{doi}?apiKey={elsevier_api_key}&httpAccept=text%2Fxml")
+    api_url = f"https://api.elsevier.com/content/article/doi/{doi}?apiKey={elsevier_api_key}&httpAccept=text%2Fxml"
     logger.info(f"Attempting download via Elsevier API (XML) for {doi}: {api_url}")
     headers = {"Accept": "application/xml"}
+    success = False
     try:
         response = requests.get(api_url, headers=headers, timeout=60)
         response.raise_for_status()
@@ -374,15 +425,20 @@ def fallback_elsevier_api(paper_metadata: Dict[str, Any], output_path: Path, api
         xml_path = output_path.with_suffix(".xml")
         with open(xml_path, "wb") as f:
             f.write(response.content)
-        logger.info(f"Successfully downloaded XML for {doi} to {xml_path}")
+        logger.info(
+            f"Successfully used Elsevier API to downloaded XML for {doi} to {xml_path}"
+        )
+        success = True
 
     except Exception as e:
         logger.error(f"Could not download via Elsevier XML API: {e}")
+    return success
+
 
 def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     """
     Attempt to download the XML via the eLife XML repository on GitHub.
-    
+
     eLife provides open access to their XML files on GitHub, which can be used as a fallback.
     When multiple versions exist (revised papers), it takes the latest version (e.g., v3 instead of v1).
 
@@ -416,21 +472,26 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     xml_path = output_path.with_suffix(".xml")
     with open(xml_path, "wb") as f:
         f.write(latest_xml)
-    logger.info(f"Downloaded eLife XML version {latest_version} for DOI {doi} to {xml_path}.")
+    logger.info(
+        f"Successfully downloaded XML via eLife API ({latest_version}) for DOI {doi} to {xml_path}."
+    )
     return True
-    
+
+
 ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
+
+
 def get_elife_xml_index() -> dict:
     """
     Fetch the eLife XML index from GitHub and return it as a dictionary.
-    
-    This function retrieves and caches the list of available eLife articles in XML format 
-    from the eLife GitHub repository. It ensures that the latest version of each article 
-    is accessible for downloading. The index is cached in memory to avoid repeated 
+
+    This function retrieves and caches the list of available eLife articles in XML format
+    from the eLife GitHub repository. It ensures that the latest version of each article
+    is accessible for downloading. The index is cached in memory to avoid repeated
     network requests when processing multiple eLife papers.
 
     Returns:
-        dict: A dictionary where keys are article numbers (as strings) and values are 
+        dict: A dictionary where keys are article numbers (as strings) and values are
               lists of tuples (version, download_url). Each list is sorted by version number.
     """
     global ELIFE_XML_INDEX
@@ -453,7 +514,9 @@ def get_elife_xml_index() -> dict:
                 version = int(match.group(2))
                 # Construct the raw download URL.
                 download_url = f"https://raw.githubusercontent.com/elifesciences/elife-article-xml/master/{path}"
-                ELIFE_XML_INDEX.setdefault(article_num_padded, []).append((version, download_url))
+                ELIFE_XML_INDEX.setdefault(article_num_padded, []).append(
+                    (version, download_url)
+                )
         # Sort each article's file list by version.
         for key in ELIFE_XML_INDEX:
             ELIFE_XML_INDEX[key].sort(key=lambda x: x[0])
