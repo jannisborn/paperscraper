@@ -76,10 +76,7 @@ def save_pdf(
         if not success:
             # check for specific publishers
             if "elife" in str(e).lower():  # elife has an open XML repository on GitHub
-                if fallback_elife_xml(paper_metadata["doi"], output_path):
-                    logger.info(
-                        f"Successfully downloaded XML of paper via eLife fallback."
-                    )
+                fallback_elife_xml(paper_metadata["doi"], output_path)
             elif (
                 ("wiley" in str(e).lower())
                 and api_keys
