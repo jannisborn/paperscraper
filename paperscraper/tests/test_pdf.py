@@ -6,7 +6,8 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from paperscraper.load_dumps import QUERY_FN_DICT
-from paperscraper.pdf import save_pdf, save_pdf_from_dump
+from paperscraper.pdf import (save_pdf, save_pdf_from_dump, fallback_bioc_pmc,
+                             fallback_elife_xml, fallback_wiley_api, fallback_elsevier_api)
 
 logging.disable(logging.INFO)
 
@@ -159,3 +160,109 @@ class TestPDF:
         os.makedirs(SAVE_PATH, exist_ok=True)
         save_pdf_from_dump(TEST_FILE_PATH, pdf_path=SAVE_PATH, key_to_save="doi")
         shutil.rmtree(SAVE_PATH)
+        
+    def test_fallback_bioc_pmc_real_api(self):
+        """Test the BioC-PMC fallback with a real API call."""
+        test_doi = "10.1038/s41587-022-01613-7" # Use a DOI known to be in PMC
+        output_path = Path("test_bioc_pmc_output")
+        try:
+            result = fallback_bioc_pmc(test_doi, output_path)
+            assert result == True
+            assert (output_path.with_suffix(".xml")).exists()
+            with open(output_path.with_suffix(".xml"), "r") as f: # Check if the file contains XML data
+                content = f.read()
+                assert "<" in content and ">" in content  # Basic XML check
+                assert len(content) > 100  # Should have substantial content
+        finally:
+            if (output_path.with_suffix(".xml")).exists():
+                os.remove(output_path.with_suffix(".xml"))
+
+    def test_fallback_bioc_pmc_no_pmcid(self):
+        """Test BioC-PMC fallback when no PMCID is available."""
+        test_doi = "10.1002/smll.202309431" # This DOI should not have a PMCID
+        output_path = Path("test_bioc_pmc_no_pmcid")
+        result = fallback_bioc_pmc(test_doi, output_path)
+        assert result == False
+        assert not os.path.exists(output_path.with_suffix(".xml"))
+
+    def test_fallback_elife_xml_real_api(self):
+        """Test the eLife XML fallback with a real API call."""
+        test_doi = "10.7554/eLife.100173"  # Use a DOI known to be in eLife
+        output_path = Path("test_elife_xml_output")
+        try:
+            result = fallback_elife_xml(test_doi, output_path)
+            assert result == True
+            assert (output_path.with_suffix(".xml")).exists()
+            with open(output_path.with_suffix(".xml"), "r") as f: # Check if the file contains XML data
+                content = f.read()
+                assert "<" in content and ">" in content  # Basic XML check
+                assert len(content) > 100  # Should have substantial content
+        finally:
+            if (output_path.with_suffix(".xml")).exists():
+                os.remove(output_path.with_suffix(".xml"))
+
+    def test_fallback_elife_nonexistent_article(self):
+        """Test eLife XML fallback with a DOI that looks like eLife but doesn't exist."""
+        test_doi = "10.7554/eLife.00001"  # Article that doesn't exist in eLife repository
+        output_path = Path("test_elife_nonexistent")
+        result = fallback_elife_xml(test_doi, output_path)
+        # Assertions - should return False and not create a file
+        assert result == False
+        assert not os.path.exists(output_path.with_suffix(".xml"))
+
+    @patch('requests.get')
+    @patch('time.sleep')
+    def test_fallback_wiley_api(self, mock_sleep, mock_get):
+        """Test Wiley API fallback with mocked response."""
+        mock_response = MagicMock()
+        mock_response.content = b"%PDF-1.5 test content"
+        mock_response.raise_for_status = MagicMock()
+        mock_get.return_value = mock_response
+        paper_metadata = {"doi": "10.1002/smll.202309431"}
+        output_path = Path("test_wiley_output")
+        api_keys = {"WILEY_TDM_API_TOKEN": "test_token"}
+        try:
+            fallback_wiley_api(paper_metadata, output_path, api_keys)
+            assert mock_get.called
+            mock_get.assert_called_with(
+                "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fsmll.202309431",
+                headers={"Wiley-TDM-Client-Token": "test_token"},
+                allow_redirects=True,
+                timeout=60
+            )
+            pdf_path = output_path.with_suffix(".pdf")
+            assert os.path.exists(pdf_path)
+            with open(pdf_path, "rb") as f:
+                content = f.read()
+                assert content == b"%PDF-1.5 test content"
+        finally:
+            if os.path.exists(output_path.with_suffix(".pdf")):
+                os.remove(output_path.with_suffix(".pdf"))
+    
+    @patch('requests.get')
+    @patch('lxml.etree.fromstring')
+    def test_fallback_elsevier_api(self, mock_fromstring, mock_get):
+        """Test Elsevier API fallback with mocked response."""
+        mock_response = MagicMock()
+        mock_response.content = b"<xml>Test content</xml>"
+        mock_response.raise_for_status = MagicMock()
+        mock_get.return_value = mock_response
+        paper_metadata = {"doi": "10.1016/j.xops.2024.100504"}
+        output_path = Path("test_elsevier_output")
+        api_keys = {"ELSEVIER_TDM_API_KEY": "test_key"}
+        try:
+            fallback_elsevier_api(paper_metadata, output_path, api_keys)
+            assert mock_get.called
+            mock_get.assert_called_with(
+                "https://api.elsevier.com/content/article/doi/10.1016/j.xops.2024.100504?apiKey=test_key&httpAccept=text%2Fxml",
+                headers={"Accept": "application/xml"},
+                timeout=60
+            )
+            xml_path = output_path.with_suffix(".xml")
+            assert os.path.exists(xml_path)
+            with open(xml_path, "rb") as f:
+                content = f.read()
+                assert content == b"<xml>Test content</xml>"
+        finally:
+            if os.path.exists(output_path.with_suffix(".xml")):
+                os.remove(output_path.with_suffix(".xml"))
