@@ -179,7 +179,7 @@ class TestPDF:
 
     def test_fallback_bioc_pmc_no_pmcid(self):
         """Test BioC-PMC fallback when no PMCID is available."""
-        test_doi = "10.1002/smll.202309431" # This DOI should not have a PMCID
+        test_doi = "10.1002/smll.202309431" # This DOI should not have a PMCID # codespell-ignore: smll
         output_path = Path("test_bioc_pmc_no_pmcid")
         result = fallback_bioc_pmc(test_doi, output_path)
         assert result == False
@@ -218,7 +218,7 @@ class TestPDF:
         mock_response.content = b"%PDF-1.5 test content"
         mock_response.raise_for_status = MagicMock()
         mock_get.return_value = mock_response
-        paper_metadata = {"doi": "10.1002/smll.202309431"}
+        paper_metadata = {"doi": "10.1002/smll.202309431"} # codespell-ignore: smll
         output_path = Path("test_wiley_output")
         api_keys = {"WILEY_TDM_API_TOKEN": "test_token"}
         try:
