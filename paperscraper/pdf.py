@@ -271,7 +271,7 @@ def fallback_wiley_api(
         max_attempts (int): The maximum number of attempts to retry API call.
 
     Returns:
-        Whether or not download was successful
+        bool: True if the PDF file was successfully downloaded, False otherwise.
     """
 
     WILEY_TDM_API_TOKEN = api_keys.get("WILEY_TDM_API_TOKEN")
@@ -400,16 +400,25 @@ def fallback_elsevier_api(
         api_keys (Dict[str, str]): A dictionary containing API keys. Must include the key "ELSEVIER_TDM_API_KEY".
 
     Returns:
-        Whether the download was successful.
+        bool: True if the XML file was successfully downloaded, False otherwise.
     """
     elsevier_api_key = api_keys.get("ELSEVIER_TDM_API_KEY")
     doi = paper_metadata["doi"]
     api_url = f"https://api.elsevier.com/content/article/doi/{doi}?apiKey={elsevier_api_key}&httpAccept=text%2Fxml"
     logger.info(f"Attempting download via Elsevier API (XML) for {doi}: {api_url}")
     headers = {"Accept": "application/xml"}
-    success = False
     try:
         response = requests.get(api_url, headers=headers, timeout=60)
+
+        # Check for 401 error and look for APIKEY_INVALID in the response
+        if response.status_code == 401:
+            error_text = response.text
+            if "APIKEY_INVALID" in error_text:
+                logger.error(f"Could not download via Elsevier XML API: APIKEY_INVALID - The provided apiKey is invalid.")
+            else:
+                logger.error(f"Could not download via Elsevier XML API: 401 Unauthorized")
+            return False
+        
         response.raise_for_status()
 
         # Attempt to parse it with lxml to confirm it's valid XML
@@ -417,7 +426,7 @@ def fallback_elsevier_api(
             etree.fromstring(response.content)
         except etree.XMLSyntaxError as e:
             logger.warning(f"Elsevier API returned invalid XML for {doi}: {e}")
-            return
+            return False
 
         xml_path = output_path.with_suffix(".xml")
         with open(xml_path, "wb") as f:
@@ -425,12 +434,10 @@ def fallback_elsevier_api(
         logger.info(
             f"Successfully used Elsevier API to downloaded XML for {doi} to {xml_path}"
         )
-        success = True
-
+        return True
     except Exception as e:
         logger.error(f"Could not download via Elsevier XML API: {e}")
-    return success
-
+        return False
 
 def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     """

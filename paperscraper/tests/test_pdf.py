@@ -59,7 +59,7 @@ class TestPDF:
         os.remove("covid_review.pdf")
         os.remove("covid_review.json")
 
-        # ournal with OA paper
+        # journal with OA paper
         paper_data = {"doi": "10.1038/s42256-023-00639-z"}
         save_pdf(paper_data, filepath="regression_transformer", save_metadata=True)
         assert os.path.exists("regression_transformer.pdf")
@@ -222,8 +222,7 @@ class TestPDF:
         assert not os.path.exists(output_path.with_suffix(".xml"))
 
     @patch("requests.get")
-    @patch("time.sleep")
-    def test_fallback_wiley_api(self, mock_sleep, mock_get):
+    def test_fallback_wiley_api_mock(self, mock_get):
         """Test Wiley API fallback with mocked response."""
         mock_response = MagicMock()
         mock_response.content = b"%PDF-1.5 test content"
@@ -249,10 +248,21 @@ class TestPDF:
         finally:
             if os.path.exists(output_path.with_suffix(".pdf")):
                 os.remove(output_path.with_suffix(".pdf"))
+    
+    def test_fallback_wiley_api_returns_boolean(self):
+        """Test that fallback_wiley_api properly returns a boolean value."""
+        paper_metadata = {"doi": "10.1002/smll.202309431"}
+        output_path = Path("test_wiley_output")
+        api_keys = {"WILEY_TDM_API_TOKEN": "INVALID_TEST_KEY_123"}
+        result = fallback_wiley_api(paper_metadata, output_path, api_keys)
+        # Check the result is a boolean
+        # will be True if on university network and False otherwise
+        assert isinstance(result, bool)
+        if result and output_path.with_suffix(".pdf").exists():
+            os.remove(output_path.with_suffix(".pdf"))
 
-    @patch("requests.get")
-    @patch("lxml.etree.fromstring")
-    def test_fallback_elsevier_api(self, mock_fromstring, mock_get):
+    @patch('requests.get')
+    def test_fallback_elsevier_api_mock(self, mock_get):
         """Test Elsevier API fallback with mocked response."""
         mock_response = MagicMock()
         mock_response.content = b"<xml>Test content</xml>"
@@ -277,3 +287,16 @@ class TestPDF:
         finally:
             if os.path.exists(output_path.with_suffix(".xml")):
                 os.remove(output_path.with_suffix(".xml"))
+
+    def test_fallback_elsevier_api_invalid_key(self, caplog):
+        """Test real Elsevier API connectivity by verifying invalid key response pattern."""
+        caplog.set_level(logging.ERROR)
+        paper_metadata = {"doi": "10.1016/j.xops.2024.100504"}
+        output_path = Path("test_elsevier_invalid")
+        api_keys = {"ELSEVIER_TDM_API_KEY": "INVALID_TEST_KEY_123"}
+        result = fallback_elsevier_api(paper_metadata, output_path, api_keys)
+        # Should return False for invalid key
+        assert result is False
+        assert not output_path.with_suffix(".xml").exists()
+        # Check for the specific APIKEY_INVALID error in the logs
+        assert "APIKEY_INVALID" in caplog.text
