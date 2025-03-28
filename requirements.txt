@@ -1,5 +1,5 @@
 arxiv>=1.4.7
-pymed-paperscraper
+pymed-paperscraper>=1.0.3
 pandas>=1.0.4
 requests==2.32.0
 tqdm>=4.51.0
@@ -12,3 +12,5 @@ impact-factor>=1.1.1
 thefuzz>=0.20.0
 pytest
 tldextract
+semanticscholar>=0.8.4
+pydantic

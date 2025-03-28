@@ -5,11 +5,8 @@ import pandas as pd
 import pytest
 from scholarly._proxy_generator import MaxTriesExceededException
 
-from paperscraper.scholar import (
-    get_and_dump_scholar_papers,
-    get_citations_from_title,
-    get_scholar_papers,
-)
+from paperscraper.citations import get_citations_from_title
+from paperscraper.scholar import get_and_dump_scholar_papers, get_scholar_papers
 
 logging.disable(logging.INFO)
 
@@ -27,7 +24,6 @@ def handle_scholar_exception(func):
 
 
 class TestScholar:
-
     @handle_scholar_exception
     def test_citations(self):
         num = get_citations_from_title("GT4SD")

@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 
 class EntityResult(BaseModel):
-    num_citations: int = -1
-    num_references: int = -1
+    num_citations: int
+    num_references: int
     # keys are authors or papers and values are absolute self links
     self_citations: Dict[str, int] = {}
     self_references: Dict[str, int] = {}

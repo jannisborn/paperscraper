@@ -143,3 +143,6 @@ __pycache__/
 
 # Specific folders
 paperscraper/server_dumps/*.json
+
+# ignore api keys
+api_keys.txt
