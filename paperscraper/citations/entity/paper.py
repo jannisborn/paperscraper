@@ -1,7 +1,7 @@
 import logging
 import re
 import sys
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from ..self_citations import CitationResult, self_citations_paper
 from ..self_references import ReferenceResult, self_references_paper
@@ -47,6 +47,7 @@ class Paper(Entity):
             raise ValueError(f"Unknown mode {mode} chose from {MODES}.")
 
         input = input.strip()
+        self.input = input
         if mode == "infer":
             if (
                 len(input) > 15
@@ -70,7 +71,6 @@ class Paper(Entity):
         elif mode == "ssid":
             self.doi = get_doi_from_ssid(input)
 
-        print("DOI", self.doi)
         if self.doi is not None:
             out = get_title_and_id_from_doi(self.doi)
             if out is not None:
@@ -81,18 +81,30 @@ class Paper(Entity):
         """
         Extracts the self references of a paper, for each author.
         """
-        self.ref_result: ReferenceResult = self_references_paper(self.doi)
+        if isinstance(self.doi, str):
+            self.ref_result: ReferenceResult = self_references_paper(self.doi)
 
     def self_citations(self):
         """
         Extracts the self citations of a paper, for each author.
         """
-        self.citation_result: CitationResult = self_citations_paper(self.doi)
+        if isinstance(self.doi, str):
+            self.citation_result: CitationResult = self_citations_paper(self.doi)
 
-    def get_result(self) -> PaperResult:
+    def get_result(self) -> Optional[PaperResult]:
         """
         Provides the result of the analysis.
         """
+        if not hasattr(self, "ref_result"):
+            logger.warning(
+                f"Cant get result since no referencing result for {self.input} exists."
+            )
+            return
+        elif not hasattr(self, "citation_result"):
+            logger.warning(
+                f"Cant get result since no citation result for {self.input} exists."
+            )
+            return
         ref_result = self.ref_result.model_dump()
         ref_result.pop("ssid", None)
         return PaperResult(

@@ -28,7 +28,8 @@ def get_doi_from_title(title: str) -> Optional[str]:
         DOI according to semantic scholar API
     """
     response = requests.get(
-        PAPER_URL + "search", params={"query": title, "fields": "externalIds"}
+        PAPER_URL + "search",
+        params={"query": title, "fields": "externalIds", "limit": 1},
     )
     data = response.json()
 
@@ -50,12 +51,17 @@ def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     Returns:
       str or None: The DOI of the paper, or None if not found or in case of an error.
     """
+    logger.warning(
+        "Semantic Scholar API is easily overloaded when passing SS IDs, provide DOIs to improve throughput."
+    )
     attempts = 0
     for attempt in tqdm(
         range(1, max_retries + 1), desc=f"Fetching DOI for {ssid}", unit="attempt"
     ):
         # Make the GET request to Semantic Scholar.
-        response = requests.get(f"{PAPER_URL}{ssid}", params={"fields": "externalIds"})
+        response = requests.get(
+            f"{PAPER_URL}{ssid}", params={"fields": "externalIds", "limit": 1}
+        )
 
         # If successful, try to extract and return the DOI.
         if response.status_code == 200:

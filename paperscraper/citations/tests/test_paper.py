@@ -43,6 +43,8 @@ class TestPaper:
             client = SelfLinkClient(entity=ssid, mode="paper")
             client.extract()
             result = client.get_result()
+            if result is None:
+                return
             assert isinstance(result, PaperResult)
             assert isinstance(result.ssid, str)
             assert isinstance(result.title, str)
