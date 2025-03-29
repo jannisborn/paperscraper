@@ -97,12 +97,12 @@ class Paper(Entity):
         """
         if not hasattr(self, "ref_result"):
             logger.warning(
-                f"Cant get result since no referencing result for {self.input} exists."
+                f"Can't get result since no referencing result for {self.input} exists."
             )
             return
         elif not hasattr(self, "citation_result"):
             logger.warning(
-                f"Cant get result since no citation result for {self.input} exists."
+                f"Can't get result since no citation result for {self.input} exists."
             )
             return
         ref_result = self.ref_result.model_dump()
