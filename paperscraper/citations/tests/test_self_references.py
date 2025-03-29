@@ -25,7 +25,7 @@ class TestSelfReferences:
         for doi, ref_result in result.items():
             assert isinstance(doi, str)
             assert isinstance(ref_result, ReferenceResult)
-            assert isinstance(ref_result.id, str)
+            assert isinstance(ref_result.ssid, str)
             assert isinstance(ref_result.num_references, int)
             assert ref_result.num_references > 0
             assert ref_result.reference_score > 0
@@ -43,7 +43,7 @@ class TestSelfReferences:
         for doi, ref_result in result.items():
             assert isinstance(doi, str)
             assert isinstance(ref_result, ReferenceResult)
-            assert isinstance(ref_result.id, str)
+            assert isinstance(ref_result.ssid, str)
             assert isinstance(ref_result.num_references, int)
             assert ref_result.num_references > 0
             assert ref_result.reference_score > 0

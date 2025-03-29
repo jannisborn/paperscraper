@@ -53,15 +53,15 @@ class Researcher(Entity):
             self.author = input
             self.ssid = author_name_to_ssid(input)
 
-        self.paper_ids = get_papers_for_author(self.ssid)
+        self.ssids = get_papers_for_author(self.ssid)
 
     def self_references(self):
         """
         Sifts through all papers of a researcher and extracts the self references.
         """
         results: List[ReferenceResult] = []
-        for paper_id in self.paper_ids:
-            results.append(self_references_paper(paper_id))
+        for ssid in self.ssids:
+            results.append(self_references_paper(ssid))
 
         # TODO: Aggregate results
 

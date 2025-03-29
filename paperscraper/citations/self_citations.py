@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import re
 import sys
@@ -9,7 +8,7 @@ import numpy as np
 from pydantic import BaseModel
 
 from ..utils import optional_async
-from .utils import DOI_PATTERN, check_overlap, find_matching
+from .utils import DOI_PATTERN, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,7 +16,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class CitationResult(BaseModel):
-    id: str  # semantic scholar paper id
+    ssid: str  # semantic scholar paper id
     num_citations: int
     self_citations: Dict[str, float] = {}
     citation_score: float
@@ -75,7 +74,7 @@ async def self_citations_paper(input: str, verbose: bool = False) -> CitationRes
         ratios[author] = round(100 * self_cites / total, 2)
 
     result = CitationResult(
-        id=input,
+        ssid=input,
         num_citations=total,
         self_citations=ratios,
         citation_score=round(np.mean(list(ratios.values())), 3),

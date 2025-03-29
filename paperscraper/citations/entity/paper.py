@@ -3,10 +3,11 @@ import re
 import sys
 from typing import List, Literal
 
+from ..self_citations import CitationResult, self_citations_paper
 from ..self_references import ReferenceResult, self_references_paper
 from ..utils import (
     DOI_PATTERN,
-    get_doi_from_paper_id,
+    get_doi_from_ssid,
     get_doi_from_title,
     get_title_and_id_from_doi,
 )
@@ -16,10 +17,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# TODO: Should also inherit from CitationResult
-class PaperResult(ReferenceResult):
+class PaperResult(ReferenceResult, CitationResult):
     title: str
-    paper_id: str
 
 
 ModeType = Literal[tuple(MODES := ("doi", "title", "ss_id", "infer"))]
@@ -28,9 +27,9 @@ BASE_URL: str = "https://api.semanticscholar.org/graph/v1/paper/search"
 
 
 class Paper(Entity):
-    title: str
-    doi: str
-    authors: List[str]
+    title: str = ""
+    doi: str = ""
+    authors: List[str] = []
 
     def __init__(self, input: str, mode: ModeType = "infer"):
         """
@@ -55,7 +54,7 @@ class Paper(Entity):
                 and (input.isalnum() and input.islower())
             ):
                 # This is a paper ID
-                mode = "paper_id"
+                mode = "ssid"
             elif len(re.findall(DOI_PATTERN, input, re.IGNORECASE)) == 1:
                 mode = "doi"
             else:
@@ -68,12 +67,15 @@ class Paper(Entity):
             self.doi = input
         elif mode == "title":
             self.doi = get_doi_from_title(input)
-        elif mode == "paper_id":
-            self.doi = get_doi_from_paper_id(input)
-        out = get_title_and_id_from_doi(self.doi)
-        if out is not None:
-            self.title = out["title"]
-            self.paper_id = out["paper_id"]
+        elif mode == "ssid":
+            self.doi = get_doi_from_ssid(input)
+
+        print("DOI", self.doi)
+        if self.doi is not None:
+            out = get_title_and_id_from_doi(self.doi)
+            if out is not None:
+                self.title = out["title"]
+                self.ssid = out["ssid"]
 
     def self_references(self):
         """
@@ -85,10 +87,14 @@ class Paper(Entity):
         """
         Extracts the self citations of a paper, for each author.
         """
-        ...
+        self.citation_result: CitationResult = self_citations_paper(self.doi)
 
     def get_result(self) -> PaperResult:
         """
         Provides the result of the analysis.
         """
-        return PaperResult(title=self.title, paper_id=self.paper_id, **self.ref_result)
+        ref_result = self.ref_result.model_dump()
+        ref_result.pop("ssid", None)
+        return PaperResult(
+            title=self.title, **ref_result, **self.citation_result.model_dump()
+        )

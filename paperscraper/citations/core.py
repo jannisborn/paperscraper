@@ -13,6 +13,7 @@ ModeType = Literal[tuple(MODES := ("paper", "author"))]
 
 class SelfLinkClient:
     def __init__(self, entity: str, mode: ModeType = "paper") -> None:
+        self.mode = mode
         if self.mode == "paper":
             self.object = Paper(entity)
 

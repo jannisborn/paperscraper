@@ -14,3 +14,4 @@ pytest
 tldextract
 semanticscholar>=0.8.4
 pydantic
+unidecode

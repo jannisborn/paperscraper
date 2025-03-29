@@ -19,7 +19,7 @@ ModeType = Literal[tuple(MODES := ("doi", "name", "orcid", "ssid"))]
 
 
 class ReferenceResult(BaseModel):
-    id: str  # semantic scholar paper id
+    ssid: str  # semantic scholar paper id
     num_references: int
     self_references: Dict[str, float] = {}
     reference_score: float
@@ -167,7 +167,7 @@ async def self_references_paper(input: str, verbose: bool = False) -> ReferenceR
         ratios[author] = round(100 * self_cites / total, 2)
 
     result = ReferenceResult(
-        id=input,
+        ssid=input,
         num_references=total,
         self_references=ratios,
         reference_score=round(np.mean(list(ratios.values())), 3),

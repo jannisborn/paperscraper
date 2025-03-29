@@ -1,9 +1,12 @@
 import logging
 import sys
+from time import sleep
 from typing import Any, Dict, List, Optional
 
 import httpx
 import requests
+from tqdm import tqdm
+from unidecode import unidecode
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,27 +40,32 @@ def get_doi_from_title(title: str) -> Optional[str]:
     logger.warning(f"Did not find DOI for title={title}")
 
 
-def get_doi_from_paper_id(paper_id: str) -> Optional[str]:
+def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     """
     Given a Semantic Scholar paper ID, returns the corresponding DOI if available.
 
     Parameters:
-      paper_id (str): The paper ID on Semantic Scholar.
+      ssid (str): The paper ID on Semantic Scholar.
 
     Returns:
       str or None: The DOI of the paper, or None if not found or in case of an error.
     """
+    attempts = 0
+    for attempt in tqdm(
+        range(1, max_retries + 1), desc=f"Fetching DOI for {ssid}", unit="attempt"
+    ):
+        # Make the GET request to Semantic Scholar.
+        response = requests.get(f"{PAPER_URL}{ssid}", params={"fields": "externalIds"})
 
-    # Make the GET request to Semantic Scholar.
-    response = requests.get(PAPER_URL, params={"fields": "externalIds"})
-
-    # If successful, try to extract and return the DOI.
-    if response.status_code == 200:
-        data = response.json()
-        doi = data.get("externalIds", {}).get("DOI")
-        return doi
+        # If successful, try to extract and return the DOI.
+        if response.status_code == 200:
+            data = response.json()
+            doi = data.get("externalIds", {}).get("DOI")
+            return doi
+        attempts += 1
+        sleep(10)
     logger.warning(
-        f"Did not find DOI for paper ID {paper_id}. Code={response.status_code}, text={response.text}"
+        f"Did not find DOI for paper ID {ssid}. Code={response.status_code}, text={response.text}"
     )
 
 
@@ -69,19 +77,16 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
         doi (str): The DOI of the paper (e.g., "10.18653/v1/N18-3011").
 
     Returns:
-        dict or None: A dictionary with keys 'title' and 'paper_id'.
+        dict or None: A dictionary with keys 'title' and 'ssid'.
     """
 
     # Send the GET request to Semantic Scholar
-    response = requests.get(f"{PAPER_URL}DOI:{doi}", params={"fields": "title,paperID"})
-
+    response = requests.get(f"{PAPER_URL}DOI:{doi}")
     if response.status_code == 200:
         data = response.json()
-        title = data.get("title")
-        paper_id = data.get("paperId")
-        return {"title": title, "paper_id": paper_id}
+        return {"title": data.get("title"), "ssid": data.get("paperId")}
     logger.warning(
-        f"Could not get authors/paper_id for DOI={doi}, {response.status_code}: {response.text}"
+        f"Could not get authors & semantic scholar ID for DOI={doi}, {response.status_code}: {response.text}"
     )
 
 
@@ -173,7 +178,6 @@ def find_matching(
         if f["authorId"] not in overlap_ids
         and any([check_overlap(f["name"], s["name"]) for s in second])
     }
-
     return list(overlap_ids | overlap_names)
 
 
@@ -190,6 +194,19 @@ def check_overlap(n1: str, n2: str) -> bool:
         bool: Whether names are identical.
     """
     # remove initials and check for name intersection
-    s1 = {w for w in n1.lower().replace(".", "").split() if len(w) > 1}
-    s2 = {w for w in n2.lower().replace(".", "").split() if len(w) > 1}
-    return len(s1 | s2) == len(s1)
+    s1 = {w for w in clean_name(n1).split()}
+    s2 = {w for w in clean_name(n2).split()}
+    return len(s2) > 0 and len(s1 | s2) == len(s1)
+
+
+def clean_name(s: str) -> str:
+    """
+    Clean up a str by removing special characters.
+
+    Args:
+        s: Input possibly containing special symbols
+
+    Returns:
+        Homogenized string.
+    """
+    return "".join(ch for ch in unidecode(s) if ch.isalpha() or ch.isspace()).lower()

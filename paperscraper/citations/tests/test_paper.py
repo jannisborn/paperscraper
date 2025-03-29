@@ -1,24 +1,18 @@
 import logging
-import time
 
 import pytest
 
-from paperscraper.citations.self_citations import CitationResult, self_citations_paper
-from paperscraper.citations.self_references import (
-    ReferenceResult,
-    self_references,
-    self_references_paper,
-)
+from paperscraper.citations import SelfLinkClient
+from paperscraper.citations.entity import PaperResult
 
 logging.disable(logging.INFO)
 
 
 class TestPaper:
     @pytest.fixture
-    def ssdois(self):
-        # TODO: Make a test with Semantic Scholar dois (rate limit seems more strict there)
+    def ssids(self):
         return [
-            "9745b5bdc430b1f9b15ab3b71157f2ebaade9830",  # semantic scholar ID
+            "a732443cae8cd2d6a76f4f3cf785a562baf41137",  # semantic scholar ID
         ]
 
     @pytest.fixture
@@ -29,53 +23,32 @@ class TestPaper:
             "10.1016/j.isci.2021.102269",
         ]
 
-    def test_references(self, dois):
+    def test_paper_doi(self, dois):
         for doi in dois:
-            result = self_references_paper(doi)
-            assert isinstance(result, ReferenceResult)
-            assert isinstance(result.num_references, int)
-            assert result.num_references > 0
-            assert isinstance(result.id, str)
-            assert isinstance(result.reference_score, float)
-            for author, ratio in result.self_references.items():
-                assert isinstance(author, str)
-                assert isinstance(ratio, float)
-
-    def test_citations(self, dois):
-        for doi in dois:
-            result = self_citations_paper(doi)
-            assert isinstance(result, CitationResult)
-            assert isinstance(result.num_citations, int)
-            assert result.num_citations > 0
-            assert isinstance(result.id, str)
+            client = SelfLinkClient(entity=doi, mode="paper")
+            client.extract()
+            result = client.get_result()
+            assert isinstance(result, PaperResult)
+            assert isinstance(result.ssid, str)
+            assert isinstance(result.title, str)
             assert isinstance(result.citation_score, float)
-            for author, ratio in result.self_citations.items():
-                assert isinstance(author, str)
-                assert isinstance(ratio, float)
+            assert isinstance(result.reference_score, float)
+            assert result.citation_score >= 0
+            assert result.reference_score >= 0
+            assert isinstance(result.self_references, dict)
+            assert isinstance(result.self_citations, dict)
 
-    def test_compare_async_and_sync_performance(self, dois):
-        """
-        Compares the execution time of asynchronous and synchronous `self_references`
-        for a list of DOIs.
-        """
-
-        start_time = time.perf_counter()
-        self_references(dois)
-        async_duration = time.perf_counter() - start_time
-
-        # Measure synchronous execution time (three independent calls)
-        start_time = time.perf_counter()
-        for doi in dois:
-            self_references(doi)
-        sync_duration = time.perf_counter() - start_time
-
-        print(f"Asynchronous execution time (batch): {async_duration:.2f} seconds")
-        print(
-            f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
-        )
-
-        # Assert that async execution (batch) is faster or at least not slower
-        assert async_duration <= sync_duration, (
-            f"Async execution ({async_duration:.2f}s) is slower than sync execution "
-            f"({sync_duration:.2f}s)"
-        )
+    def test_paper_ssid(self, ssids):
+        for ssid in ssids:
+            client = SelfLinkClient(entity=ssid, mode="paper")
+            client.extract()
+            result = client.get_result()
+            assert isinstance(result, PaperResult)
+            assert isinstance(result.ssid, str)
+            assert isinstance(result.title, str)
+            assert isinstance(result.citation_score, float)
+            assert isinstance(result.reference_score, float)
+            assert result.citation_score >= 0
+            assert result.reference_score >= 0
+            assert isinstance(result.self_references, dict)
+            assert isinstance(result.self_citations, dict)
