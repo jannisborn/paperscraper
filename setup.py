@@ -43,6 +43,7 @@ setup(
         "tldextract",
         "semanticscholar",
         "pydantic",
+        "unidecode",
     ],
     keywords=[
         "Academics",

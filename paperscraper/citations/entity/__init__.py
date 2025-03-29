@@ -1,2 +1,2 @@
-from .paper import Paper
-from .researcher import Researcher
+from .paper import Paper, PaperResult  # noqa
+from .researcher import Researcher, ResearcherResult  # noqa
