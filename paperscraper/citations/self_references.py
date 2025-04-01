@@ -5,10 +5,12 @@ import sys
 from typing import Dict, Iterable, Literal, Union
 
 import httpx
+import numpy as np
+from pydantic import BaseModel
 from semanticscholar import SemanticScholar
 
 from ..utils import optional_async
-from .utils import check_overlap, doi_pattern
+from .utils import DOI_PATTERN, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,11 +18,17 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 ModeType = Literal[tuple(MODES := ("doi", "name", "orcid", "ssid"))]
 
 
+class ReferenceResult(BaseModel):
+    ssid: str  # semantic scholar paper id
+    num_references: int
+    self_references: Dict[str, float] = {}
+    reference_score: float
+
+
 @optional_async
 async def self_references(
     inputs: Union[str, Iterable[str]],
     mode: ModeType = "doi",
-    relative: bool = True,
     verbose: bool = False,
 ) -> Dict[str, Dict[str, Union[float, int]]]:
     """
@@ -39,8 +47,6 @@ async def self_references(
             - name:     Name of a researcher to measure self references across all papers.
             - orcid:    ORCID ID of a researcher to measure self references across all papers.
             - ssid:    Semantic Scholar ID of a researcher to measure self references across all papers.
-        relative: If True, returns self-citations as percentages; otherwise, as raw counts.
-                  Defaults to False.
         verbose: Whether to log detailed information. Defaults to False.
 
     Returns:
@@ -58,15 +64,13 @@ async def self_references(
 
     if mode == "doi":
         for should_be_doi in inputs:
-            dois = re.findall(doi_pattern, should_be_doi, re.IGNORECASE)
+            dois = re.findall(DOI_PATTERN, should_be_doi, re.IGNORECASE)
             if len(dois) == 1:
                 # This is a DOI
                 tasks.append(
                     (
                         should_be_doi,
-                        self_references_paper(
-                            dois[0], verbose=verbose, relative=relative
-                        ),
+                        self_references_paper(dois[0], verbose=verbose),
                     )
                 )
             else:
@@ -96,10 +100,7 @@ async def self_references(
             for doi in dois:
                 # TODO: Skip over erratum / corrigendum
                 tasks.append(
-                    (
-                        should_be_ssid,
-                        self_references_paper(doi, verbose=verbose, relative=relative),
-                    )
+                    (should_be_ssid, self_references_paper(doi, verbose=verbose))
                 )
         completed_tasks = await asyncio.gather(*[task[1] for task in tasks])
         results[author.name] = []
@@ -116,55 +117,60 @@ async def self_references(
 
 
 @optional_async
-async def self_references_paper(
-    doi: str,
-    relative: bool = True,
-    verbose: bool = False,
-) -> Dict[str, Union[float, int]]:
+async def self_references_paper(input: str, verbose: bool = False) -> ReferenceResult:
     """
-    Analyze self-references for a single DOI.
+    Analyze self-references for a single DOI or semantic scholar ID
 
     Args:
-        doi: The DOI to analyze.
-        relative: If True, returns self-citations as percentages; otherwise, as raw counts.
-                  Defaults to False.
+        input: either a DOI or a semantic scholar ID.
         verbose: Whether to log detailed information. Defaults to False.
 
     Returns:
-        A dictionary mapping authors to their self-citations.
+        A ReferenceResult object.
 
     Raises:
         ValueError: If no references are found for the given DOI.
     """
+    if len(input) > 15 and " " not in input and (input.isalnum() and input.islower()):
+        mode = ""
+    elif len(re.findall(DOI_PATTERN, input, re.IGNORECASE)) == 1:
+        mode = "DOI:"
+
+    suffix = f"{mode}{input}"
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}",
+            f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
             params={"fields": "title,authors,references.authors"},
         )
         response.raise_for_status()
         paper = response.json()
 
     authors: Dict[str, int] = {a["name"]: 0 for a in paper["authors"]}
+    ratios = authors.copy()
     if not paper["references"]:
-        logger.warning(f"Could not find citations from Semantic Scholar for {doi}")
+        logger.warning(f"Could not find citations from Semantic Scholar for ID:{input}")
         return authors
 
     for ref in paper["references"]:
-        ref_authors = {a["name"] for a in ref["authors"]}
-        for author in authors:
-            # TODO: Make sure to expand names given as J. Doe to John Doe
-            if any(check_overlap(author, ra) for ra in ref_authors):
-                authors[author] += 1
+        # For every reference, find matching names and increase
+        for author in find_matching(paper["authors"], ref["authors"]):
+            authors[author] += 1
     total = len(paper["references"])
 
     if verbose:
-        logger.info(f"Self references in \"{paper['title']}\"")
+        logger.info(f'Self references in "{paper["title"]}"')
         logger.info(f" N = {len(paper['references'])}")
         for author, self_cites in authors.items():
-            logger.info(f" {author}: {100*(self_cites/total):.2f}% self-references")
+            logger.info(f" {author}: {100 * (self_cites / total):.2f}% self-references")
 
-    if relative:
-        for author, self_cites in authors.items():
-            authors[author] = round(100 * self_cites / total, 2)
+    for author, self_cites in authors.items():
+        ratios[author] = round(100 * self_cites / total, 2)
 
-    return authors
+    result = ReferenceResult(
+        ssid=input,
+        num_references=total,
+        self_references=ratios,
+        reference_score=round(np.mean(list(ratios.values())), 3),
+    )
+
+    return result
