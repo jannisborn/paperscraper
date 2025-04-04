@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional, Union
 import requests
 import tldextract
 from bs4 import BeautifulSoup
+from dotenv import find_dotenv, load_dotenv
 from lxml import etree
 from tqdm import tqdm
 
@@ -58,7 +59,7 @@ def save_pdf(
         raise ValueError(f"The folder: {output_path} seems to not exist.")
 
     # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
-    if isinstance(api_keys, str):
+    if not isinstance(api_keys, dict):
         api_keys = load_api_keys(api_keys)
 
     url = f"https://doi.org/{paper_metadata['doi']}"
@@ -105,7 +106,7 @@ def save_pdf(
     else:  # if no citation_pdf_url meta tag found, try other fallbacks
         if "elife" in paper_metadata["doi"].lower():
             logger.info(
-                f"DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
+                "DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
             )
             if not fallback_elife_xml(paper_metadata["doi"], output_path):
                 logger.warning(
@@ -199,7 +200,8 @@ def save_pdf_from_dump(
 
     papers = load_jsonl(dump_path)
 
-    api_keys_dict = load_api_keys(api_keys) if api_keys else None
+    if not isinstance(api_keys, dict):
+        api_keys = load_api_keys(api_keys)
 
     pbar = tqdm(papers, total=len(papers), desc="Processing")
     for i, paper in enumerate(pbar):
@@ -218,12 +220,10 @@ def save_pdf_from_dump(
             logger.info(f"File {xml_file} already exists. Skipping download.")
             continue
         output_path = str(pdf_file)
-        save_pdf(
-            paper, output_path, save_metadata=save_metadata, api_keys=api_keys_dict
-        )
+        save_pdf(paper, output_path, save_metadata=save_metadata, api_keys=api_keys)
 
 
-def load_api_keys(filepath: str) -> Dict[str, str]:
+def load_api_keys(filepath: Optional[str] = None) -> Dict[str, str]:
     """
     Reads API keys from a file and returns them as a dictionary.
     The file should have each API key on a separate line in the format:
@@ -234,21 +234,20 @@ def load_api_keys(filepath: str) -> Dict[str, str]:
         ELSEVIER_TDM_API_KEY=your_elsevier_key_here
 
     Args:
-        filepath (str): Path to the file containing API keys.
+        filepath: Optional path to the file containing API keys.
 
     Returns:
         Dict[str, str]: A dictionary where keys are API key names and values are their respective API keys.
     """
-    api_keys = {}
-    try:
-        with open(filepath, "r") as f:
-            for line in f:
-                if "=" in line:
-                    key, value = line.strip().split("=", 1)
-                    api_keys[key] = value
-    except Exception as e:
-        logger.error(f"Error reading API keys file: {e}")
-    return api_keys
+    if filepath:
+        load_dotenv(dotenv_path=filepath)
+    else:
+        load_dotenv(find_dotenv())
+
+    return {
+        "WILEY_TDM_API_TOKEN": os.getenv("WILEY_TDM_API_TOKEN"),
+        "ELSEVIER_TDM_API_KEY": os.getenv("ELSEVIER_TDM_API_KEY"),
+    }
 
 
 def fallback_wiley_api(
@@ -414,11 +413,15 @@ def fallback_elsevier_api(
         if response.status_code == 401:
             error_text = response.text
             if "APIKEY_INVALID" in error_text:
-                logger.error(f"Could not download via Elsevier XML API: APIKEY_INVALID - The provided apiKey is invalid.")
+                logger.error(
+                    f"Could not download via Elsevier XML API: APIKEY_INVALID - The provided apiKey is invalid."
+                )
             else:
-                logger.error(f"Could not download via Elsevier XML API: 401 Unauthorized")
+                logger.error(
+                    f"Could not download via Elsevier XML API: 401 Unauthorized"
+                )
             return False
-        
+
         response.raise_for_status()
 
         # Attempt to parse it with lxml to confirm it's valid XML
@@ -438,6 +441,7 @@ def fallback_elsevier_api(
     except Exception as e:
         logger.error(f"Could not download via Elsevier XML API: {e}")
         return False
+
 
 def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     """
