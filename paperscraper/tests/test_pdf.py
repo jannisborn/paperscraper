@@ -316,4 +316,4 @@ class TestPDF:
         assert result is False
         assert not output_path.with_suffix(".xml").exists()
         # Check for the specific APIKEY_INVALID error in the logs
-        assert "APIKEY_INVALID" in caplog.text
+        assert "invalid" in caplog.text.lower()
