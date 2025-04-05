@@ -12,12 +12,12 @@ class TestXRXiv:
     def test_get_medrxiv(self):
         medrxiv(
             start_date="2020-05-01",
-            end_date="2020-05-10",
-            save_path="medrix_tmp_dump.jsonl",
+            end_date="2020-05-02",
+            save_path="medriv_tmp_dump.jsonl",
         )
 
     def test_xriv_querier(self):
-        querier = XRXivQuery("medrix_tmp_dump.jsonl")
+        querier = XRXivQuery("medriv_tmp_dump.jsonl")
         query = [covid19, ai, mi]
         querier.search_keywords(query, output_filepath="covid19_ai_imaging.jsonl")
         assert os.path.exists("covid19_ai_imaging.jsonl")

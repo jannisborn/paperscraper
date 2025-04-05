@@ -137,7 +137,7 @@ async def self_references_paper(input: str, verbose: bool = False) -> ReferenceR
         mode = "DOI:"
 
     suffix = f"{mode}{input}"
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
         response = await client.get(
             f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
             params={"fields": "title,authors,references.authors"},

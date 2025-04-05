@@ -37,7 +37,7 @@ and plotting routines for meta-analysis.
 pip install paperscraper
 ```
 
-This is enough to query **PubMed**, **arXiv** or Google Scholar.
+This is enough to query PubMed, arXiv or Google Scholar.
 
 #### Download X-rxiv Dumps
 
@@ -189,6 +189,7 @@ To use publisher APIs:
 WILEY_TDM_API_TOKEN=your_wiley_token_here
 ELSEVIER_TDM_API_KEY=your_elsevier_key_here
 ```
+NOTE: If you name the file `.env` it will be loaded automatically (if it is in the cwd or anywhere above the tree to home).
 
 2. Pass the file path when calling retrieval functions:
 

@@ -44,6 +44,7 @@ setup(
         "semanticscholar",
         "pydantic",
         "unidecode",
+        "dotenv",
     ],
     keywords=[
         "Academics",
