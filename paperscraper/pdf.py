@@ -413,13 +413,9 @@ def fallback_elsevier_api(
         if response.status_code == 401:
             error_text = response.text
             if "APIKEY_INVALID" in error_text:
-                logger.error(
-                    f"Could not download via Elsevier XML API: APIKEY_INVALID - The provided apiKey is invalid."
-                )
+                logger.error("Invalid API key. Couldn't download via Elsevier XML API")
             else:
-                logger.error(
-                    f"Could not download via Elsevier XML API: 401 Unauthorized"
-                )
+                logger.error("401 Unauthorized. Couldn't download via Elsevier XML API")
             return False
 
         response.raise_for_status()
