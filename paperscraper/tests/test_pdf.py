@@ -186,10 +186,7 @@ class TestPDF:
         assert os.path.exists(filename + ".pdf"), (
             "PDF file was not created for OA content"
         )
-
         os.remove(filename + ".pdf")
-        test_doi = {"doi": "10.1038/s41587-022-01613-7"}  # Use a DOI known to be in PMC
-        save_pdf(test_doi, filepath=SAVE_PATH, api_keys=None)
 
     def test_api_key_file(self):
         test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI from Wiley
