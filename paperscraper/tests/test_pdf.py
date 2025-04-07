@@ -171,7 +171,7 @@ class TestPDF:
         save_pdf(test_doi, filepath=SAVE_PATH, api_keys=None)
 
     def test_api_key_file(self):
-        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI known to be in PMC
+        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI from Wiley
         with open(SAVE_PATH, "w") as f:
             f.write("WILEY_TDM_API_TOKEN=INVALID_TEST_KEY_123")
         save_pdf(test_doi, filepath=SAVE_PATH, api_keys=SAVE_PATH)
