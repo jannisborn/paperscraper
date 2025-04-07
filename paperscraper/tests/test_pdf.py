@@ -166,7 +166,31 @@ class TestPDF:
         save_pdf_from_dump(TEST_FILE_PATH, pdf_path=SAVE_PATH, key_to_save="doi")
         shutil.rmtree(SAVE_PATH)
 
-    def test_api_keys_none(self):
+    def test_api_keys_none_PMC(self):
+        """Test that save_pdf works properly even when no API keys are provided."""
+        test_doi = {"doi": "10.1038/s41587-022-01613-7"}  # DOI known to be in PMC
+        filename = SAVE_PATH + "_pmc"
+        # Call function with no API keys
+        save_pdf(test_doi, filepath=filename, api_keys=None)
+
+        # Verify file was created - with .xml extension from PMC fallback
+        assert os.path.exists(filename + ".xml"), "XML file was not created via PMC fallback"
+
+        # Clean up
+        os.remove(filename + ".xml")
+
+    def test_api_keys_none_OA(self):
+        """Test that save_pdf works properly even when no API keys are provided."""
+        test_doi = {"doi": "10.1038/s42256-023-00639-z"}  # DOI known to be OA
+        filename = SAVE_PATH + "_oa"
+        # Call function with no API keys
+        save_pdf(test_doi, filepath=filename, api_keys=None)
+
+        # Verify file was created - with .pdf extension for direct PDF download
+        assert os.path.exists(filename + ".pdf"), "PDF file was not created for OA content"
+
+        # Clean up
+        os.remove(filename + ".pdf")
         test_doi = {"doi": "10.1038/s41587-022-01613-7"}  # Use a DOI known to be in PMC
         save_pdf(test_doi, filepath=SAVE_PATH, api_keys=None)
 
