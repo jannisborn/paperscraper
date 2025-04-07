@@ -39,12 +39,11 @@ def save_pdf(
     Save a PDF file of a paper.
 
     Args:
-        paper_metadata: A dictionary with the paper metadata. Must
-            contain the `doi` key.
+        paper_metadata: A dictionary with the paper metadata. Must contain the `doi` key.
         filepath: Path to the PDF file to be saved (with or without suffix).
         save_metadata: A boolean indicating whether to save paper metadata as a separate json.
         api_keys: Either a dictionary containing API keys (if already loaded) or a string (path to API keys file).
-                  If None, API-based fallbacks will be skipped.
+                  If None, will try to load from `.env` file and if unsuccessful, skip API-based fallbacks.
     """
     if not isinstance(paper_metadata, Dict):
         raise TypeError(f"paper_metadata must be a dict, not {type(paper_metadata)}.")
@@ -98,6 +97,16 @@ def save_pdf(
                 logger.warning(
                     f"The file from {url} does not appear to be a valid PDF."
                 )
+                success = fallback_bioc_pmc(paper_metadata["doi"], output_path)
+                if not success:
+                    # Check for specific publishers
+                    if "elife" in paper_metadata["doi"].lower():
+                        logger.info("Attempting fallback to eLife XML repository")
+                        fallback_elife_xml(paper_metadata["doi"], output_path)
+                    elif api_keys and "WILEY_TDM_API_TOKEN" in api_keys:
+                        fallback_wiley_api(paper_metadata, output_path, api_keys)
+                    elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:
+                        fallback_elsevier_api(paper_metadata, output_path, api_keys)
             else:
                 with open(output_path.with_suffix(".pdf"), "wb+") as f:
                     f.write(response.content)
