@@ -7,5 +7,5 @@ coverage:
         threshold: 2% # Up to 2% drop/fluctuation is OK
 
   ignore:
-    - "tests/*"
-    - "test_*.py"
+    - "paperscraper/tests/*"
+    - "**/test_*.py"
