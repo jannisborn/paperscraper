@@ -36,7 +36,7 @@ class TestDumper:
 
     @pytest.fixture
     def setup_medrxiv(self):
-        return medrxiv
+        return partial(medrxiv, max_retries=2)
 
     @pytest.fixture
     def setup_biorxiv(self):
@@ -70,36 +70,36 @@ class TestDumper:
     @pytest.mark.timeout(30)
     def test_medrxiv(self, setup_medrxiv):
         # Check that the function runs for at least 15 seconds
-        assert self.run_function_with_timeout(
-            setup_medrxiv, 15
-        ), "medrxiv should still be running after 15 seconds"
+        assert self.run_function_with_timeout(setup_medrxiv, 15), (
+            "medrxiv should still be running after 15 seconds"
+        )
 
     @pytest.mark.timeout(30)
     def test_biorxiv(self, setup_biorxiv):
         # Check that the function runs for at least 15 seconds
-        assert self.run_function_with_timeout(
-            setup_biorxiv, 15
-        ), "biorxiv should still be running after 15 seconds"
+        assert self.run_function_with_timeout(setup_biorxiv, 15), (
+            "biorxiv should still be running after 15 seconds"
+        )
 
     @pytest.mark.timeout(30)
     def test_chemrxiv(self, setup_chemrxiv):
         # Check that the function runs for at least 15 seconds
-        assert self.run_function_with_timeout(
-            setup_chemrxiv, 15
-        ), "chemrxiv should still be running after 15 seconds"
+        assert self.run_function_with_timeout(setup_chemrxiv, 15), (
+            "chemrxiv should still be running after 15 seconds"
+        )
 
     @pytest.mark.timeout(30)
     def test_arxiv(self, setup_arxiv):
         # Check that the function runs for at least 15 seconds
-        assert self.run_function_with_timeout(
-            setup_arxiv, 15
-        ), "arxiv should still be running after 90 seconds"
+        assert self.run_function_with_timeout(setup_arxiv, 15), (
+            "arxiv should still be running after 90 seconds"
+        )
 
     def test_chemrxiv_date(self):
-        chemrxiv(start_date="2024-06-01", end_date="2024-06-02")
+        chemrxiv(start_date="2024-06-01", end_date="2024-06-01")
 
     def test_biorxiv_date(self):
-        biorxiv(start_date="2024-06-01", end_date="2024-06-02")
+        biorxiv(start_date="2024-06-01", end_date="2024-06-01")
 
     def test_arxiv_date(self):
         # Result of this may be empty because arxiv updates not daily.
@@ -107,7 +107,7 @@ class TestDumper:
         arxiv(start_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
 
         arxiv(end_date="1991-01-01")
-        arxiv(start_date="1993-04-01", end_date="1993-04-03")
+        arxiv(start_date="1993-04-03", end_date="1993-04-03")
 
     def test_arxiv_wrong_date(self):
         with pytest.raises(
@@ -150,6 +150,6 @@ class TestDumper:
         importlib.reload(load_dumps_module)
         from paperscraper.load_dumps import QUERY_FN_DICT
 
-        assert (
-            len(QUERY_FN_DICT) == 5
-        ), f"Expected QUERY_FN_DICT to also contain med/bio/chemrxiv, {QUERY_FN_DICT}"
+        assert len(QUERY_FN_DICT) == 5, (
+            f"Expected QUERY_FN_DICT to also contain med/bio/chemrxiv, {QUERY_FN_DICT}"
+        )

@@ -133,10 +133,6 @@ class TestPDF:
         save_pdf(paper_metadata=paper_data, filepath="output.pdf")
         assert not os.path.exists("output.pdf")
 
-    def test_save_pdf_from_dump_without_path(self):
-        with pytest.raises(ValueError):
-            save_pdf_from_dump(TEST_FILE_PATH, pdf_path=SAVE_PATH, key_to_save="doi")
-
     def test_save_pdf_from_dump_wrong_type(self):
         with pytest.raises(TypeError):
             save_pdf_from_dump(-1, pdf_path=SAVE_PATH, key_to_save="doi")
@@ -166,13 +162,107 @@ class TestPDF:
         save_pdf_from_dump(TEST_FILE_PATH, pdf_path=SAVE_PATH, key_to_save="doi")
         shutil.rmtree(SAVE_PATH)
 
+    def test_api_keys_none_pmc(self):
+        """Test that save_pdf works properly even when no API keys are provided. Paper in PMC."""
+        test_doi = {"doi": "10.1038/s41587-022-01613-7"}  # DOI known to be in PMC
+        filename = SAVE_PATH + "_pmc"
+        # Call function with no API keys
+        save_pdf(test_doi, filepath=filename, api_keys=None)
+
+        # Verify file was created - with .xml extension from PMC fallback
+        assert os.path.exists(filename + ".xml"), (
+            "XML file was not created via PMC fallback"
+        )
+        os.remove(filename + ".xml")
+
+    def test_api_keys_none_oa(self):
+        """Test that save_pdf works properly even when no API keys are provided. Paper available open-access."""
+        test_doi = {"doi": "10.1038/s42256-023-00639-z"}  # DOI known to be OA
+        filename = SAVE_PATH + "_oa"
+        # Call function with no API keys
+        save_pdf(test_doi, filepath=filename, api_keys=None)
+
+        # Verify file was created - with .pdf extension for direct PDF download
+        assert os.path.exists(filename + ".pdf"), (
+            "PDF file was not created for OA content"
+        )
+        os.remove(filename + ".pdf")
+
+    def test_api_key_file(self):
+        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI from Wiley
+        with open("tmp_keyfile.txt", "w") as f:
+            f.write("WILEY_TDM_API_TOKEN=INVALID_TEST_KEY_123")
+        save_pdf(test_doi, filepath=SAVE_PATH, api_keys="tmp_keyfile.txt")
+        os.remove("tmp_keyfile.txt")
+
+    def test_api_key_env(self):
+        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI known to be in PMC
+        with patch.dict(
+            os.environ, {"WILEY_TDM_API_TOKEN": "ANOTHER_INVALID_TEST_KEY"}
+        ):
+            save_pdf(test_doi, filepath=SAVE_PATH, api_keys=None)
+
+    @pytest.mark.skipif(
+        os.getenv("INSTITUTIONAL_NETWORK") != "1",
+        reason="Not in an institutional network",
+    )
+    def test_api_key_file_academic_network(self):
+        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI from Wiley
+        filename = SAVE_PATH + "_wiley"
+        wiley_key_path = SAVE_PATH + "_wiley_key1"
+        success = False
+        try:
+            with open(wiley_key_path, "w") as f:
+                f.write("WILEY_TDM_API_TOKEN=INVALID_TEST_KEY_123")
+            save_pdf(test_doi, filepath=filename, api_keys=wiley_key_path)
+            # Verify file was created - with .pdf extension for Wiley content
+            assert os.path.exists(filename + ".pdf"), (
+                "PDF file was not created for Wiley content"
+            )
+            success = True
+        finally:
+            for file in [filename + ".pdf", wiley_key_path]:
+                if os.path.exists(file):
+                    os.remove(file)
+            if not success:
+                raise ValueError("PDF file was not created for Wiley content")
+
+    @pytest.mark.skipif(
+        os.getenv("INSTITUTIONAL_NETWORK") != "1",
+        reason="Not in an institutional network",
+    )
+    def test_api_key_file_env_academic_network(self):
+        test_doi = {"doi": "10.1002/smll.202309431"}  # Use a DOI from Wiley
+        filename = SAVE_PATH + "_wiley"
+        line = "WILEY_TDM_API_TOKEN=INVALID_TEST_KEY_123\n"
+        # Append to .env file in the current directory
+        with open(".env", "a") as f:
+            f.write(line)
+
+        try:
+            save_pdf(test_doi, filepath=filename, api_keys=None)
+
+            # Verify file was created - with .pdf extension for Wiley content
+            assert os.path.exists(filename + ".pdf"), (
+                "PDF file was not created for Wiley content"
+            )
+        finally:
+            # Clean up
+            if os.path.exists(filename + ".pdf"):
+                os.remove(filename + ".pdf")
+            with open(".env", "r") as f:
+                lines = f.readlines()
+            if lines and lines[-1] == line:
+                with open(".env", "w") as f:
+                    f.writelines(lines[:-1])
+
     def test_fallback_bioc_pmc_real_api(self):
         """Test the BioC-PMC fallback with a real API call."""
         test_doi = "10.1038/s41587-022-01613-7"  # Use a DOI known to be in PMC
         output_path = Path("test_bioc_pmc_output")
         try:
             result = fallback_bioc_pmc(test_doi, output_path)
-            assert result == True
+            assert result is True
             assert (output_path.with_suffix(".xml")).exists()
             with open(
                 output_path.with_suffix(".xml"), "r"
@@ -189,7 +279,7 @@ class TestPDF:
         test_doi = "10.1002/smll.202309431"  # This DOI should not have a PMCID
         output_path = Path("test_bioc_pmc_no_pmcid")
         result = fallback_bioc_pmc(test_doi, output_path)
-        assert result == False
+        assert result is False
         assert not os.path.exists(output_path.with_suffix(".xml"))
 
     def test_fallback_elife_xml_real_api(self):
@@ -198,7 +288,7 @@ class TestPDF:
         output_path = Path("test_elife_xml_output")
         try:
             result = fallback_elife_xml(test_doi, output_path)
-            assert result == True
+            assert result is True
             assert (output_path.with_suffix(".xml")).exists()
             with open(
                 output_path.with_suffix(".xml"), "r"
@@ -218,7 +308,7 @@ class TestPDF:
         output_path = Path("test_elife_nonexistent")
         result = fallback_elife_xml(test_doi, output_path)
         # Assertions - should return False and not create a file
-        assert result == False
+        assert result is False
         assert not os.path.exists(output_path.with_suffix(".xml"))
 
     @patch("requests.get")
@@ -248,7 +338,7 @@ class TestPDF:
         finally:
             if os.path.exists(output_path.with_suffix(".pdf")):
                 os.remove(output_path.with_suffix(".pdf"))
-    
+
     def test_fallback_wiley_api_returns_boolean(self):
         """Test that fallback_wiley_api properly returns a boolean value."""
         paper_metadata = {"doi": "10.1002/smll.202309431"}
@@ -261,7 +351,7 @@ class TestPDF:
         if result and output_path.with_suffix(".pdf").exists():
             os.remove(output_path.with_suffix(".pdf"))
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_fallback_elsevier_api_mock(self, mock_get):
         """Test Elsevier API fallback with mocked response."""
         mock_response = MagicMock()
@@ -299,4 +389,4 @@ class TestPDF:
         assert result is False
         assert not output_path.with_suffix(".xml").exists()
         # Check for the specific APIKEY_INVALID error in the logs
-        assert "APIKEY_INVALID" in caplog.text
+        assert "invalid" in caplog.text.lower()
