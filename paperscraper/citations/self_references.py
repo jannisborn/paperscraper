@@ -8,7 +8,7 @@ import httpx
 import numpy as np
 from pydantic import BaseModel
 
-from ..utils import optional_async
+from ..async_utils import optional_async, retry_with_exponential_backoff
 from .utils import DOI_PATTERN, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -98,6 +98,7 @@ async def _process_single_reference(
 
 
 @optional_async
+@retry_with_exponential_backoff(max_retries=4, base_delay=1.0)
 async def self_references_paper(
     inputs: Union[str, List[str]], verbose: bool = False
 ) -> Union[ReferenceResult, List[ReferenceResult]]:
