@@ -2,8 +2,6 @@ import logging
 import sys
 from typing import Literal
 
-import httpx
-
 from .entity import Paper, Researcher
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
