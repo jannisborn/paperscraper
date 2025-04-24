@@ -1,7 +1,8 @@
 import logging
+import re
 import sys
 from time import sleep
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import httpx
 import requests
@@ -96,7 +97,7 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     )
 
 
-def author_name_to_ssid(author_name: str) -> str:
+def author_name_to_ssaid(author_name: str) -> str:
     """
     Given an author name, returns the Semantic Scholar author ID.
 
@@ -118,16 +119,38 @@ def author_name_to_ssid(author_name: str) -> str:
             return authors[0].get("authorId")
 
     logger.error(
-        f"Error in retrieving name from SS ID: {response.status_code} - {response.text}"
+        f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"
     )
 
 
-async def get_papers_for_author(author_id: str) -> List[str]:
+def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
+    """
+    Determines the intended input type by the user if not explicitly given (`infer`).
+
+    Args:
+        input: Either a DOI or a semantic scholar paper ID or an author name.
+
+    Returns:
+        The input type
+    """
+    if len(input) > 15 and " " not in input and (input.isalnum() and input.islower()):
+        mode = "ssid"
+    elif len(re.findall(DOI_PATTERN, input, re.IGNORECASE)) == 1:
+        mode = "doi"
+    else:
+        logger.info(
+            f"Assuming `{input}` is a paper title, since it seems neither a DOI nor a paper ID"
+        )
+        mode = "title"
+    return mode
+
+
+async def get_papers_for_author(ss_author_id: str) -> List[str]:
     """
     Given a Semantic Scholar author ID, returns a list of all Semantic Scholar paper IDs for that author.
 
     Args:
-        author_id (str): The Semantic Scholar author ID (e.g., "1741101").
+        ss_author_id (str): The Semantic Scholar author ID (e.g., "1741101").
 
     Returns:
         A list of paper IDs (as strings) authored by the given author.
@@ -139,7 +162,7 @@ async def get_papers_for_author(author_id: str) -> List[str]:
     async with httpx.AsyncClient() as client:
         while True:
             response = await client.get(
-                f"https://api.semanticscholar.org/graph/v1/author/{author_id}/papers",
+                f"https://api.semanticscholar.org/graph/v1/author/{ss_author_id}/papers",
                 params={"fields": "paperId", "offset": offset, "limit": limit},
             )
             response.raise_for_status()

@@ -14,6 +14,5 @@ class TestCitations:
         num = get_citations_by_doi("10.1035348/s42256-023-00639-z")
         assert isinstance(num, int) and num == 0
 
-
-num = get_citations_by_doi("10.1035348/s42256-023-00639-z")
-assert isinstance(num, int) and num == 0
+        num = get_citations_by_doi("10.1035348/s42256-023-00639-z")
+        assert isinstance(num, int) and num == 0

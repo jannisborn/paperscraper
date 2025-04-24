@@ -2,13 +2,48 @@ import asyncio
 import json
 import logging
 import sys
+import threading
 from functools import wraps
-from typing import Dict, List
+from typing import Awaitable, Callable, Dict, List, TypeVar, Union
 
 import pandas as pd
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
+
+
+def _start_bg_loop(loop: asyncio.AbstractEventLoop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
+# Start one background loop in its own daemon thread
+_background_loop = asyncio.new_event_loop()
+threading.Thread(target=_start_bg_loop, args=(_background_loop,), daemon=True).start()
+
+
+def optional_async(
+    func: Callable[..., Awaitable[T]],
+) -> Callable[..., Union[T, Awaitable[T]]]:
+    """
+    Allows an async function to be called from sync code (blocks until done)
+    or from within an async context (returns a coroutine to await).
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Union[T, Awaitable[T]]:
+        coro = func(*args, **kwargs)
+        try:
+            # If we're already in an asyncio loop, hand back the coroutine:
+            asyncio.get_running_loop()
+            return coro  # caller must await it
+        except RuntimeError:
+            # Otherwise, schedule on the background loop and block
+            future = asyncio.run_coroutine_threadsafe(coro, _background_loop)
+            return future.result()
+
+    return wrapper
 
 
 def dump_papers(papers: pd.DataFrame, filepath: str) -> None:
@@ -70,18 +105,3 @@ def load_jsonl(filepath: str) -> List[Dict[str, str]]:
     with open(filepath, "r") as f:
         data = [json.loads(line) for line in f.readlines()]
     return data
-
-
-def optional_async(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Check if there's an active event loop
-        try:
-            loop = asyncio.get_running_loop()
-            # If we're in an async context, await the function
-            return func(*args, **kwargs)
-        except RuntimeError:
-            # Otherwise, run it synchronously using asyncio.run
-            return asyncio.run(func(*args, **kwargs))
-
-    return wrapper

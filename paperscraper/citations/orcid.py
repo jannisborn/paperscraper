@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Optional
 
 import requests
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://pub.orcid.org/v3.0/"
 
 
-def orcid_to_author_name(orcid_id: str) -> str:
+def orcid_to_author_name(orcid_id: str) -> Optional[str]:
     """
     Given an ORCID ID (as a string, e.g. '0000-0002-1825-0097'),
     returns the full name of the author from the ORCID public API.

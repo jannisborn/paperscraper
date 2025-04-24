@@ -1,50 +1,48 @@
 import logging
 import time
-from typing import Dict
 
 import pytest
 
-from paperscraper.citations import self_references_paper
-from paperscraper.citations.self_references import ReferenceResult
+from paperscraper.citations import self_citations_paper
+from paperscraper.citations.self_citations import CitationResult
 
 logging.disable(logging.INFO)
 
 
-class TestSelfReferences:
+class TestSelfCitations:
     @pytest.fixture
     def dois(self):
         return [
-            "10.1038/s43586-024-00334-2",
+            "10.1038/s41467-020-18671-7",
             "10.1038/s41586-023-06600-9",
-            "10.1016/j.neunet.2014.09.003",
+            "ed69978f1594a4e2b9dccfc950490fa1df817ae8",
         ]
 
     def test_single_doi(self, dois):
-        result = self_references_paper(dois[0])
-        assert isinstance(result, ReferenceResult)
-        assert isinstance(result.num_references, int)
-        assert result.num_references > 0
+        result = self_citations_paper(dois[0])
+        assert isinstance(result, CitationResult)
         assert isinstance(result.ssid, str)
-        assert isinstance(result.reference_score, float)
-        assert result.reference_score > 0
-        assert isinstance(result.self_references, Dict)
-        for author, self_cites in result.self_references.items():
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations > 10
+        assert isinstance(result.citation_score, float)
+        assert result.citation_score > 0
+        for author, self_cites in result.self_citations.items():
             assert isinstance(author, str)
             assert isinstance(self_cites, float)
             assert self_cites >= 0 and self_cites <= 100
 
     def test_multiple_dois(self, dois):
-        results = self_references_paper(dois[1:])
-        assert isinstance(results, list)
-        assert len(results) == len(dois[1:])
-        for ref_result in results:
-            assert isinstance(ref_result, ReferenceResult)
-            assert isinstance(ref_result.ssid, str)
-            assert isinstance(ref_result.num_references, int)
-            assert ref_result.num_references > 0
-            assert ref_result.reference_score > 0
-            assert isinstance(ref_result.reference_score, float)
-            for author, self_cites in ref_result.self_references.items():
+        result = self_citations_paper(dois[1:])
+        assert isinstance(result, list)
+        assert len(result) == len(dois[1:])
+        for cit_result in result:
+            assert isinstance(cit_result, CitationResult)
+            assert isinstance(cit_result.ssid, str)
+            assert isinstance(cit_result.num_citations, int)
+            assert cit_result.num_citations > 0
+            assert cit_result.citation_score > 0
+            assert isinstance(cit_result.citation_score, float)
+            for author, self_cites in cit_result.self_citations.items():
                 assert isinstance(author, str)
                 assert isinstance(self_cites, float)
                 assert self_cites >= 0 and self_cites <= 100
@@ -56,12 +54,12 @@ class TestSelfReferences:
         """
 
         start_time = time.perf_counter()
-        async_results = self_references_paper(dois)
+        async_results = self_citations_paper(dois)
         async_duration = time.perf_counter() - start_time
 
         # Measure synchronous execution time (three independent calls)
         start_time = time.perf_counter()
-        sync_results = [self_references_paper(doi) for doi in dois]
+        sync_results = [self_citations_paper(doi) for doi in dois]
 
         sync_duration = time.perf_counter() - start_time
 
@@ -69,11 +67,12 @@ class TestSelfReferences:
         print(
             f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
         )
-        for a, s in zip(async_results, sync_results):
-            assert a == s, f"{a} vs {s}"
 
         # Assert that async execution (batch) is faster or at least not slower
         assert 0.9 * async_duration <= sync_duration, (
             f"Async execution ({async_duration:.2f}s) is slower than sync execution "
             f"({sync_duration:.2f}s)"
         )
+
+        for a, s in zip(async_results, sync_results):
+            assert a == s, f"{a} vs {s}"
