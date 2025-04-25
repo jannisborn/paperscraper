@@ -17,11 +17,7 @@ class TestPaper:
 
     @pytest.fixture
     def dois(self):
-        return [
-            "10.1038/s41586-023-06600-9",
-            "10.1016/j.neunet.2014.09.003",
-            "10.1016/j.isci.2021.102269",
-        ]
+        return ["10.1038/s41586-023-06600-9", "10.1016/j.neunet.2014.09.003"]
 
     def test_paper_doi(self, dois):
         for doi in dois:

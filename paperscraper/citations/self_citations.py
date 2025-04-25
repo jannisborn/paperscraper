@@ -1,13 +1,14 @@
+import asyncio
 import logging
 import re
 import sys
-from typing import Dict
+from typing import Any, Dict, List, Union
 
 import httpx
 import numpy as np
 from pydantic import BaseModel
 
-from ..utils import optional_async
+from ..async_utils import optional_async, retry_with_exponential_backoff
 from .utils import DOI_PATTERN, find_matching
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -22,62 +23,104 @@ class CitationResult(BaseModel):
     citation_score: float
 
 
-@optional_async
-async def self_citations_paper(input: str, verbose: bool = False) -> CitationResult:
+async def _fetch_citation_data(
+    client: httpx.AsyncClient, suffix: str
+) -> Dict[str, Any]:
     """
-    Analyze self-citations for a single DOI or semantic scholar ID.
+    Fetch raw paper data from Semantic Scholar by DOI or SSID suffix.
 
     Args:
-        input: Either a DOI or a semantic scholar ID.
-        verbose: Whether to log detailed information. Defaults to False.
+        client: An active httpx.AsyncClient.
+        suffix: Prefixed identifier (e.g., "DOI:10.1000/xyz123" or SSID).
 
     Returns:
-        A ReferenceResult object.
-
-    Raises:
-        ValueError: If no citations are found for the given DOI.
+        The JSON-decoded response as a dictionary.
     """
-    if len(input) > 15 and " " not in input and (input.isalnum() and input.islower()):
-        mode = ""
-    elif len(re.findall(DOI_PATTERN, input, re.IGNORECASE)) == 1:
-        mode = "DOI:"
+    response = await client.get(
+        f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
+        params={"fields": "title,authors,citations.authors"},
+    )
+    response.raise_for_status()
+    return response.json()
 
-    suffix = f"{mode}{input}"
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
-        response = await client.get(
-            f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
-            params={"fields": "title,authors,citations.authors"},
-        )
-        response.raise_for_status()
-        paper = response.json()
 
-    authors: Dict[str, int] = {a["name"]: 0 for a in paper["authors"]}
-    ratios = authors.copy()
-    if not paper.get("citations"):
-        logger.warning(f"Could not find citations from Semantic Scholar for ID:{input}")
-        return authors
+async def _process_single(client: httpx.AsyncClient, identifier: str) -> CitationResult:
+    """
+    Compute self-citation stats for a single paper.
 
-    for citation in paper["citations"]:
-        # For every reference, find matching names and increase
-        for author in find_matching(paper["authors"], citation["authors"]):
-            authors[author] += 1
+    Args:
+        client: An active httpx.AsyncClient.
+        identifier: A DOI or Semantic Scholar ID.
 
-    total = len(paper["citations"])
+    Returns:
+        A CitationResult containing counts and percentages of self-citations.
+    """
+    # Determine prefix for Semantic Scholar API
+    if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
+        prefix = ""
+    elif len(re.findall(DOI_PATTERN, identifier, re.IGNORECASE)) == 1:
+        prefix = "DOI:"
+    else:
+        prefix = ""
 
-    if verbose:
-        logger.info(f'Self-citations in "{paper["title"]}"')
-        logger.info(f" N = {len(paper['citations'])}")
-        for author, self_cites in authors.items():
-            logger.info(f" {author}: {100 * (self_cites / total):.2f}% self-citations")
+    suffix = f"{prefix}{identifier}"
+    paper = await _fetch_citation_data(client, suffix)
 
-    for author, self_cites in authors.items():
-        ratios[author] = round(100 * self_cites / total, 2)
+    # Initialize counters
+    author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
+    citations = paper.get("citations", [])
+    total_cites = len(citations)
 
-    result = CitationResult(
-        ssid=input,
-        num_citations=total,
+    # Tally self-citations
+    for cite in citations:
+        matched = find_matching(paper.get("authors", []), cite.get("authors", []))
+        for name in matched:
+            author_counts[name] += 1
+
+    # Compute percentages
+    ratios: Dict[str, float] = {
+        name: round((count / total_cites * 100), 2) if total_cites > 0 else 0.0
+        for name, count in author_counts.items()
+    }
+
+    avg_score = round(float(np.mean(list(ratios.values()))) if ratios else 0.0, 3)
+
+    return CitationResult(
+        ssid=identifier,
+        num_citations=total_cites,
         self_citations=ratios,
-        citation_score=round(np.mean(list(ratios.values())), 3),
+        citation_score=avg_score,
     )
 
-    return result
+
+@optional_async
+@retry_with_exponential_backoff(max_retries=4, base_delay=1.0)
+async def self_citations_paper(
+    inputs: Union[str, List[str]], verbose: bool = False
+) -> Union[CitationResult, List[CitationResult]]:
+    """
+    Analyze self-citations for one or more papers by DOI or Semantic Scholar ID.
+
+    Args:
+        inputs: A single DOI/SSID string or a list of them.
+        verbose: If True, logs detailed information for each paper.
+
+    Returns:
+        A single CitationResult if a string was passed, else a list of CitationResults.
+    """
+    single_input = isinstance(inputs, str)
+    identifiers = [inputs] if single_input else list(inputs)
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+        tasks = [_process_single(client, ident) for ident in identifiers]
+        results = await asyncio.gather(*tasks)
+
+    if verbose:
+        for res in results:
+            logger.info(
+                f'Self-citations in "{res.ssid}": N={res.num_citations}, Score={res.citation_score}%'
+            )
+            for author, pct in res.self_citations.items():
+                logger.info(f"  {author}: {pct}%")
+
+    return results[0] if single_input else results
