@@ -45,7 +45,6 @@ class TestPDF:
 
         # Now try with S3 routine
         keys = load_api_keys("api_keys.txt")
-        print("Keys", keys)
         save_pdf(
             {"doi": "10.1101/786871"},
             filepath="taskload.pdf",
