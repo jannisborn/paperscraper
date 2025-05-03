@@ -38,10 +38,10 @@ class TestPDF:
         os.remove("kinases.json")
 
         # biorxiv
-        # paper_data = {"doi": "10.1101/798496"}
-        # save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
-        # assert not os.path.exists("taskload.pdf")
-        # assert not os.path.exists("taskload.json")
+        paper_data = {"doi": "10.1101/798496"}
+        save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
+        assert not os.path.exists("taskload.pdf")
+        assert not os.path.exists("taskload.json")
 
         # Now try with S3 routine
         keys = load_api_keys("api_keys.txt")
@@ -53,7 +53,6 @@ class TestPDF:
             api_keys=keys,
         )
         assert os.path.exists("taskload.pdf")
-        exit()
 
         # medrxiv
         paper_data = {"doi": "10.1101/2020.09.02.20187096"}
