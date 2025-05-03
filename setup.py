@@ -45,6 +45,7 @@ setup(
         "pydantic",
         "unidecode",
         "dotenv",
+        "boto3",
     ],
     keywords=[
         "Academics",

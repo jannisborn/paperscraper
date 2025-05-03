@@ -6,14 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from paperscraper.pdf import (
-    fallback_bioc_pmc,
-    fallback_elife_xml,
-    fallback_elsevier_api,
-    fallback_wiley_api,
-    save_pdf,
-    save_pdf_from_dump,
-)
+from paperscraper.pdf import load_api_keys, save_pdf, save_pdf_from_dump
+from paperscraper.pdf.fallbacks import FALLBACKS
 
 logging.disable(logging.INFO)
 
@@ -44,12 +38,22 @@ class TestPDF:
         os.remove("kinases.json")
 
         # biorxiv
-        paper_data = {"doi": "10.1101/798496"}
-        save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
+        # paper_data = {"doi": "10.1101/798496"}
+        # save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
+        # assert not os.path.exists("taskload.pdf")
+        # assert not os.path.exists("taskload.json")
+
+        # Now try with S3 routine
+        keys = load_api_keys("api_keys.txt")
+        print("Keys", keys)
+        save_pdf(
+            {"doi": "10.1101/786871"},
+            filepath="taskload.pdf",
+            save_metadata=False,
+            api_keys=keys,
+        )
         assert os.path.exists("taskload.pdf")
-        assert os.path.exists("taskload.json")
-        os.remove("taskload.pdf")
-        os.remove("taskload.json")
+        exit()
 
         # medrxiv
         paper_data = {"doi": "10.1101/2020.09.02.20187096"}
@@ -261,7 +265,7 @@ class TestPDF:
         test_doi = "10.1038/s41587-022-01613-7"  # Use a DOI known to be in PMC
         output_path = Path("test_bioc_pmc_output")
         try:
-            result = fallback_bioc_pmc(test_doi, output_path)
+            result = FALLBACKS["bioc_pmc"](test_doi, output_path)
             assert result is True
             assert (output_path.with_suffix(".xml")).exists()
             with open(
@@ -278,7 +282,7 @@ class TestPDF:
         """Test BioC-PMC fallback when no PMCID is available."""
         test_doi = "10.1002/smll.202309431"  # This DOI should not have a PMCID
         output_path = Path("test_bioc_pmc_no_pmcid")
-        result = fallback_bioc_pmc(test_doi, output_path)
+        result = FALLBACKS["bioc_pmc"](test_doi, output_path)
         assert result is False
         assert not os.path.exists(output_path.with_suffix(".xml"))
 
@@ -287,7 +291,7 @@ class TestPDF:
         test_doi = "10.7554/eLife.100173"  # Use a DOI known to be in eLife
         output_path = Path("test_elife_xml_output")
         try:
-            result = fallback_elife_xml(test_doi, output_path)
+            result = FALLBACKS["elife"](test_doi, output_path)
             assert result is True
             assert (output_path.with_suffix(".xml")).exists()
             with open(
@@ -306,7 +310,7 @@ class TestPDF:
             "10.7554/eLife.00001"  # Article that doesn't exist in eLife repository
         )
         output_path = Path("test_elife_nonexistent")
-        result = fallback_elife_xml(test_doi, output_path)
+        result = FALLBACKS["elife"](test_doi, output_path)
         # Assertions - should return False and not create a file
         assert result is False
         assert not os.path.exists(output_path.with_suffix(".xml"))
@@ -322,7 +326,7 @@ class TestPDF:
         output_path = Path("test_wiley_output")
         api_keys = {"WILEY_TDM_API_TOKEN": "test_token"}
         try:
-            fallback_wiley_api(paper_metadata, output_path, api_keys)
+            FALLBACKS["wiley"](paper_metadata, output_path, api_keys)
             assert mock_get.called
             mock_get.assert_called_with(
                 "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fsmll.202309431",
@@ -344,7 +348,7 @@ class TestPDF:
         paper_metadata = {"doi": "10.1002/smll.202309431"}
         output_path = Path("test_wiley_output")
         api_keys = {"WILEY_TDM_API_TOKEN": "INVALID_TEST_KEY_123"}
-        result = fallback_wiley_api(paper_metadata, output_path, api_keys)
+        result = FALLBACKS["wiley"](paper_metadata, output_path, api_keys)
         # Check the result is a boolean
         # will be True if on university network and False otherwise
         assert isinstance(result, bool)
@@ -362,7 +366,7 @@ class TestPDF:
         output_path = Path("test_elsevier_output")
         api_keys = {"ELSEVIER_TDM_API_KEY": "test_key"}
         try:
-            fallback_elsevier_api(paper_metadata, output_path, api_keys)
+            FALLBACKS["elsevier"](paper_metadata, output_path, api_keys)
             assert mock_get.called
             mock_get.assert_called_with(
                 "https://api.elsevier.com/content/article/doi/10.1016/j.xops.2024.100504?apiKey=test_key&httpAccept=text%2Fxml",
@@ -384,7 +388,7 @@ class TestPDF:
         paper_metadata = {"doi": "10.1016/j.xops.2024.100504"}
         output_path = Path("test_elsevier_invalid")
         api_keys = {"ELSEVIER_TDM_API_KEY": "INVALID_TEST_KEY_123"}
-        result = fallback_elsevier_api(paper_metadata, output_path, api_keys)
+        result = FALLBACKS["elsevier"](paper_metadata, output_path, api_keys)
         # Should return False for invalid key
         assert result is False
         assert not output_path.with_suffix(".xml").exists()

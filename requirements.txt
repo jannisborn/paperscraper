@@ -16,3 +16,4 @@ semanticscholar>=0.8.4
 pydantic
 unidecode
 dotenv
+boto3
