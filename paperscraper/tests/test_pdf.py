@@ -52,6 +52,7 @@ class TestPDF:
             api_keys=keys,
         )
         assert os.path.exists("taskload.pdf")
+        os.remove("taskload.pdf")
 
         # medrxiv
         paper_data = {"doi": "10.1101/2020.09.02.20187096"}
