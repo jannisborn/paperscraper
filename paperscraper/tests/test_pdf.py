@@ -59,6 +59,11 @@ class TestPDF:
         assert os.path.exists("taskload.pdf")
         os.remove("taskload.pdf")
 
+        # Test S3 fallback explicitly
+        FALLBACKS["s3"](doi="10.1101/786871", output_path="taskload.pdf", api_keys=keys)
+        assert os.path.exists("taskload.pdf")
+        os.remove("taskload.pdf")
+
         # medrxiv
         paper_data = {"doi": "10.1101/2020.09.02.20187096"}
         save_pdf(paper_data, filepath="covid_review.pdf", save_metadata=True)
