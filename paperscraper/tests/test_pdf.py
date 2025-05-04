@@ -44,7 +44,7 @@ class TestPDF:
         os.environ.pop("AWS_ACCESS_KEY_ID", None)
         os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
         save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
-        # NOTE: Locally this fails but surprisingly the CI doesnt need to fight with Cloudflare for the moment
+        # NOTE: Locally this fails but surprisingly the CI does not need to fight with Cloudflare for the moment
         assert os.path.exists("taskload.pdf")
         assert os.path.exists("taskload.json")
 
