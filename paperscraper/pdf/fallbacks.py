@@ -416,15 +416,16 @@ def fallback_s3(
         for key in meca_keys
     }
     target = None
-    for future in tqdm(
-        as_completed(futures),
+    pbar = tqdm(
         total=len(futures),
-        desc=f"Scanning in biorxiv with {workers} workers for {doi}...",
-    ):
+        desc=f"Scanning in biorxiv with {workers} workers for {doi}…",
+    )
+    for future in as_completed(futures):
         key = futures[future]
         try:
             if future.result():
                 target = key
+                pbar.set_description(f"Success! Found target {doi} in {key}")
                 # cancel pending futures to speed shutdown
                 for fut in futures:
                     fut.cancel()

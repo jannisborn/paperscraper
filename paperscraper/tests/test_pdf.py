@@ -38,6 +38,8 @@ class TestPDF:
         os.remove("kinases.json")
 
         # biorxiv
+        if os.path.exists("taskload.pdf"):
+            os.remove("taskload.pdf")
         paper_data = {"doi": "10.1101/798496"}
         save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
         assert not os.path.exists("taskload.pdf")
