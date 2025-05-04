@@ -431,7 +431,9 @@ def fallback_s3(
                     fut.cancel()
                 break
         except Exception:
-            continue
+            pass
+        finally:
+            pbar.update(1)
     # shutdown without waiting for remaining threads
     executor.shutdown(wait=False)
     if target is None:

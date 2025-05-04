@@ -41,6 +41,8 @@ class TestPDF:
         if os.path.exists("taskload.pdf"):
             os.remove("taskload.pdf")
         paper_data = {"doi": "10.1101/798496"}
+        os.environ.pop("AWS_ACCESS_KEY_ID", None)
+        os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
         save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
         assert not os.path.exists("taskload.pdf")
         assert not os.path.exists("taskload.json")
