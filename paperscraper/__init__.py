@@ -1,7 +1,7 @@
 """Initialize the module."""
 
 __name__ = "paperscraper"
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 import logging
 import os
@@ -36,7 +36,7 @@ def dump_queries(keywords: List[List[Union[str, List[str]]]], dump_root: str) ->
 
     for idx, keyword in enumerate(keywords):
         for db, f in QUERY_FN_DICT.items():
-            logger.info(f" Keyword {idx+1}/{len(keywords)}, DB: {db}")
+            logger.info(f" Keyword {idx + 1}/{len(keywords)}, DB: {db}")
             filename = get_filename_from_query(keyword)
             os.makedirs(os.path.join(dump_root, db), exist_ok=True)
             f(keyword, output_filepath=os.path.join(dump_root, db, filename))
