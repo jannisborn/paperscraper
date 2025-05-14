@@ -374,6 +374,8 @@ def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         manifest = z.read("manifest.xml")
 
+    # Extract the last part of the DOI (newer DOIs that contain date fail otherwise)
+    doi_token = doi_token.split('.')[-1]
     return doi_token.encode("utf-8") in manifest.lower()
 
 

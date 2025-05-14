@@ -47,6 +47,8 @@ class TestPDF:
         # NOTE: Locally this fails but surprisingly the CI does not need to fight with Cloudflare for the moment
         assert os.path.exists("taskload.pdf")
         assert os.path.exists("taskload.json")
+        os.remove("taskload.pdf")
+        os.remove("taskload.json")
 
         # Now try with S3 routine
         keys = load_api_keys("api_keys.txt")
@@ -61,6 +63,11 @@ class TestPDF:
 
         # Test S3 fallback explicitly
         FALLBACKS["s3"](doi="10.1101/786871", output_path="taskload.pdf", api_keys=keys)
+        assert os.path.exists("taskload.pdf")
+        os.remove("taskload.pdf")
+
+        # Test S3 fallback with newer DOIs (including year/month/day)
+        FALLBACKS["s3"](doi="10.1101/2023.10.09.561414", output_path="taskload.pdf", api_keys=keys)
         assert os.path.exists("taskload.pdf")
         os.remove("taskload.pdf")
 
