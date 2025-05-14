@@ -9,9 +9,7 @@ jobs:
       max-parallel: 3
       matrix:
         python-version:
-          - 3.9
           - "3.10"
-          - "3.11"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,6 +24,15 @@ jobs:
           pip install coverage pytest-cov
       - name: Install package from source
         run: pip install -e .
+      - name: Export AWS secrets
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> api_keys.txt
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> api_keys.txt
+          unset AWS_ACCESS_KEY_ID
+          unset AWS_SECRET_ACCESS_KEY
       - name: Test package from source
         run: |
           python -c "import paperscraper"
@@ -33,7 +40,7 @@ jobs:
           coverage report
           coverage xml -o coverage.xml
       - name: Upload to Codecov
-        if: matrix.python-version == '3.9'
+        if: matrix.python-version == '3.10'
         uses: codecov/codecov-action@v2
         with:
           files: coverage.xml
@@ -49,10 +56,20 @@ jobs:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.event.pull_request.head.ref }}
 
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: "3.10"
+
+    - name: Export AWS secrets
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> api_keys.txt
+        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> api_keys.txt
+        unset AWS_ACCESS_KEY_ID
+        unset AWS_SECRET_ACCESS_KEY
 
     - name: Install dependencies
       run: |

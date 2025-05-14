@@ -1,262 +1,27 @@
 """Functionalities to scrape PDF files of publications."""
 
-import json
+import calendar
+import datetime
+import io
 import logging
-import os
 import re
 import sys
 import time
+import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Union
 
+import boto3
 import requests
-import tldextract
-from bs4 import BeautifulSoup
-from dotenv import find_dotenv, load_dotenv
 from lxml import etree
 from tqdm import tqdm
 
-from .utils import load_jsonl
+ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
 
+logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-ABSTRACT_ATTRIBUTE = {
-    "biorxiv": ["DC.Description"],
-    "arxiv": ["citation_abstract"],
-    "chemrxiv": ["citation_abstract"],
-}
-DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
-
-
-def save_pdf(
-    paper_metadata: Dict[str, Any],
-    filepath: str,
-    save_metadata: bool = False,
-    api_keys: Optional[Union[str, Dict[str, str]]] = None,
-) -> None:
-    """
-    Save a PDF file of a paper.
-
-    Args:
-        paper_metadata: A dictionary with the paper metadata. Must contain the `doi` key.
-        filepath: Path to the PDF file to be saved (with or without suffix).
-        save_metadata: A boolean indicating whether to save paper metadata as a separate json.
-        api_keys: Either a dictionary containing API keys (if already loaded) or a string (path to API keys file).
-                  If None, will try to load from `.env` file and if unsuccessful, skip API-based fallbacks.
-    """
-    if not isinstance(paper_metadata, Dict):
-        raise TypeError(f"paper_metadata must be a dict, not {type(paper_metadata)}.")
-    if "doi" not in paper_metadata.keys():
-        raise KeyError("paper_metadata must contain the key 'doi'.")
-    if not isinstance(filepath, str):
-        raise TypeError(f"filepath must be a string, not {type(filepath)}.")
-
-    output_path = Path(filepath)
-
-    if not Path(output_path).parent.exists():
-        raise ValueError(f"The folder: {output_path} seems to not exist.")
-
-    # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
-    if not isinstance(api_keys, dict):
-        api_keys = load_api_keys(api_keys)
-
-    url = f"https://doi.org/{paper_metadata['doi']}"
-    try:
-        response = requests.get(url, timeout=60)
-        response.raise_for_status()
-    except Exception as e:
-        logger.warning(
-            f"Could not download from: {url} - {e}. Attempting download via BioC-PMC fallback"
-        )
-        # always first try fallback to BioC-PMC (open access papers on PubMed Central)
-        success = fallback_bioc_pmc(paper_metadata["doi"], output_path)
-
-        # if BioC-PMC fails, try other fallbacks
-        if not success:
-            # check for specific publishers
-            if "elife" in str(e).lower():  # elife has an open XML repository on GitHub
-                fallback_elife_xml(paper_metadata["doi"], output_path)
-            elif (
-                ("wiley" in str(e).lower())
-                and api_keys
-                and ("WILEY_TDM_API_TOKEN" in api_keys)
-            ):
-                fallback_wiley_api(paper_metadata, output_path, api_keys)
-        return
-
-    soup = BeautifulSoup(response.text, features="lxml")
-    meta_pdf = soup.find("meta", {"name": "citation_pdf_url"})
-    if meta_pdf and meta_pdf.get("content"):
-        pdf_url = meta_pdf.get("content")
-        try:
-            response = requests.get(pdf_url, timeout=60)
-            response.raise_for_status()
-
-            if response.content[:4] != b"%PDF":
-                logger.warning(
-                    f"The file from {url} does not appear to be a valid PDF."
-                )
-                success = fallback_bioc_pmc(paper_metadata["doi"], output_path)
-                if not success:
-                    # Check for specific publishers
-                    if "elife" in paper_metadata["doi"].lower():
-                        logger.info("Attempting fallback to eLife XML repository")
-                        fallback_elife_xml(paper_metadata["doi"], output_path)
-                    elif api_keys and "WILEY_TDM_API_TOKEN" in api_keys:
-                        fallback_wiley_api(paper_metadata, output_path, api_keys)
-                    elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:
-                        fallback_elsevier_api(paper_metadata, output_path, api_keys)
-            else:
-                with open(output_path.with_suffix(".pdf"), "wb+") as f:
-                    f.write(response.content)
-        except Exception as e:
-            logger.warning(f"Could not download {pdf_url}: {e}")
-    else:  # if no citation_pdf_url meta tag found, try other fallbacks
-        if "elife" in paper_metadata["doi"].lower():
-            logger.info(
-                "DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
-            )
-            if not fallback_elife_xml(paper_metadata["doi"], output_path):
-                logger.warning(
-                    f"eLife XML fallback failed for {paper_metadata['doi']}."
-                )
-        elif (
-            api_keys and "ELSEVIER_TDM_API_KEY" in api_keys
-        ):  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
-            fallback_elsevier_api(paper_metadata, output_path, api_keys)
-        else:
-            logger.warning(
-                f"Retrieval failed. No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available."
-            )
-
-    if not save_metadata:
-        return
-
-    metadata = {}
-    # Extract title
-    title_tag = soup.find("meta", {"name": "citation_title"})
-    metadata["title"] = title_tag.get("content") if title_tag else "Title not found"
-
-    # Extract authors
-    authors = []
-    for author_tag in soup.find_all("meta", {"name": "citation_author"}):
-        if author_tag.get("content"):
-            authors.append(author_tag["content"])
-    metadata["authors"] = authors if authors else ["Author information not found"]
-
-    # Extract abstract
-    domain = tldextract.extract(url).domain
-    abstract_keys = ABSTRACT_ATTRIBUTE.get(domain, DEFAULT_ATTRIBUTES)
-
-    for key in abstract_keys:
-        abstract_tag = soup.find("meta", {"name": key})
-        if abstract_tag:
-            raw_abstract = BeautifulSoup(
-                abstract_tag.get("content", "None"), "html.parser"
-            ).get_text(separator="\n")
-            if raw_abstract.strip().startswith("Abstract"):
-                raw_abstract = raw_abstract.strip()[8:]
-            metadata["abstract"] = raw_abstract.strip()
-            break
-
-    if "abstract" not in metadata.keys():
-        metadata["abstract"] = "Abstract not found"
-        logger.warning(f"Could not find abstract for {url}")
-    elif metadata["abstract"].endswith("..."):
-        logger.warning(f"Abstract truncated from {url}")
-
-    # Save metadata to JSON
-    try:
-        with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-    except Exception as e:
-        logger.error(f"Failed to save metadata to {str(output_path)}: {e}")
-
-
-def save_pdf_from_dump(
-    dump_path: str,
-    pdf_path: str,
-    key_to_save: str = "doi",
-    save_metadata: bool = False,
-    api_keys: Optional[str] = None,
-) -> None:
-    """
-    Receives a path to a `.jsonl` dump with paper metadata and saves the PDF files of
-    each paper.
-
-    Args:
-        dump_path: Path to a `.jsonl` file with paper metadata, one paper per line.
-        pdf_path: Path to a folder where the files will be stored.
-        key_to_save: Key in the paper metadata to use as filename.
-            Has to be `doi` or `title`. Defaults to `doi`.
-        save_metadata: A boolean indicating whether to save paper metadata as a separate json.
-        api_keys: Path to a file with API keys. If None, API-based fallbacks will be skipped.
-    """
-
-    if not isinstance(dump_path, str):
-        raise TypeError(f"dump_path must be a string, not {type(dump_path)}.")
-    if not dump_path.endswith(".jsonl"):
-        raise ValueError("Please provide a dump_path with .jsonl extension.")
-
-    if not isinstance(pdf_path, str):
-        raise TypeError(f"pdf_path must be a string, not {type(pdf_path)}.")
-
-    if not isinstance(key_to_save, str):
-        raise TypeError(f"key_to_save must be a string, not {type(key_to_save)}.")
-    if key_to_save not in ["doi", "title", "date"]:
-        raise ValueError("key_to_save must be one of 'doi' or 'title'.")
-
-    papers = load_jsonl(dump_path)
-
-    if not isinstance(api_keys, dict):
-        api_keys = load_api_keys(api_keys)
-
-    pbar = tqdm(papers, total=len(papers), desc="Processing")
-    for i, paper in enumerate(pbar):
-        pbar.set_description(f"Processing paper {i + 1}/{len(papers)}")
-
-        if "doi" not in paper.keys() or paper["doi"] is None:
-            logger.warning(f"Skipping {paper['title']} since no DOI available.")
-            continue
-        filename = paper[key_to_save].replace("/", "_")
-        pdf_file = Path(os.path.join(pdf_path, f"{filename}.pdf"))
-        xml_file = pdf_file.with_suffix(".xml")
-        if pdf_file.exists():
-            logger.info(f"File {pdf_file} already exists. Skipping download.")
-            continue
-        if xml_file.exists():
-            logger.info(f"File {xml_file} already exists. Skipping download.")
-            continue
-        output_path = str(pdf_file)
-        save_pdf(paper, output_path, save_metadata=save_metadata, api_keys=api_keys)
-
-
-def load_api_keys(filepath: Optional[str] = None) -> Dict[str, str]:
-    """
-    Reads API keys from a file and returns them as a dictionary.
-    The file should have each API key on a separate line in the format:
-        KEY_NAME=API_KEY_VALUE
-
-    Example:
-        WILEY_TDM_API_TOKEN=your_wiley_token_here
-        ELSEVIER_TDM_API_KEY=your_elsevier_key_here
-
-    Args:
-        filepath: Optional path to the file containing API keys.
-
-    Returns:
-        Dict[str, str]: A dictionary where keys are API key names and values are their respective API keys.
-    """
-    if filepath:
-        load_dotenv(dotenv_path=filepath)
-    else:
-        load_dotenv(find_dotenv())
-
-    return {
-        "WILEY_TDM_API_TOKEN": os.getenv("WILEY_TDM_API_TOKEN"),
-        "ELSEVIER_TDM_API_KEY": os.getenv("ELSEVIER_TDM_API_KEY"),
-    }
 
 
 def fallback_wiley_api(
@@ -491,9 +256,6 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     return True
 
 
-ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
-
-
 def get_elife_xml_index() -> dict:
     """
     Fetch the eLife XML index from GitHub and return it as a dictionary.
@@ -534,3 +296,171 @@ def get_elife_xml_index() -> dict:
         for key in ELIFE_XML_INDEX:
             ELIFE_XML_INDEX[key].sort(key=lambda x: x[0])
     return ELIFE_XML_INDEX
+
+
+def month_folder(doi: str) -> str:
+    """
+    Query bioRxiv API to get the posting date of a given DOI.
+    Convert a date to the BioRxiv S3 folder name, rolling over if it's the month's last day.
+    E.g., if date is the last day of April, treat as May_YYYY.
+
+    Args:
+        doi: The DOI for which to retrieve the date.
+
+    Returns:
+        Month and year in format `October_2019`
+    """
+    url = f"https://api.biorxiv.org/details/biorxiv/{doi}/na/json"
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    date_str = resp.json()["collection"][0]["date"]
+    date = datetime.date.fromisoformat(date_str)
+
+    # NOTE: bioRxiv papers posted on the last day of the month are archived the next day
+    last_day = calendar.monthrange(date.year, date.month)[1]
+    if date.day == last_day:
+        date = date + datetime.timedelta(days=1)
+    return date.strftime("%B_%Y")
+
+
+def list_meca_keys(s3_client, bucket: str, prefix: str) -> list:
+    """
+    List all .meca object keys under a given prefix in a requester-pays bucket.
+
+    Args:
+        s3_client: S3 client to get the data from.
+        bucket: bucket to get data from.
+        prefix: prefix to get data from.
+
+    Returns:
+        List of keys, one per existing .meca in the bucket.
+    """
+    keys = []
+    paginator = s3_client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(
+        Bucket=bucket, Prefix=prefix, RequestPayer="requester"
+    ):
+        for obj in page.get("Contents", []):
+            if obj["Key"].endswith(".meca"):
+                keys.append(obj["Key"])
+    return keys
+
+
+def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
+    """
+    Efficiently inspect manifest.xml within a .meca zip by fetching only necessary bytes.
+    Parse via ZipFile to read manifest.xml and match DOI token.
+
+    Args:
+        s3_client: S3 client to get the data from.
+        bucket: bucket to get data from.
+        key: prefix to get data from.
+        doi_token: the DOI that should be matched
+
+    Returns:
+        Whether or not the DOI could be matched
+    """
+    try:
+        head = s3_client.get_object(
+            Bucket=bucket, Key=key, Range="bytes=0-4095", RequestPayer="requester"
+        )["Body"].read()
+        tail = s3_client.get_object(
+            Bucket=bucket, Key=key, Range="bytes=-4096", RequestPayer="requester"
+        )["Body"].read()
+    except Exception:
+        return False
+
+    data = head + tail
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        manifest = z.read("manifest.xml")
+
+    # Extract the last part of the DOI (newer DOIs that contain date fail otherwise)
+    doi_token = doi_token.split('.')[-1]
+    return doi_token.encode("utf-8") in manifest.lower()
+
+
+def fallback_s3(
+    doi: str, output_path: Union[str, Path], api_keys: dict, workers: int = 32
+) -> bool:
+    """
+    Download a BioRxiv PDF via the requester-pays S3 bucket using range requests.
+
+    Args:
+        doi: The DOI for which to retrieve the PDF (e.g. '10.1101/798496').
+        output_path: Path where the PDF will be saved (with .pdf suffix added).
+        api_keys: Dict containing 'AWS_ACCESS_KEY_ID' and 'AWS_SECRET_ACCESS_KEY'.
+
+    Returns:
+        True if download succeeded, False otherwise.
+    """
+
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=api_keys.get("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=api_keys.get("AWS_SECRET_ACCESS_KEY"),
+        region_name="us-east-1",
+    )
+    bucket = "biorxiv-src-monthly"
+
+    # Derive prefix from DOI date
+    prefix = f"Current_Content/{month_folder(doi)}/"
+
+    # List MECA archives in that month
+    meca_keys = list_meca_keys(s3, bucket, prefix)
+    if not meca_keys:
+        return False
+
+    token = doi.split("/")[-1].lower()
+    target = None
+    executor = ThreadPoolExecutor(max_workers=32)
+    futures = {
+        executor.submit(find_meca_for_doi, s3, bucket, key, token): key
+        for key in meca_keys
+    }
+    target = None
+    pbar = tqdm(
+        total=len(futures),
+        desc=f"Scanning in biorxiv with {workers} workers for {doi}…",
+    )
+    for future in as_completed(futures):
+        key = futures[future]
+        try:
+            if future.result():
+                target = key
+                pbar.set_description(f"Success! Found target {doi} in {key}")
+                # cancel pending futures to speed shutdown
+                for fut in futures:
+                    fut.cancel()
+                break
+        except Exception:
+            pass
+        finally:
+            pbar.update(1)
+    # shutdown without waiting for remaining threads
+    executor.shutdown(wait=False)
+    if target is None:
+        logger.error(f"Could not find {doi} on biorxiv")
+        return False
+
+    # Download full MECA and extract PDF
+    data = s3.get_object(Bucket=bucket, Key=target, RequestPayer="requester")[
+        "Body"
+    ].read()
+    output_path = Path(output_path)
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        for name in z.namelist():
+            if name.lower().endswith(".pdf"):
+                z.extract(name, path=output_path.parent)
+                # Move file to desired location
+                (output_path.parent / name).rename(output_path.with_suffix(".pdf"))
+                return True
+    return False
+
+
+FALLBACKS: Dict[str, Callable] = {
+    "bioc_pmc": fallback_bioc_pmc,
+    "elife": fallback_elife_xml,
+    "elsevier": fallback_elsevier_api,
+    "s3": fallback_s3,
+    "wiley": fallback_wiley_api,
+}
