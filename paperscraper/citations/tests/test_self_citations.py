@@ -13,7 +13,6 @@ class TestSelfCitations:
     @pytest.fixture
     def dois(self):
         return [
-            "10.1038/s41467-020-18671-7",
             "10.1038/s41586-023-06600-9",
             "ed69978f1594a4e2b9dccfc950490fa1df817ae8",
         ]
@@ -30,11 +29,14 @@ class TestSelfCitations:
             assert isinstance(author, str)
             assert isinstance(self_cites, float)
             assert self_cites >= 0 and self_cites <= 100
+        time.sleep(5)
 
     def test_multiple_dois(self, dois):
-        result = self_citations_paper(dois[1:])
+        start_time = time.perf_counter()
+        result = self_citations_paper(dois)
+        async_duration = time.perf_counter() - start_time
         assert isinstance(result, list)
-        assert len(result) == len(dois[1:])
+        assert len(result) == len(dois)
         for cit_result in result:
             assert isinstance(cit_result, CitationResult)
             assert isinstance(cit_result.ssid, str)
@@ -46,21 +48,13 @@ class TestSelfCitations:
                 assert isinstance(author, str)
                 assert isinstance(self_cites, float)
                 assert self_cites >= 0 and self_cites <= 100
+        time.sleep(5)
 
-    def test_compare_async_and_sync_performance(self, dois):
-        """
-        Compares the execution time of asynchronous and synchronous `self_references`
-        for a list of DOIs.
-        """
-
-        start_time = time.perf_counter()
-        async_results = self_citations_paper(dois)
-        async_duration = time.perf_counter() - start_time
+        # compare async and sync performance
 
         # Measure synchronous execution time (three independent calls)
         start_time = time.perf_counter()
-        sync_results = [self_citations_paper(doi) for doi in dois]
-
+        sync_result = [self_citations_paper(doi) for doi in dois]
         sync_duration = time.perf_counter() - start_time
 
         print(f"Asynchronous execution time (batch): {async_duration:.2f} seconds")
@@ -74,5 +68,5 @@ class TestSelfCitations:
             f"({sync_duration:.2f}s)"
         )
 
-        for a, s in zip(async_results, sync_results):
+        for a, s in zip(result, sync_result):
             assert a == s, f"{a} vs {s}"

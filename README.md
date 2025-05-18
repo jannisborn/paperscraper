@@ -181,6 +181,7 @@ For more comprehensive access to papers from major publishers, you can provide A
 
 - **Wiley TDM API**: Enables access to [Wiley](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining) publications (2,000+ journals).
 - **Elsevier TDM API**: Enables access to [Elsevier](https://www.elsevier.com/about/policies-and-standards/text-and-data-mining) publications (The Lancet, Cell, ...).
+- **bioRxiv TDM API** Enable access to [bioRxiv](https://www.biorxiv.org/tdm) publications (since May 2025 bioRxiv is protected with Cloudflare)
 
 To use publisher APIs:
 
@@ -188,7 +189,10 @@ To use publisher APIs:
 ```
 WILEY_TDM_API_TOKEN=your_wiley_token_here
 ELSEVIER_TDM_API_KEY=your_elsevier_key_here
+AWS_ACCESS_KEY_ID=your_aws_access_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
 ```
+NOTE: The AWS keys can be created in your AWS/IAM account. When creating the key, make sure you tick the `AmazonS3ReadOnlyAccess` permission policy. 
 NOTE: If you name the file `.env` it will be loaded automatically (if it is in the cwd or anywhere above the tree to home).
 
 2. Pass the file path when calling retrieval functions:
