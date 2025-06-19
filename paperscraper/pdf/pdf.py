@@ -135,7 +135,7 @@ def save_pdf(
             logger.info(
                 "DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
             )
-            if not FALLBACKS["elive"](doi, output_path):
+            if not FALLBACKS["elife"](doi, output_path):
                 logger.warning(
                     f"eLife XML fallback failed for {paper_metadata['doi']}."
                 )
