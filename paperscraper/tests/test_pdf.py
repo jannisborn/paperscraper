@@ -41,14 +41,15 @@ class TestPDF:
         if os.path.exists("taskload.pdf"):
             os.remove("taskload.pdf")
         paper_data = {"doi": "10.1101/798496"}
-        os.environ.pop("AWS_ACCESS_KEY_ID", None)
-        os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
-        save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
-        # NOTE: Locally this fails but surprisingly the CI does not need to fight with Cloudflare for the moment
-        assert os.path.exists("taskload.pdf")
-        assert os.path.exists("taskload.json")
-        os.remove("taskload.pdf")
-        os.remove("taskload.json")
+        # NOTE: Locally this fails since spring 2025 and since summer 2025
+        # also the CI fights with CloudFare
+        # os.environ.pop("AWS_ACCESS_KEY_ID", None)
+        # os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
+        # save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
+        # assert os.path.exists("taskload.pdf")
+        # assert os.path.exists("taskload.json")
+        # os.remove("taskload.pdf")
+        # os.remove("taskload.json")
 
         # Now try with S3 routine
         keys = load_api_keys("api_keys.txt")
