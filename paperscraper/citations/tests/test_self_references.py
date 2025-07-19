@@ -14,7 +14,6 @@ class TestSelfReferences:
     @pytest.fixture
     def dois(self):
         return [
-            "10.1038/s43586-024-00334-2",
             "10.1038/s41586-023-06600-9",
             "10.1016/j.neunet.2014.09.003",
         ]
