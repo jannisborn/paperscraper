@@ -278,7 +278,7 @@ class TestPDF:
 
     def test_fallback_bioc_pmc_real_api(self):
         """Test the BioC-PMC fallback with a real API call."""
-        return
+        return # TODO: API seems to have changed
         test_doi = "10.1038/s41587-022-01613-7"  # Use a DOI known to be in PMC
         output_path = Path("test_bioc_pmc_output")
         try:
