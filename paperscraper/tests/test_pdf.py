@@ -41,14 +41,7 @@ class TestPDF:
         if os.path.exists("taskload.pdf"):
             os.remove("taskload.pdf")
         paper_data = {"doi": "10.1101/798496"}
-        os.environ.pop("AWS_ACCESS_KEY_ID", None)
-        os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
-        save_pdf(paper_data, filepath="taskload.pdf", save_metadata=True)
-        # NOTE: Locally this fails but surprisingly the CI does not need to fight with Cloudflare for the moment
-        assert os.path.exists("taskload.pdf")
-        assert os.path.exists("taskload.json")
-        os.remove("taskload.pdf")
-        os.remove("taskload.json")
+        # NOTE: biorxiv is cloudflare controlled so standard scraping fails
 
         # Now try with S3 routine
         keys = load_api_keys("api_keys.txt")
