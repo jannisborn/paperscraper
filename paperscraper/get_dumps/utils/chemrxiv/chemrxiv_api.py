@@ -99,6 +99,11 @@ class ChemrxivAPI:
     def query_generator(self, query, method: str = "get", params: Dict = {}):
         """Query for a list of items, with paging. Returns a generator."""
 
+        try:
+            total = self.number_of_preprints()
+        except Exception:
+            total = float("inf")   # fallback if that call fails
+
         page = 0
         while True:
             params.update(
@@ -109,6 +114,8 @@ class ChemrxivAPI:
                     "searchDateTo": self.end_date,
                 }
             )
+            if page * self.page_size > total:
+                break
             r = self.request(urljoin(self.base, query), method, params=params)
             if r.status_code == 400:
                 raise ValueError(r.json()["message"])
