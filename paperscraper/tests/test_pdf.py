@@ -177,7 +177,6 @@ class TestPDF:
 
     def test_api_keys_none_pmc(self):
         """Test that save_pdf works properly even when no API keys are provided. Paper in PMC."""
-        return # TODO: API seems to have changed
         test_doi = {"doi": "10.1038/s41587-022-01613-7"}  # DOI known to be in PMC
         filename = SAVE_PATH + "_pmc"
         # Call function with no API keys
@@ -272,7 +271,6 @@ class TestPDF:
 
     def test_fallback_bioc_pmc_real_api(self):
         """Test the BioC-PMC fallback with a real API call."""
-        return # TODO: API seems to have changed
         test_doi = "10.1038/s41587-022-01613-7"  # Use a DOI known to be in PMC
         output_path = Path("test_bioc_pmc_output")
         try:
