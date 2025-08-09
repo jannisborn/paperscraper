@@ -94,7 +94,7 @@ def get_arxiv_papers_api(
     fields as desired.
 
     Args:
-        query Query to arxiv API. Needs to match the arxiv API notation.
+        query: Query to arxiv API. Needs to match the arxiv API notation.
         fields: List of strings with fields to keep in output.
         max_results: Maximal number of results, defaults to 99999.
         client_options: Optional arguments for `arxiv.Client`. E.g.:
@@ -144,7 +144,7 @@ def get_and_dump_arxiv_papers(
         keywords: List of keywords for arxiv search.
             The outer list level will be considered as AND separated keys, the
             inner level as OR separated.
-        filepath: Path where the dump will be saved.
+        output_filepath: Path where the dump will be saved.
         fields: List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].

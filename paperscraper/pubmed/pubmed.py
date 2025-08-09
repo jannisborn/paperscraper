@@ -42,15 +42,15 @@ def get_pubmed_papers(
     fields as desired.
 
     Args:
-        query (str): Query to PubMed API. Needs to match PubMed API notation.
-        fields (list[str]): List of strings with fields to keep in output.
+        query: Query to PubMed API. Needs to match PubMed API notation.
+        fields: List of strings with fields to keep in output.
             NOTE: If 'emails' is passed, an attempt is made to extract author mail
             addresses.
-        max_results (int): Maximal number of results retrieved from DB. Defaults
+        max_results: Maximal number of results retrieved from DB. Defaults
             to 9998, higher values likely raise problems due to PubMedAPI, see:
             https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit
-
-        NOTE: *args, **kwargs are additional arguments for pubmed.query
+        args: additional arguments for pubmed.query
+        kwargs: additional arguments for pubmed.query
 
     Returns:
         pd.DataFrame. One paper per row.
@@ -100,19 +100,19 @@ def get_and_dump_pubmed_papers(
     Combines get_pubmed_papers and dump_papers.
 
     Args:
-        keywords (List[Union[str, List[str]]]): List of keywords to request
-            pubmed API. The outer list level will be considered as AND
-            separated keys, the inner level as OR separated.
-        filepath (str): Path where the dump will be saved.
-        fields (List, optional): List of strings with fields to keep in output.
+        keywords: List of keywords to request pubmed API.
+            The outer list level will be considered as AND separated keys.
+            The inner level as OR separated.
+        output_filepath: Path where the dump will be saved.
+        fields: List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
             NOTE: If 'emails' is passed, an attempt is made to extract author mail
             addresses.
-        start_date (str): Start date for the search. Needs to be in format:
+        start_date: Start date for the search. Needs to be in format:
             YYYY/MM/DD, e.g. '2020/07/20'. Defaults to 'None', i.e. no specific
             dates are used.
-        end_date (str): End date for the search. Same notation as start_date.
+        end_date: End date for the search. Same notation as start_date.
     """
     # Translate keywords into query.
     query = get_query_from_keywords_and_date(

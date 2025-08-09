@@ -1,0 +1,9 @@
+/* Style only the submodule entries under 'paperscraper' */
+.md-sidebar--primary nav.md-nav[aria-labelledby="__nav_2_label"] li.md-nav__item ul.md-nav__list li.md-nav__item .md-ellipsis {
+    font-family: var(--md-code-font-family);
+    font-size: .9em;
+    background: var(--md-code-bg-color);
+    color: var(--md-code-fg-color);
+    padding: 0 .3rem;
+    border-radius: .2rem;
+}

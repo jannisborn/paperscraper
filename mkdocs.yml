@@ -22,17 +22,16 @@ theme:
     # - navigation.expand
     - navigation.indexes
     # - navigation.instant
-    # - navigation.sections
-    # - navigation.tabs
-    # - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - search.highlight
     - search.share
     - search.suggest
     - toc.follow
-  # - toc.integrate
-
+    - toc.integrate
   palette:
     - scheme: default
       primary: black
@@ -49,9 +48,18 @@ theme:
   language: en
 
 nav:
-  - Home: README.md
-  - API Reference:
-      - Paperscraper: api_reference.md
+  - Overview: README.md
+  - API Documentation:
+    - Overview: api/index.md
+    - paperscraper: 
+      - api/paperscraper/index.md
+      - paperscraper.arxiv: api/arxiv.md
+      - paperscraper.citations: api/citations.md
+      - paperscraper.get_dumps: api/get_dumps.md
+      - paperscraper.pdf: api/pdf.md
+      - paperscraper.pubmed: api/pubmed.md
+      - paperscraper.scholar: api/scholar.md
+      - paperscraper.xrxiv: api/xrxiv.md
 
 # Copyright
 copyright: MIT License
@@ -71,10 +79,16 @@ plugins:
       handlers:
         python:
           options:
+            show_submodules: true
+            heading_level: 2
+            group_by_category: true
+            members_order: source
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
             render_typehint_in_signature: true
             show_root_heading: true
             show_signature_annotations: true
-            show_source: false
+            show_source: true
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -89,6 +103,7 @@ markdown_extensions:
   - meta
   - toc:
       permalink: true
+      # toc_depth: 3
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
@@ -97,8 +112,8 @@ markdown_extensions:
   - pymdownx.critic
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.keys
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -116,8 +131,8 @@ markdown_extensions:
   - pymdownx.tilde
 
 extra_css:
-  - css/termynal.css
-  - css/custom.css
+  - css/nav-code-style.css
+  - css/mkdocstrings-chips.css
 extra_javascript:
   - js/termynal.js
   - js/custom.js

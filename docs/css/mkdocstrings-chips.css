@@ -1,0 +1,28 @@
+/* Colorize mkdocstrings symbol-type badges */
+.md-typeset .doc-symbol {
+    border-radius: .25rem;
+    font-size: .72em;
+    padding: .12em .4em;
+}
+
+.md-typeset .doc-symbol--module {
+    background: #e8f0ff;
+    color: #1a4fff;
+}
+
+.md-typeset .doc-symbol--class {
+    background: #e6f7ef;
+    color: #0a7f4f;
+}
+
+.md-typeset .doc-symbol--method,
+.md-typeset .doc-symbol--function {
+    background: #fff3e0;
+    color: #b95a00;
+}
+
+.md-typeset .doc-symbol--attribute,
+.md-typeset .doc-symbol--variable {
+    background: #f3e8ff;
+    color: #6b21a8;
+}

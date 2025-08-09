@@ -49,7 +49,7 @@ def get_date(datestring: str) -> str:
     """Get the date of a chemrxiv dump enry.
 
     Args:
-        date (str): String in the format: 2021-10-15T05:12:32.356Z
+        datestring: String in the format: 2021-10-15T05:12:32.356Z
 
     Returns:
         str: Date in the format: YYYY-MM-DD.
@@ -84,7 +84,7 @@ def parse_dump(source_path: str, target_path: str) -> None:
     NOTE: This is a lazy parser trying to store all data in memory.
 
     Args:
-        path (str): Path to the source dump
+        source_path: Path to the source dump
     """
 
     dump = []

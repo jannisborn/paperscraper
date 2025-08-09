@@ -37,7 +37,7 @@ def aggregate_paper(
             title or abstract. Only applies if filtering is True.
         return_filtered (bool, optional): Whether the filtered matches are also
             returned. Only applies if filtering is True. Defaults to False.
-        filer_abstract (bool, optional): Whether the keyword is searched in the abstract
+        filter_abstract (bool, optional): Whether the keyword is searched in the abstract
             or not. Defaults to True.
         last_year (int, optional): Most recent year for the aggregation. Defaults
             to current year. All newer entries are discarded.
@@ -112,8 +112,7 @@ def aggregate_paper(
 
         if len(date.split("-")) < 2:
             logger.warning(
-                f"Paper without month {date}, randomly assigned month."
-                f"{paper['title']}"
+                f"Paper without month {date}, randomly assigned month.{paper['title']}"
             )
             month = np.random.choice(12)
         else:

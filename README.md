@@ -4,7 +4,6 @@
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/github/jannisborn/paperscraper/branch/main/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
 # paperscraper
 
@@ -371,7 +370,7 @@ plot_multiple_venn(
 ## Citation
 If you use `paperscraper`, please cite a paper that motivated our development of this tool.
 
-```bib
+```bibtex
 @article{born2021trends,
   title={Trends in Deep Learning for Property-driven Drug Design},
   author={Born, Jannis and Manica, Matteo},
@@ -387,9 +386,15 @@ If you use `paperscraper`, please cite a paper that motivated our development of
 ## Contributions
 Thanks to the following contributors:
 - [@mathinic](https://github.com/mathinic): Since `v0.3.0` improved PubMed full text retrieval with additional fallback mechanisms (BioC-PMC, eLife and optional Wiley/Elsevier APIs).
+
 - [@memray](https://github.com/memray): Since `v0.2.12` there are automatic retries when downloading the {med/bio/chem}rxiv dumps.
+
 - [@achouhan93](https://github.com/achouhan93): Since `v0.2.5` {med/bio/chem}rxiv can be scraped for specific dates!
+
 - [@daenuprobst](https://github.com/daenuprobst): Since  `v0.2.4` PDF files can be scraped directly (`paperscraper.pdf.save_pdf`)
+
 - [@oppih](https://github.com/oppih): Since `v0.2.3` chemRxiv API also provides DOI and URL if available
-- [@lukasschwab](https://github.com/lukasschwab): Bumped `arxiv` dependency to >`1.4.2` in paperscraper `v0.1.0`.
+
+- [@lukasschwab](https://github.com/lukasschwab): Enabled support for `arxiv` >`1.4.2` in paperscraper `v0.1.0`.
+
 - [@juliusbierk](https://github.com/juliusbierk): Bugfixes

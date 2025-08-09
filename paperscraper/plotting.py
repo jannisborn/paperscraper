@@ -1,7 +1,6 @@
 import logging
 import math
-import os
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,13 +18,13 @@ def plot_comparison(
     x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
     show_preprint: bool = False,
     title_text: str = "",
-    keyword_text=None,
+    keyword_text: Optional[List[str]] = None,
     figpath: str = "comparison_plot.pdf",
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
     Args:
-        data_dict (dict): A dictionary with keywords as keys. Each value should be a
+        data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
                 'covid_19.jsonl': {
@@ -39,18 +38,15 @@ def plot_comparison(
                     ...
                 }
             }
-        keys (List[str]): List of keys which should be plotted. This has to be a
-           subset of data_dict.keys().
-        x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
-            same length as data_dict[key][database]. Defaults to ['2015', '2016',
-            '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
-            year.
-        show_preprint (bool, optional): Whether preprint servers are aggregated or not.
+        keys: List of keys which should be plotted. This has to be a subset of data_dict.keys().
+        x_ticks: List of strings to be used for the x-ticks. Should have same length as
+            data_dict[key][database]. Defaults to ['2015', '2016', '2017', '2018', '2019', '2020'],
+            meaning that papers are aggregated per year.
+        show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
-        title_text (str, optional): Title for the produced figure. Defaults to ''.
-        keyword_text ([type], optional): Figure caption per keyword. Defaults to None,
-            i.e. empty strings will be used.
-        figpath (str, optional): Name under which figure is saved. Relative or absolute
+        title_text: Title for the produced figure. Defaults to ''.
+        keyword_text: Figure caption per keyword. Defaults to None, i.e. empty strings will be used.
+        figpath: Name under which figure is saved. Relative or absolute
             paths can be given. Defaults to 'comparison_plot.pdf'.
 
     Raises:
@@ -184,12 +180,12 @@ def plot_single(
     show_preprint: bool = False,
     title_text: str = "",
     figpath: str = "comparison_plot.pdf",
-    logscale=False,
+    logscale: bool = False,
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
     Args:
-        data_dict (dict): A dictionary with keywords as keys. Each value should be a
+        data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
                 'covid_19.jsonl': {
@@ -203,19 +199,17 @@ def plot_single(
                     ...
                 }
             }
-        keys (str): A key which should be plotted. This has to be a
-           subset of data_dict.keys().
+        keys: A key which should be plotted. This has to be a subset of data_dict.keys().
         x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
             same length as data_dict[key][database]. Defaults to ['2015', '2016',
             '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
             year.
-        show_preprint (bool, optional): Whether preprint servers are aggregated or not.
+        show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
-        title_text (str, optional): Title for the produced figure. Defaults to ''.
+        title_text: Title for the produced figure. Defaults to ''.
         figpath (str, optional): Name under which figure is saved. Relative or absolute
             paths can be given. Defaults to 'comparison_plot.pdf'.
-        logscale (bool, optional): Whether y-axis is plotted on logscale. Defaults
-            to False.
+        logscale: Whether y-axis is plotted on logscale. Defaults to False.
 
     Raises:
         KeyError: If a database is missing in data_dict.
