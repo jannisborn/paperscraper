@@ -14,6 +14,7 @@ from typing import Any, Callable, Dict, Union
 
 import boto3
 import requests
+from botocore.client import BaseClient
 from lxml import etree
 from tqdm import tqdm
 
@@ -323,7 +324,7 @@ def month_folder(doi: str) -> str:
     return date.strftime("%B_%Y")
 
 
-def list_meca_keys(s3_client, bucket: str, prefix: str) -> list:
+def list_meca_keys(s3_client: BaseClient, bucket: str, prefix: str) -> list:
     """
     List all .meca object keys under a given prefix in a requester-pays bucket.
 
@@ -346,7 +347,9 @@ def list_meca_keys(s3_client, bucket: str, prefix: str) -> list:
     return keys
 
 
-def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
+def find_meca_for_doi(
+    s3_client: BaseClient, bucket: str, key: str, doi_token: str
+) -> bool:
     """
     Efficiently inspect manifest.xml within a .meca zip by fetching only necessary bytes.
     Parse via ZipFile to read manifest.xml and match DOI token.
@@ -375,7 +378,7 @@ def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
         manifest = z.read("manifest.xml")
 
     # Extract the last part of the DOI (newer DOIs that contain date fail otherwise)
-    doi_token = doi_token.split('.')[-1]
+    doi_token = doi_token.split(".")[-1]
     return doi_token.encode("utf-8") in manifest.lower()
 
 
