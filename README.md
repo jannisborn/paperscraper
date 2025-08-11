@@ -13,6 +13,8 @@ It provides a streamlined interface to scrape metadata, allows to retrieve citat
 from Google Scholar, impact factors from journals and comes with simple postprocessing functions
 and plotting routines for meta-analysis.
 
+Full docs are available here: https://jannisborn.github.io/paperscraper/
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
