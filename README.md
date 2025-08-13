@@ -1,5 +1,6 @@
 [![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_tip.yml?query=branch%3Amain)
 [![build](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml/badge.svg?branch=main)](https://github.com/jannisborn/paperscraper/actions/workflows/test_pypi.yml?query=branch%3Amain)
+[![build](https://github.com/jannisborn/paperscraper/actions/workflows/docs.yml/badge.svg?branch=main)](https://jannisborn.github.io/paperscraper/)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
@@ -13,7 +14,6 @@ It provides a streamlined interface to scrape metadata, allows to retrieve citat
 from Google Scholar, impact factors from journals and comes with simple postprocessing functions
 and plotting routines for meta-analysis.
 
-Full docs are available here: https://jannisborn.github.io/paperscraper/
 
 ## Table of Contents
 
