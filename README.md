@@ -41,16 +41,16 @@ This is enough to query PubMed, arXiv or Google Scholar.
 
 #### Download X-rxiv Dumps
 
-However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) and [chemrxiv](https://www.chemrxiv.org), the setup is different. The entire dump is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line).
+However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) and [chemrxiv](https://www.chemrxiv.org), the setup is different. The entire history of papers is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line). This takes a while, as of November 2025:
 
 ```py
 from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
-medrxiv()  #  Takes ~30min and should result in ~35 MB file
-biorxiv()  # Takes ~1h and should result in ~350 MB file
-chemrxiv()  #  Takes ~45min and should result in ~20 MB file
+chemrxiv()  #  Takes 30min -> +30K papers (~50 MB file)
+medrxiv()  #  Takes <1h -> +90K papers (~200 MB file)
+biorxiv()  # Up to 6h -> +400K papers (~800 MB file)
 ```
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter so that the changes take effect. 
-*NOTE*: If you experience API connection issues (`ConnectionError`), since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`.
+*NOTE*: If you experience API connection issues, since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`.
 
 Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates.
 ```py

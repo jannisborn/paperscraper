@@ -7,9 +7,15 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from requests.exceptions import SSLError
+from requests.exceptions import (
+    ChunkedEncodingError,
+    ContentDecodingError,
+    JSONDecodeError,
+    SSLError,
+)
 from requests.models import HTTPError
 from tqdm import tqdm
+from urllib3.exceptions import DecodeError
 
 from .chemrxiv_api import ChemrxivAPI
 
@@ -127,20 +133,21 @@ def parse_dump(source_path: str, target_path: str) -> None:
 def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
     if api is None:
         api = ChemrxivAPI()
-
     os.makedirs(save_dir, exist_ok=True)
+
     for preprint in tqdm(api.all_preprints()):
-        path = os.path.join(save_dir, f"{preprint['item']['id']}.json")
+        item = preprint["item"]
+        path = os.path.join(save_dir, f"{item['id']}.json")
         if os.path.exists(path):
             continue
-        preprint = preprint["item"]
-        preprint_id = preprint["id"]
-        try:
-            preprint = api.preprint(preprint_id)
-        except HTTPError:
-            logger.warning(f"HTTP API Client error for ID: {preprint_id}")
-        except SSLError:
-            logger.warning(f"SSLError for ID: {preprint_id}")
+
+        if not item.get("title") or "authors" not in item:
+            try:
+                item = api.preprint(item["id"])
+            except Exception as e:
+                logger.warning(
+                    f"Enrich failed for {item['id']}: {e}; writing listing payload"
+                )
 
         with open(path, "w") as file:
-            json.dump(preprint, file, indent=2)
+            json.dump(item, file, indent=2)
