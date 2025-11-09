@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -61,6 +62,39 @@ def save_pdf(
 
     doi = paper_metadata["doi"]
     url = f"https://doi.org/{doi}"
+    user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
+    if "arxiv" in doi:
+        soup = None
+        try:
+            match = re.search(
+                r"arxiv\.([0-9]{4}\.[0-9]{4,5}(?:v\d+)?)", doi, re.IGNORECASE
+            )
+            arxiv_id = match.group(1)
+            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+            r = requests.get(pdf_url, timeout=60, headers=user_agent)
+            r.raise_for_status()
+            if r.content[:4] == b"%PDF":
+                with open(output_path.with_suffix(".pdf"), "wb+") as f:
+                    f.write(r.content)
+                # If metadata requested, fetch the landing page now to extract it
+                if save_metadata:
+                    try:
+                        resp_landing = requests.get(url, timeout=60, headers=user_agent)
+                        resp_landing.raise_for_status()
+                        soup = BeautifulSoup(resp_landing.text, features="lxml")
+                    except Exception as _:
+                        soup = None
+                else:
+                    return
+            else:
+                logger.warning(
+                    f"Direct arXiv fetch returned non-PDF for {doi}. Falling back."
+                )
+        except Exception as e:
+            logger.warning(
+                f"Direct arXiv PDF fetch failed for {doi}: {e}. Falling back."
+            )
+
     success = False
     try:
         response = requests.get(url, timeout=60)
