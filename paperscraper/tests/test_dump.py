@@ -99,7 +99,7 @@ class TestDumper:
         chemrxiv(start_date="2024-06-01", end_date="2024-06-01")
 
     def test_biorxiv_date(self):
-        biorxiv(start_date="2024-06-01", end_date="2024-06-01")
+        biorxiv(start_date="2013-06-01", end_date="2013-06-01")
 
     def test_arxiv_date(self):
         # Result of this may be empty because arxiv updates not daily.
