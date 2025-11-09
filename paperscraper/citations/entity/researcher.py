@@ -1,3 +1,4 @@
+import os
 from typing import List, Literal, Optional
 
 from semanticscholar import SemanticScholar
@@ -18,7 +19,7 @@ class ResearcherResult(EntityResult):
 
 ModeType = Literal[tuple(MODES := ("name", "orcid", "ssaid", "infer"))]
 
-sch = SemanticScholar()
+sch = SemanticScholar(api_key=os.getenv("SS_API_KEY"))
 
 
 class Researcher(Entity):

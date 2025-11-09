@@ -18,7 +18,6 @@ import requests
 from botocore.client import BaseClient
 from botocore.config import Config
 from lxml import etree
-from tqdm import tqdm
 
 ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
 
