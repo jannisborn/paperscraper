@@ -228,7 +228,7 @@ doi = '10.1021/acs.jcim.3c00132'
 get_citations_by_doi(doi)
 ```
 
-NOTE: This uses the [Semantic Scholar API]() which is bandwidth-limited. If you have an API Key set it via:
+NOTE: This uses the [Semantic Scholar API](https://www.semanticscholar.org/product/api/tutorial) which is bandwidth-limited. If you have an API Key set it via:
 ```sh
 export SS_API_KEY=YOUR_API_KEY
 ```
