@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 from typing import List, Union
 
 import pandas as pd
@@ -11,7 +12,7 @@ from .utils import get_emails, get_query_from_keywords_and_date
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-PUBMED = PubMed(tool="MyTool", email="abc@def.gh")
+PUBMED = PubMed(tool=os.getenv("NCBI_TOOL", "paperscraper"), email="abc@def.gh")
 
 pubmed_field_mapper = {"publication_date": "date"}
 
@@ -64,7 +65,14 @@ def get_pubmed_papers(
             "To obtain more than 9,999 PubMed records, consider using EDirect that contains additional"
             "logic to batch PubMed search results automatically so that an arbitrary number can be retrieved"
         )
-    raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
+
+    try:
+        raw = list(PUBMED.query(query, max_results=max_results, *args, **kwargs))
+    except (TypeError, ValueError, KeyError) as e:
+        logger.warning(
+            "PubMed query returned malformed payload; treating as empty. %s", e
+        )
+        return pd.DataFrame(columns=list(fields))
 
     get_mails = "emails" in fields
     if get_mails:

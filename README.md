@@ -228,6 +228,13 @@ doi = '10.1021/acs.jcim.3c00132'
 get_citations_by_doi(doi)
 ```
 
+NOTE: This uses the [Semantic Scholar API](https://www.semanticscholar.org/product/api/tutorial) which is bandwidth-limited. If you have an API Key set it via:
+```sh
+export SS_API_KEY=YOUR_API_KEY
+```
+This will increase your throughput for using `paperscraper.citations` based on the rate limits of your key.
+
+
 ### Journal impact factor
 
 You can also retrieve the impact factor for all journals:

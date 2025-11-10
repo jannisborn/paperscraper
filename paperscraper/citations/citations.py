@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from time import sleep
 
@@ -7,7 +8,7 @@ from semanticscholar import SemanticScholar, SemanticScholarException
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
-sch = SemanticScholar()
+sch = SemanticScholar(api_key=os.getenv("SS_API_KEY"))
 
 
 def get_citations_by_doi(doi: str) -> int:

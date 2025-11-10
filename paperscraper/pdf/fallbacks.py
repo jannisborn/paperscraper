@@ -6,17 +6,18 @@ import io
 import logging
 import re
 import sys
+import threading
 import time
 import zipfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
 import boto3
 import requests
 from botocore.client import BaseClient
+from botocore.config import Config
 from lxml import etree
-from tqdm import tqdm
 
 ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
 
@@ -347,8 +348,50 @@ def list_meca_keys(s3_client: BaseClient, bucket: str, prefix: str) -> list:
     return keys
 
 
+def _try_download_pdf_from_meca(
+    s3_client: BaseClient, bucket: str, key: str, out_pdf: Path, stop: threading.Event
+) -> bool:
+    """
+    Download a MECA object and extract the first PDF found into out_pdf.
+
+    Args:
+        s3_client: S3 client to get the data from.
+        bucket: bucket to get data from.
+        key: prefix to get data from.
+        out_pdf: Where the PDF should be saved to.
+
+    Returns:
+        True on success, False otherwise.
+    """
+    if stop.is_set():
+        return False
+    try:
+        obj = s3_client.get_object(Bucket=bucket, Key=key, RequestPayer="requester")
+        data = obj["Body"].read()
+    except Exception as e:
+        logger.debug(f"Failed to GET {key}: {e}")
+        return False
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            for name in z.namelist():
+                if name.lower().endswith(".pdf"):
+                    out_pdf.parent.mkdir(parents=True, exist_ok=True)
+                    z.extract(name, path=out_pdf.parent)
+                    (out_pdf.parent / name).rename(out_pdf)
+                    return True
+    except Exception as e:
+        logger.debug(f"Failed to read MECA zip {key}: {e}")
+        return False
+    return False
+
+
 def find_meca_for_doi(
-    s3_client: BaseClient, bucket: str, key: str, doi_token: str
+    s3_client: BaseClient,
+    bucket: str,
+    key: str,
+    doi_token: str,
+    stop_event: threading.Event,
+    tail_bytes: int = 131072,
 ) -> bool:
     """
     Efficiently inspect manifest.xml within a .meca zip by fetching only necessary bytes.
@@ -363,23 +406,46 @@ def find_meca_for_doi(
     Returns:
         Whether or not the DOI could be matched
     """
+
+    if stop_event.is_set():
+        return False
+
     try:
-        head = s3_client.get_object(
-            Bucket=bucket, Key=key, Range="bytes=0-4095", RequestPayer="requester"
-        )["Body"].read()
+        # Try tail-only first (central directory is at end)
         tail = s3_client.get_object(
-            Bucket=bucket, Key=key, Range="bytes=-4096", RequestPayer="requester"
+            Bucket=bucket,
+            Key=key,
+            Range=f"bytes=-{tail_bytes}",
+            RequestPayer="requester",
         )["Body"].read()
     except Exception:
         return False
 
-    data = head + tail
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        manifest = z.read("manifest.xml")
+    if stop_event.is_set():
+        return False
 
-    # Extract the last part of the DOI (newer DOIs that contain date fail otherwise)
-    doi_token = doi_token.split(".")[-1]
-    return doi_token.encode("utf-8") in manifest.lower()
+    data = tail
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            # avoid reading file contents; inspect namelist/central directory
+            for name in z.namelist():
+                if name.endswith("manifest.xml"):
+                    manifest = z.read(name)  # small file in practice
+                    token = doi_token.split(".")[-1].encode("utf-8")
+                    return token in manifest.lower()
+    except zipfile.BadZipFile:
+        # Fallback: fetch small head slice & retry zip
+        try:
+            head = s3_client.get_object(
+                Bucket=bucket, Key=key, Range="bytes=0-65535", RequestPayer="requester"
+            )["Body"].read()
+            with zipfile.ZipFile(io.BytesIO(head + tail)) as z:
+                manifest = z.read("manifest.xml")
+                token = doi_token.split(".")[-1].encode("utf-8")
+                return token in manifest.lower()
+        except Exception:
+            return False
+    return False
 
 
 def fallback_s3(
@@ -402,6 +468,7 @@ def fallback_s3(
         aws_access_key_id=api_keys.get("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=api_keys.get("AWS_SECRET_ACCESS_KEY"),
         region_name="us-east-1",
+        config=Config(connect_timeout=5, read_timeout=10, retries={"max_attempts": 3}),
     )
     bucket = "biorxiv-src-monthly"
 
@@ -414,50 +481,62 @@ def fallback_s3(
         return False
 
     token = doi.split("/")[-1].lower()
-    target = None
-    executor = ThreadPoolExecutor(max_workers=32)
-    futures = {
-        executor.submit(find_meca_for_doi, s3, bucket, key, token): key
-        for key in meca_keys
-    }
-    target = None
-    pbar = tqdm(
-        total=len(futures),
-        desc=f"Scanning in biorxiv with {workers} workers for {doi}…",
-    )
-    for future in as_completed(futures):
-        key = futures[future]
-        try:
-            if future.result():
-                target = key
-                pbar.set_description(f"Success! Found target {doi} in {key}")
-                # cancel pending futures to speed shutdown
-                for fut in futures:
-                    fut.cancel()
-                break
-        except Exception:
-            pass
-        finally:
-            pbar.update(1)
-    # shutdown without waiting for remaining threads
-    executor.shutdown(wait=False)
-    if target is None:
+
+    # Prefer keys that already contain the token
+    candidate_keys = [k for k in meca_keys if token in k.lower()]
+    # If none contain the token (older DOIs, etc.), fall back to a small prefix scan
+    if not candidate_keys:
+        candidate_keys = meca_keys[: min(500, len(meca_keys))]
+    out_pdf = Path(output_path).with_suffix(".pdf")
+
+    # Try candidates concurrently but keep at most `workers` in flight.
+    stop = threading.Event()
+
+    def job(k):
+        ok = _try_download_pdf_from_meca(s3, bucket, k, out_pdf, stop)
+        if ok:
+            stop.set()
+        return ok
+
+    executor = ThreadPoolExecutor(max_workers=workers)
+    found = False
+    try:
+        it = iter(candidate_keys)
+        # prime the queue with at most `workers` tasks
+        futures = set()
+        for _ in range(min(workers, len(candidate_keys))):
+            k = next(it, None)
+            if k is not None:
+                futures.add(executor.submit(job, k))
+
+        while futures and not found:
+            done, futures = wait(futures, return_when=FIRST_COMPLETED)
+            # check completed ones
+            for fut in done:
+                try:
+                    if fut.result():
+                        found = True
+                        stop.set()
+                        # cancel not-yet-started tasks
+                        for f in list(futures):
+                            f.cancel()
+                        break
+                except Exception:
+                    pass
+            # top up queue if still searching
+            while not found and len(futures) < workers:
+                k = next(it, None)
+                if k is None:
+                    break
+                futures.add(executor.submit(job, k))
+    finally:
+        # don't wait for running tasks; best-effort cancel
+        executor.shutdown(wait=False, cancel_futures=True)
+
+    if not found:
         logger.error(f"Could not find {doi} on biorxiv")
         return False
-
-    # Download full MECA and extract PDF
-    data = s3.get_object(Bucket=bucket, Key=target, RequestPayer="requester")[
-        "Body"
-    ].read()
-    output_path = Path(output_path)
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        for name in z.namelist():
-            if name.lower().endswith(".pdf"):
-                z.extract(name, path=output_path.parent)
-                # Move file to desired location
-                (output_path.parent / name).rename(output_path.with_suffix(".pdf"))
-                return True
-    return False
+    return True
 
 
 FALLBACKS: Dict[str, Callable] = {
