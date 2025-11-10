@@ -944,7 +944,7 @@ file with one paper per line.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-12">12</a></span>
 <span class="normal"><a href="#__codelineno-0-13">13</a></span>
@@ -1078,7 +1078,7 @@ an 'author' field.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
 <span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
@@ -1287,7 +1287,7 @@ dates are used.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
 <span class="normal"><a href="#__codelineno-0-35">35</a></span>
@@ -1493,10 +1493,9 @@ https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/pubmed.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-33">33</a></span>
-<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
 <span class="normal"><a href="#__codelineno-0-35">35</a></span>
 <span class="normal"><a href="#__codelineno-0-36">36</a></span>
 <span class="normal"><a href="#__codelineno-0-37">37</a></span>
@@ -1549,61 +1548,76 @@ https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</p>
 <span class="normal"><a href="#__codelineno-0-84">84</a></span>
 <span class="normal"><a href="#__codelineno-0-85">85</a></span>
 <span class="normal"><a href="#__codelineno-0-86">86</a></span>
-<span class="normal"><a href="#__codelineno-0-87">87</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pubmed_papers</span><span class="p">(</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9998</span><span class="p">,</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Performs PubMed API request of a query and returns list of papers with</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    fields as desired.</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        query: Query to PubMed API. Needs to match PubMed API notation.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            addresses.</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        max_results: Maximal number of results retrieved from DB. Defaults</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            to 9998, higher values likely raise problems due to PubMedAPI, see:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        args: additional arguments for pubmed.query</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        kwargs: additional arguments for pubmed.query</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        pd.DataFrame. One paper per row.</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="k">if</span> <span class="n">max_results</span> <span class="o">&gt;</span> <span class="mi">9998</span><span class="p">:</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">max_results cannot be larger than 9998, received </span><span class="si">{</span><span class="n">max_results</span><span class="si">}</span><span class="s2">.&quot;</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>            <span class="s2">&quot;This will likely result in a JSONDecodeError. Considering lowering `max_results`.</span><span class="se">\n</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>            <span class="s2">&quot;For PubMed, ESearch can only retrieve the first 9,999 records matching the query. &quot;</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>            <span class="s2">&quot;To obtain more than 9,999 PubMed records, consider using EDirect that contains additional&quot;</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>            <span class="s2">&quot;logic to batch PubMed search results automatically so that an arbitrary number can be retrieved&quot;</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="p">)</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">PUBMED</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="n">max_results</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-87">87</a></span>
+<span class="normal"><a href="#__codelineno-0-88">88</a></span>
+<span class="normal"><a href="#__codelineno-0-89">89</a></span>
+<span class="normal"><a href="#__codelineno-0-90">90</a></span>
+<span class="normal"><a href="#__codelineno-0-91">91</a></span>
+<span class="normal"><a href="#__codelineno-0-92">92</a></span>
+<span class="normal"><a href="#__codelineno-0-93">93</a></span>
+<span class="normal"><a href="#__codelineno-0-94">94</a></span>
+<span class="normal"><a href="#__codelineno-0-95">95</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pubmed_papers</span><span class="p">(</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9998</span><span class="p">,</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    Performs PubMed API request of a query and returns list of papers with</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    fields as desired.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        query: Query to PubMed API. Needs to match PubMed API notation.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            addresses.</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        max_results: Maximal number of results retrieved from DB. Defaults</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            to 9998, higher values likely raise problems due to PubMedAPI, see:</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        args: additional arguments for pubmed.query</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        kwargs: additional arguments for pubmed.query</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        pd.DataFrame. One paper per row.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">if</span> <span class="n">max_results</span> <span class="o">&gt;</span> <span class="mi">9998</span><span class="p">:</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">max_results cannot be larger than 9998, received </span><span class="si">{</span><span class="n">max_results</span><span class="si">}</span><span class="s2">.&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>            <span class="s2">&quot;This will likely result in a JSONDecodeError. Considering lowering `max_results`.</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>            <span class="s2">&quot;For PubMed, ESearch can only retrieve the first 9,999 records matching the query. &quot;</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>            <span class="s2">&quot;To obtain more than 9,999 PubMed records, consider using EDirect that contains additional&quot;</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>            <span class="s2">&quot;logic to batch PubMed search results automatically so that an arbitrary number can be retrieved&quot;</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="p">)</span>
 <a id="__codelineno-0-68" name="__codelineno-0-68"></a>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="n">get_mails</span> <span class="o">=</span> <span class="s2">&quot;emails&quot;</span> <span class="ow">in</span> <span class="n">fields</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="n">fields</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;emails&quot;</span><span class="p">))</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="n">processed</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="p">{</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>            <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">process_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>                <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>            <span class="p">)(</span><span class="n">value</span><span class="p">)</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a>            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>            <span class="k">if</span> <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fields</span>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="p">}</span>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">raw</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>    <span class="p">]</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">paper</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
-<a id="__codelineno-0-85" name="__codelineno-0-85"></a>            <span class="n">processed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;emails&quot;</span><span class="p">:</span> <span class="n">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">)})</span>
-<a id="__codelineno-0-86" name="__codelineno-0-86"></a>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>        <span class="n">raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">PUBMED</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="n">max_results</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>            <span class="s2">&quot;PubMed query returned malformed payload; treating as empty. </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="p">)</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="n">get_mails</span> <span class="o">=</span> <span class="s2">&quot;emails&quot;</span> <span class="ow">in</span> <span class="n">fields</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">fields</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;emails&quot;</span><span class="p">))</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="n">processed</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="p">{</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>            <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">process_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>                <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>            <span class="p">)(</span><span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>            <span class="k">if</span> <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fields</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="p">}</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>        <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">raw</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>    <span class="p">]</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">paper</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>            <span class="n">processed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;emails&quot;</span><span class="p">:</span> <span class="n">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">)})</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1727,17 +1741,9 @@ dates are used.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/pubmed.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
-<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
-<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
-<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
-<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
-<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
-<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
-<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
-<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
 <span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
 <span class="normal"><a href="#__codelineno-0-100">100</a></span>
 <span class="normal"><a href="#__codelineno-0-101">101</a></span>
@@ -1761,39 +1767,47 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-119">119</a></span>
 <span class="normal"><a href="#__codelineno-0-120">120</a></span>
 <span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_and_dump_pubmed_papers</span><span class="p">(</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>    <span class="n">output_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">    Combines get_pubmed_papers and dump_papers.</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a><span class="sd">        keywords: List of keywords to request pubmed API.</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">            The outer list level will be considered as AND separated keys.</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">            The inner level as OR separated.</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">        output_filepath: Path where the dump will be saved.</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">            Defaults to [&#39;title&#39;, &#39;authors&#39;, &#39;date&#39;, &#39;abstract&#39;,</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="sd">            &#39;journal&#39;, &#39;doi&#39;].</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">            addresses.</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">        start_date: Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        end_date: End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a>    <span class="c1"># Translate keywords into query.</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords_and_date</span><span class="p">(</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a>        <span class="n">keywords</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="p">)</span>
-<a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="n">papers</span> <span class="o">=</span> <span class="n">get_pubmed_papers</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a>    <span class="n">dump_papers</span><span class="p">(</span><span class="n">papers</span><span class="p">,</span> <span class="n">output_filepath</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_and_dump_pubmed_papers</span><span class="p">(</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="n">output_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">    Combines get_pubmed_papers and dump_papers.</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">        keywords: List of keywords to request pubmed API.</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">            The outer list level will be considered as AND separated keys.</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">            The inner level as OR separated.</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">        output_filepath: Path where the dump will be saved.</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">            Defaults to [&#39;title&#39;, &#39;authors&#39;, &#39;date&#39;, &#39;abstract&#39;,</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">            &#39;journal&#39;, &#39;doi&#39;].</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">            addresses.</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">        start_date: Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">        end_date: End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="c1"># Translate keywords into query.</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords_and_date</span><span class="p">(</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>        <span class="n">keywords</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="p">)</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">papers</span> <span class="o">=</span> <span class="n">get_pubmed_papers</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="n">dump_papers</span><span class="p">(</span><span class="n">papers</span><span class="p">,</span> <span class="n">output_filepath</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1968,10 +1982,9 @@ https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/pubmed.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-33">33</a></span>
-<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
 <span class="normal"><a href="#__codelineno-0-35">35</a></span>
 <span class="normal"><a href="#__codelineno-0-36">36</a></span>
 <span class="normal"><a href="#__codelineno-0-37">37</a></span>
@@ -2024,61 +2037,76 @@ https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</p>
 <span class="normal"><a href="#__codelineno-0-84">84</a></span>
 <span class="normal"><a href="#__codelineno-0-85">85</a></span>
 <span class="normal"><a href="#__codelineno-0-86">86</a></span>
-<span class="normal"><a href="#__codelineno-0-87">87</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pubmed_papers</span><span class="p">(</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9998</span><span class="p">,</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Performs PubMed API request of a query and returns list of papers with</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    fields as desired.</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        query: Query to PubMed API. Needs to match PubMed API notation.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            addresses.</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        max_results: Maximal number of results retrieved from DB. Defaults</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            to 9998, higher values likely raise problems due to PubMedAPI, see:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        args: additional arguments for pubmed.query</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        kwargs: additional arguments for pubmed.query</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        pd.DataFrame. One paper per row.</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="k">if</span> <span class="n">max_results</span> <span class="o">&gt;</span> <span class="mi">9998</span><span class="p">:</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">max_results cannot be larger than 9998, received </span><span class="si">{</span><span class="n">max_results</span><span class="si">}</span><span class="s2">.&quot;</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>            <span class="s2">&quot;This will likely result in a JSONDecodeError. Considering lowering `max_results`.</span><span class="se">\n</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>            <span class="s2">&quot;For PubMed, ESearch can only retrieve the first 9,999 records matching the query. &quot;</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>            <span class="s2">&quot;To obtain more than 9,999 PubMed records, consider using EDirect that contains additional&quot;</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>            <span class="s2">&quot;logic to batch PubMed search results automatically so that an arbitrary number can be retrieved&quot;</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="p">)</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">PUBMED</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="n">max_results</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-87">87</a></span>
+<span class="normal"><a href="#__codelineno-0-88">88</a></span>
+<span class="normal"><a href="#__codelineno-0-89">89</a></span>
+<span class="normal"><a href="#__codelineno-0-90">90</a></span>
+<span class="normal"><a href="#__codelineno-0-91">91</a></span>
+<span class="normal"><a href="#__codelineno-0-92">92</a></span>
+<span class="normal"><a href="#__codelineno-0-93">93</a></span>
+<span class="normal"><a href="#__codelineno-0-94">94</a></span>
+<span class="normal"><a href="#__codelineno-0-95">95</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pubmed_papers</span><span class="p">(</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9998</span><span class="p">,</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    Performs PubMed API request of a query and returns list of papers with</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    fields as desired.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        query: Query to PubMed API. Needs to match PubMed API notation.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            addresses.</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        max_results: Maximal number of results retrieved from DB. Defaults</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            to 9998, higher values likely raise problems due to PubMedAPI, see:</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">            https://stackoverflow.com/questions/75353091/biopython-entrez-article-limit</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        args: additional arguments for pubmed.query</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        kwargs: additional arguments for pubmed.query</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        pd.DataFrame. One paper per row.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">if</span> <span class="n">max_results</span> <span class="o">&gt;</span> <span class="mi">9998</span><span class="p">:</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">max_results cannot be larger than 9998, received </span><span class="si">{</span><span class="n">max_results</span><span class="si">}</span><span class="s2">.&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>            <span class="s2">&quot;This will likely result in a JSONDecodeError. Considering lowering `max_results`.</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>            <span class="s2">&quot;For PubMed, ESearch can only retrieve the first 9,999 records matching the query. &quot;</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>            <span class="s2">&quot;To obtain more than 9,999 PubMed records, consider using EDirect that contains additional&quot;</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>            <span class="s2">&quot;logic to batch PubMed search results automatically so that an arbitrary number can be retrieved&quot;</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="p">)</span>
 <a id="__codelineno-0-68" name="__codelineno-0-68"></a>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="n">get_mails</span> <span class="o">=</span> <span class="s2">&quot;emails&quot;</span> <span class="ow">in</span> <span class="n">fields</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="n">fields</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;emails&quot;</span><span class="p">))</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="n">processed</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="p">{</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>            <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">process_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>                <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>            <span class="p">)(</span><span class="n">value</span><span class="p">)</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a>            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>            <span class="k">if</span> <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fields</span>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="p">}</span>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">raw</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>    <span class="p">]</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">paper</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
-<a id="__codelineno-0-85" name="__codelineno-0-85"></a>            <span class="n">processed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;emails&quot;</span><span class="p">:</span> <span class="n">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">)})</span>
-<a id="__codelineno-0-86" name="__codelineno-0-86"></a>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>        <span class="n">raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">PUBMED</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="n">max_results</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>            <span class="s2">&quot;PubMed query returned malformed payload; treating as empty. </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="p">)</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="n">get_mails</span> <span class="o">=</span> <span class="s2">&quot;emails&quot;</span> <span class="ow">in</span> <span class="n">fields</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">fields</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;emails&quot;</span><span class="p">))</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="n">processed</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="p">{</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>            <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">process_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>                <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>            <span class="p">)(</span><span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>            <span class="k">if</span> <span class="n">pubmed_field_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fields</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="p">}</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>        <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">raw</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>    <span class="p">]</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>    <span class="k">if</span> <span class="n">get_mails</span><span class="p">:</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">paper</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>            <span class="n">processed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;emails&quot;</span><span class="p">:</span> <span class="n">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">)})</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2202,17 +2230,9 @@ dates are used.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/pubmed.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
-<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
-<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
-<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
-<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
-<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
-<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
-<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
-<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
 <span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
 <span class="normal"><a href="#__codelineno-0-100">100</a></span>
 <span class="normal"><a href="#__codelineno-0-101">101</a></span>
@@ -2236,39 +2256,47 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-119">119</a></span>
 <span class="normal"><a href="#__codelineno-0-120">120</a></span>
 <span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_and_dump_pubmed_papers</span><span class="p">(</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>    <span class="n">output_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">    Combines get_pubmed_papers and dump_papers.</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a><span class="sd">        keywords: List of keywords to request pubmed API.</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">            The outer list level will be considered as AND separated keys.</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">            The inner level as OR separated.</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">        output_filepath: Path where the dump will be saved.</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">            Defaults to [&#39;title&#39;, &#39;authors&#39;, &#39;date&#39;, &#39;abstract&#39;,</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="sd">            &#39;journal&#39;, &#39;doi&#39;].</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">            addresses.</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">        start_date: Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        end_date: End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a>    <span class="c1"># Translate keywords into query.</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords_and_date</span><span class="p">(</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a>        <span class="n">keywords</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="p">)</span>
-<a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="n">papers</span> <span class="o">=</span> <span class="n">get_pubmed_papers</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a>    <span class="n">dump_papers</span><span class="p">(</span><span class="n">papers</span><span class="p">,</span> <span class="n">output_filepath</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_and_dump_pubmed_papers</span><span class="p">(</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="n">output_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="s2">&quot;journal&quot;</span><span class="p">,</span> <span class="s2">&quot;doi&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">    Combines get_pubmed_papers and dump_papers.</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">        keywords: List of keywords to request pubmed API.</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">            The outer list level will be considered as AND separated keys.</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">            The inner level as OR separated.</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">        output_filepath: Path where the dump will be saved.</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        fields: List of strings with fields to keep in output.</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">            Defaults to [&#39;title&#39;, &#39;authors&#39;, &#39;date&#39;, &#39;abstract&#39;,</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">            &#39;journal&#39;, &#39;doi&#39;].</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">            NOTE: If &#39;emails&#39; is passed, an attempt is made to extract author mail</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">            addresses.</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">        start_date: Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">        end_date: End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="c1"># Translate keywords into query.</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords_and_date</span><span class="p">(</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>        <span class="n">keywords</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="p">)</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">papers</span> <span class="o">=</span> <span class="n">get_pubmed_papers</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="n">dump_papers</span><span class="p">(</span><span class="n">papers</span><span class="p">,</span> <span class="n">output_filepath</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2384,7 +2412,7 @@ are lists themselves, they will be OR separated.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
 <span class="normal"><a href="#__codelineno-0-12">12</a></span>
@@ -2541,7 +2569,7 @@ dates are used.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
 <span class="normal"><a href="#__codelineno-0-35">35</a></span>
@@ -2681,7 +2709,7 @@ an 'author' field.</p>
     </table>
 
 
-            <details class="quote">
+            <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
 <span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
