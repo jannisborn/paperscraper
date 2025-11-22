@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import sys
 from time import sleep
@@ -8,6 +9,8 @@ import httpx
 import requests
 from tqdm import tqdm
 from unidecode import unidecode
+
+from ..async_utils import retry_with_exponential_backoff
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,6 +34,7 @@ def get_doi_from_title(title: str) -> Optional[str]:
     response = requests.get(
         PAPER_URL + "search",
         params={"query": title, "fields": "externalIds", "limit": 1},
+        headers={"x-api-key": os.getenv("SS_API_KEY")},
     )
     data = response.json()
 
@@ -61,7 +65,9 @@ def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     ):
         # Make the GET request to Semantic Scholar.
         response = requests.get(
-            f"{PAPER_URL}{ssid}", params={"fields": "externalIds", "limit": 1}
+            f"{PAPER_URL}{ssid}",
+            params={"fields": "externalIds", "limit": 1},
+            headers={"x-api-key": os.getenv("SS_API_KEY")},
         )
 
         # If successful, try to extract and return the DOI.
@@ -88,7 +94,10 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     """
 
     # Send the GET request to Semantic Scholar
-    response = requests.get(f"{PAPER_URL}DOI:{doi}")
+    response = requests.get(
+        f"{PAPER_URL}DOI:{doi}",
+        headers={"x-api-key": os.getenv("SS_API_KEY")},
+    )
     if response.status_code == 200:
         data = response.json()
         return {"title": data.get("title"), "ssid": data.get("paperId")}
@@ -109,7 +118,9 @@ def author_name_to_ssaid(author_name: str) -> str:
     """
 
     response = requests.get(
-        AUTHOR_URL, params={"query": author_name, "fields": "name", "limit": 1}
+        AUTHOR_URL,
+        params={"query": author_name, "fields": "name", "limit": 1},
+        headers={"x-api-key": os.getenv("SS_API_KEY")},
     )
     if response.status_code == 200:
         data = response.json()
@@ -145,6 +156,7 @@ def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
     return mode
 
 
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 async def get_papers_for_author(ss_author_id: str) -> List[str]:
     """
     Given a Semantic Scholar author ID, returns a list of all Semantic Scholar paper IDs for that author.
@@ -210,22 +222,54 @@ def find_matching(
     return list(overlap_ids | overlap_names)
 
 
-def check_overlap(n1: str, n2: str) -> bool:
+def check_overlap(
+    n1: str,
+    n2: str,
+    recursive: bool = True,
+) -> bool:
     """
     Check whether two author names are identical.
-    TODO: This can be made more robust
+
+    Heuristics:
+        - Case insensitive
+        - If name sets are identical, a match is assumed (e.g. "John Walter" vs "Walter John").
+        - Assume the last token is the surname and require:
+            * same surname
+            * both have at least one given name
+            * first given names are compatible (same, or initial vs full)
 
     Args:
-        n1: first name
-        n2: second name
+        n1: first name (e.g., "John A. Smith")
+        n2: second name (e.g., "J. Smith")
 
     Returns:
         bool: Whether names are identical.
     """
-    # remove initials and check for name intersection
-    s1 = {w for w in clean_name(n1).split()}
-    s2 = {w for w in clean_name(n2).split()}
-    return len(s2) > 0 and len(s1 | s2) == len(s1)
+    t1 = [w for w in clean_name(n1).split() if w]
+    t2 = [w for w in clean_name(n2).split() if w]
+
+    if not t1 or not t2:
+        return False  # One name is empty after cleaning
+
+    if set(t1) == set(t2):
+        return True  # Name sets are identical
+
+    # Assume last token is surname
+    surname1, given1 = t1[-1], t1[:-1]
+    surname2, given2 = t2[-1], t2[:-1]
+
+    if surname1 != surname2:
+        return False  # Surnames do not match
+
+    if not given1 or not given2:
+        return False  # One name has no given names
+
+    # Compare only the *first* given name; middle names are optional
+    return (
+        given1[0] == given2[0]
+        or (len(given1[0]) == 1 and given2[0].startswith(given1[0]))
+        or (len(given2[0]) == 1 and given1[0].startswith(given2[0]))
+    )
 
 
 def clean_name(s: str) -> str:
