@@ -18,6 +18,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 class CitationResult(BaseModel):
     ssid: str  # semantic scholar paper id
+    title: str
     num_citations: int
     self_citations: Dict[str, float] = {}
     citation_score: float
@@ -87,6 +88,7 @@ async def _process_single(client: httpx.AsyncClient, identifier: str) -> Citatio
 
     return CitationResult(
         ssid=identifier,
+        title=paper.get("title", ""),
         num_citations=total_cites,
         self_citations=ratios,
         citation_score=avg_score,

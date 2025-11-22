@@ -5,14 +5,15 @@ from pydantic import BaseModel
 
 
 class EntityResult(BaseModel):
-    num_citations: int
-    num_references: int
-    # keys are authors or papers and values are absolute self links
-    self_citations: Dict[str, int] = {}
-    self_references: Dict[str, int] = {}
     # aggregated results
     self_citation_ratio: float = 0
     self_reference_ratio: float = 0
+    # total number of author citations/references
+    num_citations: int
+    num_references: int
+    # keys are papers and values are percentage of self citations/references
+    self_citations: Dict[str, float] = {}
+    self_references: Dict[str, float] = {}
 
 
 class Entity:

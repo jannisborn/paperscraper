@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import re
 import sys
 from typing import Any, Dict, List, Literal, Union
@@ -7,6 +8,7 @@ from typing import Any, Dict, List, Literal, Union
 import httpx
 import numpy as np
 from pydantic import BaseModel
+from tqdm import tqdm
 
 from ..async_utils import optional_async, retry_with_exponential_backoff
 from .utils import DOI_PATTERN, find_matching
@@ -16,15 +18,20 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 ModeType = Literal[tuple(MODES := ("doi", "infer", "ssid"))]
 
+CONCURRENCY_LIMIT = 10
+_SEM = asyncio.Semaphore(CONCURRENCY_LIMIT)
+
 
 class ReferenceResult(BaseModel):
     ssid: str  # semantic scholar paper id
+    title: str
     num_references: int
     self_references: Dict[str, float] = {}
     reference_score: float
 
 
-async def _fetch_reference_data(
+@retry_with_exponential_backoff(max_retries=14, base_delay=1.0)
+async def _fetch_paper_with_references(
     client: httpx.AsyncClient, suffix: str
 ) -> Dict[str, Any]:
     """
@@ -40,9 +47,22 @@ async def _fetch_reference_data(
     response = await client.get(
         f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
         params={"fields": "title,authors,references.authors"},
+        headers={"x-api-key": os.getenv("SS_API_KEY")},
     )
     response.raise_for_status()
     return response.json()
+
+
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0, factor=1.4)
+async def fetch_references(client: httpx.AsyncClient, paper_id: str) -> list[dict]:
+    resp = await client.get(
+        f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/references",
+        params={"fields": "citedPaper.paperId,citedPaper.title,citedPaper.authors"},
+        headers={"x-api-key": os.getenv("SS_API_KEY")},
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("data", []) or []
 
 
 async def _process_single_reference(
@@ -58,47 +78,54 @@ async def _process_single_reference(
     Returns:
         A ReferenceResult containing counts and percentages of self-references.
     """
-    # Determine prefix for API
-    if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
-        prefix = ""
-    elif len(re.findall(DOI_PATTERN, identifier, re.IGNORECASE)) == 1:
-        prefix = "DOI:"
-    else:
-        prefix = ""
+    async with _SEM:
+        # Determine prefix for API
+        if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
+            prefix = ""
+        elif len(re.findall(DOI_PATTERN, identifier, re.IGNORECASE)) == 1:
+            prefix = "DOI:"
+        else:
+            prefix = ""
 
-    suffix = f"{prefix}{identifier}"
-    paper = await _fetch_reference_data(client, suffix)
+        suffix = f"{prefix}{identifier}"
+        paper = await _fetch_paper_with_references(client, suffix)
 
-    # Initialize counters
-    author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
-    references = paper.get("references", [])
-    total_refs = len(references)
+        # Initialize counters
+        author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
+        references = paper.get("references", []) or []
 
-    # Tally self-references
-    for ref in references:
-        matched = find_matching(paper.get("authors", []), ref.get("authors", []))
-        for name in matched:
-            author_counts[name] += 1
+        # # Sometimes references are not included in the initial fetch
+        # if len(references) == 0:
+        #     await asyncio.sleep(0.2)
+        #     references = await fetch_references(client, paper.get("paperId"))
 
-    # Compute percentages per author
-    ratios: Dict[str, float] = {
-        name: round((count / total_refs * 100), 2) if total_refs > 0 else 0.0
-        for name, count in author_counts.items()
-    }
+        total_refs = len(references)
 
-    # Compute average score
-    avg_score = round(float(np.mean(list(ratios.values()))) if ratios else 0.0, 3)
+        # Tally self-references
+        for ref in references:
+            matched = find_matching(paper.get("authors", []), ref.get("authors", []))
+            for name in matched:
+                author_counts[name] += 1
 
-    return ReferenceResult(
-        ssid=identifier,
-        num_references=total_refs,
-        self_references=ratios,
-        reference_score=avg_score,
-    )
+        # Compute percentages per author
+        ratios: Dict[str, float] = {
+            name: round((count / total_refs * 100), 2) if total_refs > 0 else 0.0
+            for name, count in author_counts.items()
+        }
+
+        # Compute average score
+        avg_score = round(float(np.mean(list(ratios.values()))) if ratios else 0.0, 3)
+
+        return ReferenceResult(
+            ssid=identifier,
+            title=paper.get("title", ""),
+            num_references=total_refs,
+            self_references=ratios,
+            reference_score=avg_score,
+        )
 
 
 @optional_async
-@retry_with_exponential_backoff(max_retries=4, base_delay=1.0)
 async def self_references_paper(
     inputs: Union[str, List[str]], verbose: bool = False
 ) -> Union[ReferenceResult, List[ReferenceResult]]:
@@ -120,15 +147,25 @@ async def self_references_paper(
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
         tasks = [_process_single_reference(client, ident) for ident in identifiers]
-        results = await asyncio.gather(*tasks)
+        results: List[ReferenceResult] = []
+
+        iterator = asyncio.as_completed(tasks)
+        if verbose:
+            iterator = tqdm(
+                iterator, total=len(tasks), desc="Collecting self-references"
+            )
+
+        for coro in iterator:
+            res = await coro
+            results.append(res)
 
     if verbose:
         for res in results:
             logger.info(
-                f'Self-references in "{res.ssid}": N={res.num_references}, '
+                f'Self-references in "{res.title}": N={res.num_references}, '
                 f"Score={res.reference_score}%"
             )
             for author, pct in res.self_references.items():
-                logger.info(f"  {author}: {pct}% self-reference")
+                logger.info(f"  {author}: {pct}% self-references")
 
     return results[0] if single_input else results
