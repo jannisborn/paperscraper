@@ -2,7 +2,6 @@ import logging
 import os
 import re
 import sys
-from time import sleep
 from typing import Any, Dict, List, Literal, Optional
 
 import httpx
@@ -10,7 +9,7 @@ import requests
 from tqdm import tqdm
 from unidecode import unidecode
 
-from ..async_utils import retry_with_exponential_backoff
+from ..async_utils import optional_async, retry_with_exponential_backoff
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -52,8 +51,8 @@ def get_doi_from_title(title: str) -> Optional[str]:
     logger.warning(f"Did not find DOI for title={title}")
 
 
-@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
-def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
+@optional_async
+async def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     """
     Given a Semantic Scholar paper ID, returns the corresponding DOI if available.
 
@@ -63,33 +62,34 @@ def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     Returns:
       str or None: The DOI of the paper, or None if not found or in case of an error.
     """
-    logger.warning(
-        "Semantic Scholar API is easily overloaded when passing SS IDs, provide DOIs to improve throughput."
-    )
-    attempts = 0
-    for attempt in tqdm(
-        range(1, max_retries + 1), desc=f"Fetching DOI for {ssid}", unit="attempt"
-    ):
-        # Make the GET request to Semantic Scholar.
-        response = requests.get(
-            f"{PAPER_URL}{ssid}",
-            params={"fields": "externalIds", "limit": 1},
-            headers=HEADERS,
+    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+        logger.warning(
+            "Semantic Scholar API is easily overloaded when passing SS IDs, provide DOIs to improve throughput."
+        )
+        attempts = 0
+        for attempt in tqdm(
+            range(1, max_retries + 1), desc=f"Fetching DOI for {ssid}", unit="attempt"
+        ):
+            # Make the GET request to Semantic Scholar.
+            response = await client.get(
+                f"{PAPER_URL}{ssid}",
+                params={"fields": "externalIds", "limit": 1},
+                headers=HEADERS,
+            )
+
+            # If successful, try to extract and return the DOI.
+            if response.status_code == 200:
+                data = response.json()
+                doi = data.get("externalIds", {}).get("DOI")
+                return doi
+            attempts += 1
+        logger.warning(
+            f"Did not find DOI for paper ID {ssid}. Code={response.status_code}, text={response.text}"
         )
 
-        # If successful, try to extract and return the DOI.
-        if response.status_code == 200:
-            data = response.json()
-            doi = data.get("externalIds", {}).get("DOI")
-            return doi
-        attempts += 1
-    logger.warning(
-        f"Did not find DOI for paper ID {ssid}. Code={response.status_code}, text={response.text}"
-    )
 
-
-@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
-def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
+@optional_async
+async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
     """
     Given a DOI, retrieves the paper's title and semantic scholar paper ID.
 
@@ -99,19 +99,19 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     Returns:
         dict or None: A dictionary with keys 'title' and 'ssid'.
     """
+    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+        # Send the GET request to Semantic Scholar
+        response = await client.get(f"{PAPER_URL}DOI:{doi}", headers=HEADERS)
+        if response.status_code == 200:
+            data = response.json()
+            return {"title": data.get("title"), "ssid": data.get("paperId")}
+        logger.warning(
+            f"Could not get authors & semantic scholar ID for DOI={doi}, {response.status_code}: {response.text}"
+        )
 
-    # Send the GET request to Semantic Scholar
-    response = requests.get(f"{PAPER_URL}DOI:{doi}", headers=HEADERS)
-    if response.status_code == 200:
-        data = response.json()
-        return {"title": data.get("title"), "ssid": data.get("paperId")}
-    logger.warning(
-        f"Could not get authors & semantic scholar ID for DOI={doi}, {response.status_code}: {response.text}"
-    )
 
-
-@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
-def author_name_to_ssaid(author_name: str) -> str:
+@optional_async
+async def author_name_to_ssaid(author_name: str) -> str:
     """
     Given an author name, returns the Semantic Scholar author ID.
 
@@ -121,22 +121,22 @@ def author_name_to_ssaid(author_name: str) -> str:
     Returns:
         str or None: The Semantic Scholar author ID or None if no author is found.
     """
+    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+        response = await client.get(
+            AUTHOR_URL,
+            params={"query": author_name, "fields": "name", "limit": 1},
+            headers={"x-api-key": os.getenv("SS_API_KEY")},
+        )
+        if response.status_code == 200:
+            data = response.json()
+            authors = data.get("data", [])
+            if authors:
+                # Return the Semantic Scholar author ID from the first result.
+                return authors[0].get("authorId")
 
-    response = requests.get(
-        AUTHOR_URL,
-        params={"query": author_name, "fields": "name", "limit": 1},
-        headers={"x-api-key": os.getenv("SS_API_KEY")},
-    )
-    if response.status_code == 200:
-        data = response.json()
-        authors = data.get("data", [])
-        if authors:
-            # Return the Semantic Scholar author ID from the first result.
-            return authors[0].get("authorId")
-
-    logger.error(
-        f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"
-    )
+        logger.error(
+            f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"
+        )
 
 
 def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
