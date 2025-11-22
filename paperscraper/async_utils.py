@@ -49,14 +49,20 @@ def optional_async(
 
 
 def retry_with_exponential_backoff(
-    *, max_retries: int = 5, base_delay: float = 1.0
+    *,
+    max_retries: int = 5,
+    base_delay: float = 1.0,
+    factor: float = 1.3,
+    constant_delay: float = 0.2,
 ) -> Callable[[F], F]:
     """
     Decorator factory that retries an `async def` on HTTP 429, with exponential backoff.
 
     Args:
         max_retries: how many times to retry before giving up.
-        base_delay: initial delay in seconds; next delays will be duplication of previous.
+        base_delay: initial delay in seconds; next delays will be multiplied by `factor`.
+        factor: multiplier for delay after each retry.
+        constant_delay: fixed delay before each attempt.
 
     Usage:
 
@@ -70,18 +76,39 @@ def retry_with_exponential_backoff(
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
             delay = base_delay
-            for attempt in range(max_retries):
+            last_exception: BaseException | None = None
+            for attempt in range(1, max_retries + 1):
+                await asyncio.sleep(constant_delay)
                 try:
                     return await func(*args, **kwargs)
                 except httpx.HTTPStatusError as e:
-                    # only retry on 429
                     status = e.response.status_code if e.response is not None else None
-                    if status != 429 or attempt == max_retries - 1:
+                    if status != 429:
                         raise
-                # backoff
-                await asyncio.sleep(delay)
-                delay *= 2
-            # in theory we never reach here
+                    last_exception = e
+                    sleep_for = delay
+                    if e.response is not None:
+                        ra = e.response.headers.get("Retry-After")
+                        if ra is not None:
+                            try:
+                                sleep_for = float(ra)
+                            except ValueError:
+                                pass
+                    delay *= factor
+
+                except httpx.ReadError as e:
+                    last_exception = e
+                    sleep_for = delay
+                    delay *= factor
+
+                if attempt == max_retries:
+                    msg = (
+                        f"{func.__name__} failed after {attempt} attempts with "
+                        f"last delay {sleep_for:.2f}s"
+                    )
+                    raise RuntimeError(msg) from last_exception
+
+                await asyncio.sleep(sleep_for)
 
         return wrapper
 

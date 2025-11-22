@@ -5,6 +5,7 @@ from typing import Dict
 import pytest
 
 from paperscraper.citations import self_references_paper
+from paperscraper.citations.entity import Researcher
 from paperscraper.citations.self_references import ReferenceResult
 
 logging.disable(logging.INFO)
@@ -75,3 +76,25 @@ class TestSelfReferences:
             f"Async execution ({async_duration:.2f}s) is slower than sync execution "
             f"({sync_duration:.2f}s)"
         )
+
+    def test_researcher(self):
+        """
+        Tests calculation of self-references for all papers of an author.
+        """
+        ssaid = "2326988211"
+        researcher = Researcher(ssaid)
+        result = researcher.self_references(verbose=True)
+        assert result.ssid == int(ssaid)
+        assert isinstance(result.name, str)
+        assert result.name == "Patrick Soga"
+        assert isinstance(result.num_references, int)
+        assert result.num_references > 0
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations == -1
+        assert isinstance(result.self_references, Dict)
+        for title, ratio in result.self_references.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+
+        assert result.self_reference_ratio >= 0 and result.self_reference_ratio <= 100
