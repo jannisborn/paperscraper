@@ -21,6 +21,12 @@ PAPER_URL: str = "https://api.semanticscholar.org/graph/v1/paper/"
 AUTHOR_URL: str = "https://api.semanticscholar.org/graph/v1/author/search"
 
 
+SS_API_KEY = os.getenv("SS_API_KEY")
+HEADERS: Dict[str, str] = {}
+if SS_API_KEY:
+    HEADERS["x-api-key"] = SS_API_KEY
+
+
 def get_doi_from_title(title: str) -> Optional[str]:
     """
     Searches the DOI of a paper based on the paper title
@@ -34,7 +40,7 @@ def get_doi_from_title(title: str) -> Optional[str]:
     response = requests.get(
         PAPER_URL + "search",
         params={"query": title, "fields": "externalIds", "limit": 1},
-        headers={"x-api-key": os.getenv("SS_API_KEY")},
+        headers=HEADERS,
     )
     data = response.json()
 
@@ -46,6 +52,7 @@ def get_doi_from_title(title: str) -> Optional[str]:
     logger.warning(f"Did not find DOI for title={title}")
 
 
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     """
     Given a Semantic Scholar paper ID, returns the corresponding DOI if available.
@@ -67,7 +74,7 @@ def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
         response = requests.get(
             f"{PAPER_URL}{ssid}",
             params={"fields": "externalIds", "limit": 1},
-            headers={"x-api-key": os.getenv("SS_API_KEY")},
+            headers=HEADERS,
         )
 
         # If successful, try to extract and return the DOI.
@@ -76,12 +83,12 @@ def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
             doi = data.get("externalIds", {}).get("DOI")
             return doi
         attempts += 1
-        sleep(10)
     logger.warning(
         f"Did not find DOI for paper ID {ssid}. Code={response.status_code}, text={response.text}"
     )
 
 
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     """
     Given a DOI, retrieves the paper's title and semantic scholar paper ID.
@@ -94,10 +101,7 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     """
 
     # Send the GET request to Semantic Scholar
-    response = requests.get(
-        f"{PAPER_URL}DOI:{doi}",
-        headers={"x-api-key": os.getenv("SS_API_KEY")},
-    )
+    response = requests.get(f"{PAPER_URL}DOI:{doi}", headers=HEADERS)
     if response.status_code == 200:
         data = response.json()
         return {"title": data.get("title"), "ssid": data.get("paperId")}
@@ -106,6 +110,7 @@ def get_title_and_id_from_doi(doi: str) -> Dict[str, Any]:
     )
 
 
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 def author_name_to_ssaid(author_name: str) -> str:
     """
     Given an author name, returns the Semantic Scholar author ID.
@@ -222,11 +227,7 @@ def find_matching(
     return list(overlap_ids | overlap_names)
 
 
-def check_overlap(
-    n1: str,
-    n2: str,
-    recursive: bool = True,
-) -> bool:
+def check_overlap(n1: str, n2: str) -> bool:
     """
     Check whether two author names are identical.
 

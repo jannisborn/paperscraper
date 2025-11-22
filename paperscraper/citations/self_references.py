@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 ModeType = Literal[tuple(MODES := ("doi", "infer", "ssid"))]
 
+
+SS_API_KEY = os.getenv("SS_API_KEY")
+HEADERS: Dict[str, str] = {}
+if SS_API_KEY:
+    HEADERS["x-api-key"] = SS_API_KEY
+
 CONCURRENCY_LIMIT = 10
 _SEM = asyncio.Semaphore(CONCURRENCY_LIMIT)
 
@@ -47,7 +53,7 @@ async def _fetch_paper_with_references(
     response = await client.get(
         f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
         params={"fields": "title,authors,references.authors"},
-        headers={"x-api-key": os.getenv("SS_API_KEY")},
+        headers=HEADERS,
     )
     response.raise_for_status()
     return response.json()
@@ -58,7 +64,7 @@ async def fetch_references(client: httpx.AsyncClient, paper_id: str) -> list[dic
     resp = await client.get(
         f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/references",
         params={"fields": "citedPaper.paperId,citedPaper.title,citedPaper.authors"},
-        headers={"x-api-key": os.getenv("SS_API_KEY")},
+        headers=HEADERS,
     )
     resp.raise_for_status()
     data = resp.json()
