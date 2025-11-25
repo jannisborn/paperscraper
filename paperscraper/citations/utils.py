@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import sys
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import httpx
 import requests
@@ -111,7 +111,7 @@ async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
 
 
 @optional_async
-async def author_name_to_ssaid(author_name: str) -> str:
+async def author_name_to_ssaid(author_name: str) -> Optional[Tuple[str, str]]:
     """
     Given an author name, returns the Semantic Scholar author ID.
 
@@ -119,20 +119,21 @@ async def author_name_to_ssaid(author_name: str) -> str:
         author_name (str): The full name of the author.
 
     Returns:
-        str or None: The Semantic Scholar author ID or None if no author is found.
+        Tuple[str, str] or None: The SS author ID alongside the SS name (may differ
+            slightly from input name) or None if no author is found.
     """
     async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
         response = await client.get(
             AUTHOR_URL,
             params={"query": author_name, "fields": "name", "limit": 1},
-            headers={"x-api-key": os.getenv("SS_API_KEY")},
+            headers=HEADERS,
         )
         if response.status_code == 200:
             data = response.json()
             authors = data.get("data", [])
             if authors:
                 # Return the Semantic Scholar author ID from the first result.
-                return authors[0].get("authorId")
+                return authors[0].get("authorId"), authors[0].get("name")
 
         logger.error(
             f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"

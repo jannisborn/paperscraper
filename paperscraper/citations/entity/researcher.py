@@ -79,12 +79,12 @@ class Researcher(Entity):
             self.name = sch.get_author(input)._name
             self.ssid = input
         elif mode == "orcid":
-            self.name = orcid_to_author_name(input)
+            orcid_name = orcid_to_author_name(input)
             self.orcid = input
-            self.ssid = author_name_to_ssaid(input)
+            self.ssid, self.name = author_name_to_ssaid(orcid_name)
         elif mode == "name":
-            self.name = input
-            self.ssid = author_name_to_ssaid(input)
+            name = input
+            self.ssid, self.name = author_name_to_ssaid(input)
 
     async def _self_references_async(
         self, verbose: bool = False
@@ -119,12 +119,12 @@ class Researcher(Entity):
         reference_results = asyncio.run(self._self_references_async(verbose=verbose))
 
         individual_self_references = {
-            getattr(result, "title"): getattr(result, "self_references")[self.name]
+            getattr(result, "title"): getattr(result, "self_references").get(self.name, 0.0)
             for result in reference_results
         }
-        reference_ratio = sum(individual_self_references.values()) / len(
+        reference_ratio = sum(individual_self_references.values()) / max(1, len(
             individual_self_references
-        )
+        ))
         return ResearcherResult(
             name=self.name,
             ssid=int(self.ssid),

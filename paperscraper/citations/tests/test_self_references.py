@@ -98,3 +98,27 @@ class TestSelfReferences:
             assert ratio >= 0 and ratio <= 100
 
         assert result.self_reference_ratio >= 0 and result.self_reference_ratio <= 100
+        print(result)
+
+    def test_researcher_from_orcid(self):
+        """
+        Tests calculation of self-references for all papers of an author.
+        """
+        orcid = "0000-0003-4221-6988"
+        researcher = Researcher(orcid)
+        result = researcher.self_references(verbose=True)
+        assert result.orcid == orcid
+        assert isinstance(result.name, str)
+        assert result.name == "Juan M. Galeazzi"
+        assert isinstance(result.num_references, int)
+        assert result.num_references > 0
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations == -1
+        assert isinstance(result.self_references, Dict)
+        for title, ratio in result.self_references.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+
+        assert result.self_reference_ratio >= 0 and result.self_reference_ratio <= 100
+        print(result)

@@ -59,18 +59,6 @@ async def _fetch_paper_with_references(
     return response.json()
 
 
-@retry_with_exponential_backoff(max_retries=10, base_delay=1.0, factor=1.4)
-async def fetch_references(client: httpx.AsyncClient, paper_id: str) -> list[dict]:
-    resp = await client.get(
-        f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/references",
-        params={"fields": "citedPaper.paperId,citedPaper.title,citedPaper.authors"},
-        headers=HEADERS,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("data", []) or []
-
-
 async def _process_single_reference(
     client: httpx.AsyncClient, identifier: str
 ) -> ReferenceResult:
@@ -99,11 +87,6 @@ async def _process_single_reference(
         # Initialize counters
         author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
         references = paper.get("references", []) or []
-
-        # # Sometimes references are not included in the initial fetch
-        # if len(references) == 0:
-        #     await asyncio.sleep(0.2)
-        #     references = await fetch_references(client, paper.get("paperId"))
 
         total_refs = len(references)
 
