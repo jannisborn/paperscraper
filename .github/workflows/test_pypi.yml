@@ -26,5 +26,6 @@ jobs:
           python -c "import paperscraper.server_dumps"
           python -c "import paperscraper.tests"
           python -c "import paperscraper.impact"
+          python -c "import paperscraper.citations"
 
 

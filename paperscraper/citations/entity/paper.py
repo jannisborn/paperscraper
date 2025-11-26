@@ -68,14 +68,14 @@ class Paper(Entity):
         Extracts the self references of a paper, for each author.
         """
         if isinstance(self.doi, str):
-            self.ref_result: ReferenceResult = self_references_paper(self.doi)
+            self.self_ref: ReferenceResult = self_references_paper(self.doi)
 
     def self_citations(self):
         """
         Extracts the self citations of a paper, for each author.
         """
         if isinstance(self.doi, str):
-            self.citation_result: CitationResult = self_citations_paper(self.doi)
+            self.self_cite: CitationResult = self_citations_paper(self.doi)
 
     def get_result(self) -> Optional[PaperResult]:
         """
@@ -83,18 +83,26 @@ class Paper(Entity):
 
         Returns: PaperResult if available.
         """
-        if not hasattr(self, "ref_result"):
+        if not hasattr(self, "self_ref"):
             logger.warning(
                 f"Can't get result since no referencing result for {self.input} exists. Run `.self_references` first."
             )
             return
-        elif not hasattr(self, "citation_result"):
+        elif not hasattr(self, "self_cite"):
             logger.warning(
                 f"Can't get result since no citation result for {self.input} exists. Run `.self_citations` first."
             )
             return
-        ref_result = self.ref_result.model_dump()
-        ref_result.pop("ssid", None)
         return PaperResult(
-            title=self.title, **ref_result, **self.citation_result.model_dump()
+            title=self.title,
+            **{
+                k: v
+                for k, v in self.self_ref.model_dump().items()
+                if k not in ["ssid", "title"]
+            },
+            **{
+                k: v
+                for k, v in self.self_cite.model_dump().items()
+                if k not in ["title"]
+            },
         )

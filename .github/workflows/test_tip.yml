@@ -5,6 +5,8 @@ on: [push, release]
 jobs:
   test-source-install:
     runs-on: ubuntu-latest
+    env:
+      SS_API_KEY: ${{ secrets.SS_API_KEY }}
     strategy:
       max-parallel: 3
       matrix:
@@ -49,6 +51,8 @@ jobs:
 
   test-potential-wheel-install:
     runs-on: ubuntu-latest
+    env:
+      SS_API_KEY: ${{ secrets.SS_API_KEY }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
