@@ -96,7 +96,7 @@ async def _process_single(client: httpx.AsyncClient, identifier: str) -> Citatio
 
 
 @optional_async
-@retry_with_exponential_backoff(max_retries=4, base_delay=1.0)
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 async def self_citations_paper(
     inputs: Union[str, List[str]], verbose: bool = False
 ) -> Union[CitationResult, List[CitationResult]]:

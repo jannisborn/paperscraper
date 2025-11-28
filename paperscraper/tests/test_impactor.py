@@ -47,10 +47,17 @@ class TestImpactor:
 
     def test_quantum_information_search(self, impactor):
         expected_results = [
-            {"journal": "Innovation", "factor": 33.2, "score": 70},
-            {"journal": "InfoMat", "factor": 22.7, "score": 71},
-            {"journal": "Information Fusion", "factor": 14.7, "score": 71},
-            {"journal": "PRX Quantum", "factor": 9.3, "score": 78},
+            {"journal": "Innovation", "factor": 25.7, "score": 70},
+            {"journal": "Exploration", "factor": 22.5, "score": 74},
+            {"journal": "InfoMat", "factor": 22.3, "score": 71},
+            {"journal": "Information Fusion", "factor": 15.5, "score": 71},
+            {"journal": "PRX Quantum", "factor": 11.0, "score": 78},
+            {
+                "journal": "International Journal of Applied Earth Observation and Geoinformation",
+                "factor": 8.6,
+                "score": 76,
+            },
+            {"journal": "npj Quantum Information", "factor": 8.3, "score": 95},
         ]
 
         results = impactor.search(
@@ -69,6 +76,18 @@ class TestImpactor:
             assert (
                 expected["score"] == actual["score"]
             ), f"Score does not match for {expected['journal']}"
+
+        results = impactor.search(
+            "Quantum information", threshold=90, sort_by="score", min_impact=2
+        )
+        expected_results = [
+            {"journal": "Quantum", "factor": 5.4, "score": 100},
+            {"journal": "npj Quantum Information", "factor": 8.3, "score": 95},
+            {"journal": "Information", "factor": 2.9, "score": 95},
+            {"journal": "Quantum Information Processing", "factor": 2.2, "score": 95},
+        ]
+        assert len(results) == len(expected_results), "Number of results does not match"
+        assert results == expected_results
 
     def test_type_error(self, impactor: Impactor):
         with pytest.raises(TypeError):

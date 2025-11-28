@@ -111,7 +111,8 @@ async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
 
 
 @optional_async
-async def author_name_to_ssaid(author_name: str) -> Optional[Tuple[str, str]]:
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
+async def author_name_to_ssaid(author_name: str) -> Tuple[str, str]:
     """
     Given an author name, returns the Semantic Scholar author ID.
 
@@ -128,16 +129,17 @@ async def author_name_to_ssaid(author_name: str) -> Optional[Tuple[str, str]]:
             params={"query": author_name, "fields": "name", "limit": 1},
             headers=HEADERS,
         )
-        if response.status_code == 200:
-            data = response.json()
-            authors = data.get("data", [])
-            if authors:
-                # Return the Semantic Scholar author ID from the first result.
-                return authors[0].get("authorId"), authors[0].get("name")
+        response.raise_for_status()
+        data = response.json()
+        authors = data.get("data", [])
+        if authors:
+            # Return the Semantic Scholar author ID from the first result.
+            return authors[0]["authorId"], authors[0]["name"]
 
         logger.error(
             f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"
         )
+        return ('-1', 'N.A.')
 
 
 def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
