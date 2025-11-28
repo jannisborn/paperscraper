@@ -1,6 +1,7 @@
 import asyncio
 import os
 from typing import Any, List, Literal, Optional, Tuple
+from time import sleep
 
 from semanticscholar import SemanticScholar
 
@@ -90,6 +91,8 @@ class Researcher(Entity):
         self, verbose: bool = False
     ) -> List[ReferenceResult]:
         """Async version of self_references."""
+        if self.ssid == '-1':
+            return []
         self.ssids = await get_papers_for_author(self.ssid)
 
         results: List[ReferenceResult] = await self_references_paper(
