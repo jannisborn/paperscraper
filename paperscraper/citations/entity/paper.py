@@ -84,15 +84,9 @@ class Paper(Entity):
         Returns: PaperResult if available.
         """
         if not hasattr(self, "self_ref"):
-            logger.warning(
-                f"Can't get result since no referencing result for {self.input} exists. Run `.self_references` first."
-            )
-            return
-        elif not hasattr(self, "self_cite"):
-            logger.warning(
-                f"Can't get result since no citation result for {self.input} exists. Run `.self_citations` first."
-            )
-            return
+            self.self_references()
+        if not hasattr(self, "self_cite"):
+            self.self_citations()
         return PaperResult(
             title=self.title,
             **{

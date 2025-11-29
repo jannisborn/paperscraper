@@ -24,6 +24,7 @@ class CitationResult(BaseModel):
     citation_score: float
 
 
+@retry_with_exponential_backoff(max_retries=14, base_delay=1.0)
 async def _fetch_citation_data(
     client: httpx.AsyncClient, suffix: str
 ) -> Dict[str, Any]:
@@ -120,7 +121,7 @@ async def self_citations_paper(
     if verbose:
         for res in results:
             logger.info(
-                f'Self-citations in "{res.ssid}": N={res.num_citations}, Score={res.citation_score}%'
+                f'Self-citations in "{res.title}": N={res.num_citations}, Score={res.citation_score}%'
             )
             for author, pct in res.self_citations.items():
                 logger.info(f"  {author}: {pct}%")

@@ -84,7 +84,7 @@ class TestSelfReferences:
         ssaid = "2326988211"
         researcher = Researcher(ssaid)
         result = researcher.self_references(verbose=True)
-        assert result.ssid == int(ssaid)
+        assert result.ssaid == int(ssaid)
         assert isinstance(result.name, str)
         assert result.name == "Patrick Soga"
         assert isinstance(result.num_references, int)
