@@ -1,5 +1,6 @@
 import logging
 import time
+from time import sleep
 from typing import Dict
 
 import pytest
@@ -58,6 +59,9 @@ class TestSelfReferences:
         start_time = time.perf_counter()
         async_results = self_references_paper(dois)
         async_duration = time.perf_counter() - start_time
+
+        # Sleep to avoid API delays
+        sleep(60)
 
         # Measure synchronous execution time (three independent calls)
         start_time = time.perf_counter()
