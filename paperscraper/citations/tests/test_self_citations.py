@@ -1,9 +1,11 @@
 import logging
 import time
+from typing import Dict
 
 import pytest
 
 from paperscraper.citations import self_citations_paper
+from paperscraper.citations.entity import Researcher
 from paperscraper.citations.self_citations import CitationResult
 
 logging.disable(logging.INFO)
@@ -69,3 +71,77 @@ class TestSelfCitations:
 
         for a, s in zip(result, sync_result):
             assert a == s, f"{a} vs {s}"
+
+    def test_researcher(self):
+        """
+        Tests calculation of self-references for all papers of an author.
+        """
+        ssaid = "2328976118"
+        researcher = Researcher(ssaid)
+        result = researcher.self_citations(verbose=True)
+        assert result.ssaid == int(ssaid)
+        assert isinstance(result.name, str)
+        assert result.name == "Kacper Wyrwal"
+        assert isinstance(result.num_references, int)
+        assert result.num_references == -1
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations > 0
+        assert isinstance(result.self_citations, Dict)
+        for title, ratio in result.self_citations.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+
+        assert result.self_citation_ratio >= 0 and result.self_citation_ratio <= 100
+        print(result)
+
+    def test_researcher_from_orcid(self):
+        """
+        Tests calculation of self-references for all papers of an author.
+        """
+        orcid = "0000-0003-4221-6988"
+        researcher = Researcher(orcid)
+        result = researcher.self_citations(verbose=True)
+        assert result.orcid == orcid
+        assert isinstance(result.name, str)
+        assert result.name == "Juan M. Galeazzi"
+        assert isinstance(result.num_references, int)
+        assert result.num_references == -1
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations > 0
+        assert isinstance(result.self_references, Dict)
+        for title, ratio in result.self_citations.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+
+        assert result.self_citation_ratio >= 0 and result.self_citation_ratio <= 100
+        print(result)
+
+    def test_whole_researcher(self):
+        ssaid = "2104445902"
+        researcher = Researcher(ssaid)
+        result = researcher.get_result()
+        assert result.ssaid == int(ssaid)
+        assert isinstance(result.name, str)
+        assert result.name == "Aleksandros Sobczyk"
+        assert isinstance(result.num_references, int)
+        assert result.num_references > 0
+        assert isinstance(result.num_citations, int)
+        assert result.num_citations > 0
+        assert isinstance(result.self_citations, Dict)
+        assert isinstance(result.self_references, Dict)
+        assert len(result.self_citations) > 5
+        assert len(result.self_references) >= 3
+        for title, ratio in result.self_citations.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+        for title, ratio in result.self_references.items():
+            assert isinstance(title, str)
+            assert isinstance(ratio, float)
+            assert ratio >= 0 and ratio <= 100
+
+        assert result.self_citation_ratio >= 0 and result.self_citation_ratio <= 100
+        assert result.self_reference_ratio >= 0 and result.self_reference_ratio <= 100
+        print(result)

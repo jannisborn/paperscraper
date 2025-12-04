@@ -1,12 +1,11 @@
 import asyncio
 import os
 from typing import Any, List, Literal, Optional, Tuple
-from time import sleep
 
 from semanticscholar import SemanticScholar
 
 from ..orcid import orcid_to_author_name
-from ..self_citations import CitationResult
+from ..self_citations import CitationResult, self_citations_paper
 from ..self_references import ReferenceResult, self_references_paper
 from ..utils import author_name_to_ssaid, get_papers_for_author
 from .core import Entity, EntityResult
@@ -14,7 +13,7 @@ from .core import Entity, EntityResult
 
 class ResearcherResult(EntityResult):
     name: str
-    ssid: int
+    ssaid: int
     orcid: Optional[str] = None
 
     def _ordered_items(self) -> List[Tuple[str, Any]]:
@@ -27,7 +26,7 @@ class ResearcherResult(EntityResult):
             ("num_citations", self.num_citations),
             ("self_references", self.self_references),
             ("self_citations", self.self_citations),
-            ("ssid", self.ssid),
+            ("ssaid", self.ssaid),
             ("orcid", self.orcid),
         ]
 
@@ -46,8 +45,9 @@ sch = SemanticScholar(api_key=os.getenv("SS_API_KEY"))
 
 class Researcher(Entity):
     name: str
-    ssid: int
+    ssaid: int
     orcid: Optional[str] = None
+    ssids: List[int] = []
 
     def __init__(self, input: str, mode: ModeType = "infer"):
         """
@@ -78,22 +78,31 @@ class Researcher(Entity):
                 mode = "name"
         if mode == "ssaid":
             self.name = sch.get_author(input)._name
-            self.ssid = input
+            self.ssaid = input
         elif mode == "orcid":
             orcid_name = orcid_to_author_name(input)
             self.orcid = input
-            self.ssid, self.name = author_name_to_ssaid(orcid_name)
+            self.ssaid, self.name = author_name_to_ssaid(orcid_name)
         elif mode == "name":
-            name = input
-            self.ssid, self.name = author_name_to_ssaid(input)
+            self.name = input
+            self.ssaid, self.name = author_name_to_ssaid(input)
+
+        self.result = ResearcherResult(
+            name=self.name,
+            ssaid=int(self.ssaid),
+            orcid=self.orcid,
+            num_citations=-1,
+            num_references=-1,
+        )
 
     async def _self_references_async(
         self, verbose: bool = False
     ) -> List[ReferenceResult]:
         """Async version of self_references."""
-        if self.ssid == '-1':
+        if self.ssaid == "-1":
             return []
-        self.ssids = await get_papers_for_author(self.ssid)
+        if self.ssids == []:
+            self.ssids = await get_papers_for_author(self.ssaid)
 
         results: List[ReferenceResult] = await self_references_paper(
             self.ssids, verbose=verbose
@@ -122,36 +131,91 @@ class Researcher(Entity):
         reference_results = asyncio.run(self._self_references_async(verbose=verbose))
 
         individual_self_references = {
-            getattr(result, "title"): getattr(result, "self_references").get(self.name, 0.0)
+            getattr(result, "title"): getattr(result, "self_references").get(
+                self.name, 0.0
+            )
             for result in reference_results
         }
-        reference_ratio = sum(individual_self_references.values()) / max(1, len(
-            individual_self_references
-        ))
-        return ResearcherResult(
-            name=self.name,
-            ssid=int(self.ssid),
-            orcid=self.orcid,
-            num_references=sum(r.num_references for r in reference_results),
-            num_citations=-1,
-            self_references=dict(
-                sorted(
-                    individual_self_references.items(), key=lambda x: x[1], reverse=True
-                )
-            ),
-            self_citations={},
-            self_reference_ratio=round(reference_ratio, 3),
-            self_citation_ratio=-1.0,
+        reference_ratio = sum(individual_self_references.values()) / max(
+            1, len(individual_self_references)
         )
 
-    def self_citations(self) -> ResearcherResult:
+        self.result = self.result.model_copy(
+            update={
+                "num_references": sum(r.num_references for r in reference_results),
+                "self_references": dict(
+                    sorted(
+                        individual_self_references.items(),
+                        key=lambda x: x[1],
+                        reverse=True,
+                    )
+                ),
+                "self_reference_ratio": round(reference_ratio, 3),
+            }
+        )
+
+        return self.result
+
+    async def _self_citations_async(
+        self, verbose: bool = False
+    ) -> List[CitationResult]:
+        """Async version of self_citations."""
+        if self.ssaid == "-1":
+            return []
+        if self.ssids == []:
+            self.ssids = await get_papers_for_author(self.ssaid)
+
+        results: List[CitationResult] = await self_citations_paper(
+            self.ssids, verbose=verbose
+        )
+        # Remove papers with zero references or that are erratum/corrigendum
+        results = [
+            r
+            for r in results
+            if r.num_citations > 0
+            and "erratum" not in r.title.lower()
+            and "corrigendum" not in r.title.lower()
+        ]
+
+        return results
+
+    def self_citations(self, verbose: bool = False) -> ResearcherResult:
         """
         Sifts through all papers of a researcher and finds how often they are self-cited.
         """
-        ...
+        citation_results = asyncio.run(self._self_citations_async(verbose=verbose))
+        individual_self_citations = {
+            getattr(result, "title"): getattr(result, "self_citations").get(
+                self.name, 0.0
+            )
+            for result in citation_results
+        }
+        citation_ratio = sum(individual_self_citations.values()) / max(
+            1, len(individual_self_citations)
+        )
+
+        self.result = self.result.model_copy(
+            update={
+                "num_citations": sum(r.num_citations for r in citation_results),
+                "self_citations": dict(
+                    sorted(
+                        individual_self_citations.items(),
+                        key=lambda x: x[1],
+                        reverse=True,
+                    )
+                ),
+                "self_citation_ratio": round(citation_ratio, 3),
+            }
+        )
+
+        return self.result
 
     def get_result(self) -> ResearcherResult:
         """
         Provides the result of the analysis.
         """
-        ...
+        if not hasattr(self, "self_ref"):
+            self.self_references()
+        if not hasattr(self, "self_cite"):
+            self.self_citations()
+        return self.result
