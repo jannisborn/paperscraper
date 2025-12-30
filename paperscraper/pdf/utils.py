@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Optional
+from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -31,3 +32,22 @@ def load_api_keys(filepath: Optional[str] = None) -> Dict[str, str]:
         "AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID"),
         "AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY"),
     }
+
+
+def download_pdf_to_path(pdf_url: str, out_path: Path, headers: dict) -> bool:
+    # Stream to avoid loading the entire PDF in memory
+    with requests.get(
+        pdf_url, stream=True, timeout=60, headers=headers, allow_redirects=True
+    ) as r:
+        r.raise_for_status()
+        # Read first chunk to validate it’s a PDF
+        it = r.iter_content(chunk_size=64 * 1024)
+        first = next(it, b"")
+        if not first.startswith(b"%PDF"):
+            return False
+        with open(out_path.with_suffix(".pdf"), "wb") as f:
+            f.write(first)
+            for chunk in it:
+                if chunk:
+                    f.write(chunk)
+    return True

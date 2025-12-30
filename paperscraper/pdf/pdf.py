@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 from ..utils import load_jsonl
 from .fallbacks import FALLBACKS
-from .utils import load_api_keys
+from .utils import load_api_keys, download_pdf_to_path
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def save_pdf(
     filepath: Union[str, Path],
     save_metadata: bool = False,
     api_keys: Optional[Union[str, Dict[str, str]]] = None,
-) -> None:
+) -> bool:
     """
     Save a PDF file of a paper.
 
@@ -43,6 +43,9 @@ def save_pdf(
         save_metadata: A boolean indicating whether to save paper metadata as a separate json.
         api_keys: Either a dictionary containing API keys (if already loaded) or a string (path to API keys file).
                   If None, will try to load from `.env` file and if unsuccessful, skip API-based fallbacks.
+
+    Returns:
+        Whether the PDF was saved successfully
     """
     if not isinstance(paper_metadata, Dict):
         raise TypeError(f"paper_metadata must be a dict, not {type(paper_metadata)}.")
@@ -59,10 +62,12 @@ def save_pdf(
     # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
     if not isinstance(api_keys, dict):
         api_keys = load_api_keys(api_keys)
-
     doi = paper_metadata["doi"]
     url = f"https://doi.org/{doi}"
     user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
+    success = False
+
+    # Arxiv PDFs can be downloaded directly
     if "arxiv" in doi:
         soup = None
         try:
@@ -76,6 +81,7 @@ def save_pdf(
             if r.content[:4] == b"%PDF":
                 with open(output_path.with_suffix(".pdf"), "wb+") as f:
                     f.write(r.content)
+                success = True
                 # If metadata requested, fetch the landing page now to extract it
                 if save_metadata:
                     try:
@@ -85,7 +91,7 @@ def save_pdf(
                     except Exception as _:
                         soup = None
                 else:
-                    return
+                    return True
             else:
                 logger.warning(
                     f"Direct arXiv fetch returned non-PDF for {doi}. Falling back."
@@ -95,16 +101,78 @@ def save_pdf(
                 f"Direct arXiv PDF fetch failed for {doi}: {e}. Falling back."
             )
 
-    success = False
+    # Try to load biorxiv PDF but may be blocked by Cloudflare
+    if "biorxiv" in doi:
+        # Try manual download
+        response = requests.get(url, timeout=60)
+
+        pdf_url = f"https://www.biorxiv.org/content/{doi}.full.pdf"
+        try:
+            if download_pdf_to_path(pdf_url, output_path, user_agent):
+                if not save_metadata:
+                    return True
+                success = True
+            else:
+                logger.info(
+                    f"Direct bioRxiv PDF endpoint did not return a PDF: {pdf_url}"
+                )
+        except Exception as e:
+            logger.info(f"Direct bioRxiv PDF download failed: {pdf_url} ({e})")
+
     try:
         response = requests.get(url, timeout=60)
+        soup = BeautifulSoup(response.text, features="lxml")
         response.raise_for_status()
-        success = True
     except Exception as e:
         error = str(e)
         logger.warning(f"Could not download from: {url} - {e}. ")
+        soup = None
 
-    if not success and "biorxiv" in error:
+    # Try to save the metadata
+    if soup is not None and save_metadata:
+        metadata = {}
+        title_tag = soup.find("meta", {"name": "citation_title"})
+        metadata["title"] = title_tag.get("content") if title_tag else "Title not found"
+
+        # Extract authors
+        authors = []
+        for author_tag in soup.find_all("meta", {"name": "citation_author"}):
+            if author_tag.get("content"):
+                authors.append(author_tag["content"])
+        metadata["authors"] = authors if authors else ["Author information not found"]
+
+        # Extract abstract
+        domain = tldextract.extract(url).domain
+        abstract_keys = ABSTRACT_ATTRIBUTE.get(domain, DEFAULT_ATTRIBUTES)
+
+        for key in abstract_keys:
+            abstract_tag = soup.find("meta", {"name": key})
+            if abstract_tag:
+                raw_abstract = BeautifulSoup(
+                    abstract_tag.get("content", "None"), "html.parser"
+                ).get_text(separator="\n")
+                if raw_abstract.strip().startswith("Abstract"):
+                    raw_abstract = raw_abstract.strip()[8:]
+                metadata["abstract"] = raw_abstract.strip()
+                break
+
+        if "abstract" not in metadata.keys():
+            metadata["abstract"] = "Abstract not found"
+            logger.warning(f"Could not find abstract for {url}")
+        elif metadata["abstract"].endswith("..."):
+            logger.warning(f"Abstract truncated from {url}")
+
+        # Save metadata to JSON
+        try:
+            with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
+                json.dump(metadata, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            logger.error(f"Failed to save metadata to {str(output_path)}: {e}")
+
+    if success:
+        return True
+
+    if "biorxiv" in error:
         if (
             api_keys.get("AWS_ACCESS_KEY_ID") is None
             or api_keys.get("AWS_SECRET_ACCESS_KEY") is None
@@ -118,28 +186,30 @@ def save_pdf(
         else:
             success = FALLBACKS["s3"](doi, output_path, api_keys)
             if success:
-                return
+                return True
 
+    # always first try fallback to BioC-PMC (open access papers on PubMed Central)
+    success = FALLBACKS["bioc_pmc"](doi, output_path)
+
+    # if BioC-PMC fails, try other fallbacks
     if not success:
-        # always first try fallback to BioC-PMC (open access papers on PubMed Central)
-        success = FALLBACKS["bioc_pmc"](doi, output_path)
+        # check for specific publishers
+        if "elife" in error.lower():  # elife has an open XML repository on GitHub
+            success = FALLBACKS["elife"](doi, output_path)
+        elif (
+            ("wiley" in error.lower())
+            and api_keys
+            and ("WILEY_TDM_API_TOKEN" in api_keys)
+        ):
+            success = FALLBACKS["wiley"](paper_metadata, output_path, api_keys)
+    if success:
+        return True
 
-        # if BioC-PMC fails, try other fallbacks
-        if not success:
-            # check for specific publishers
-            if "elife" in error.lower():  # elife has an open XML repository on GitHub
-                FALLBACKS["elife"](doi, output_path)
-            elif (
-                ("wiley" in error.lower())
-                and api_keys
-                and ("WILEY_TDM_API_TOKEN" in api_keys)
-            ):
-                FALLBACKS["wiley"](paper_metadata, output_path, api_keys)
-        return
-
-    soup = BeautifulSoup(response.text, features="lxml")
-    meta_pdf = soup.find("meta", {"name": "citation_pdf_url"})
-    if meta_pdf and meta_pdf.get("content"):
+    if (
+        soup is not None
+        and (meta_pdf := soup.find("meta", {"name": "citation_pdf_url"}))
+        and meta_pdf.get("content")
+    ):
         pdf_url = meta_pdf.get("content")
         try:
             response = requests.get(pdf_url, timeout=60)
@@ -154,11 +224,17 @@ def save_pdf(
                     # Check for specific publishers
                     if "elife" in doi.lower():
                         logger.info("Attempting fallback to eLife XML repository")
-                        FALLBACKS["elife"](doi, output_path)
+                        success = FALLBACKS["elife"](doi, output_path)
                     elif api_keys and "WILEY_TDM_API_TOKEN" in api_keys:
-                        FALLBACKS["wiley"](paper_metadata, output_path, api_keys)
+                        success = FALLBACKS["wiley"](
+                            paper_metadata, output_path, api_keys
+                        )
                     elif api_keys and "ELSEVIER_TDM_API_KEY" in api_keys:
-                        FALLBACKS["elsevier"](paper_metadata, output_path, api_keys)
+                        success = FALLBACKS["elsevier"](
+                            paper_metadata, output_path, api_keys
+                        )
+                if success:
+                    return True
             else:
                 with open(output_path.with_suffix(".pdf"), "wb+") as f:
                     f.write(response.content)
@@ -169,61 +245,20 @@ def save_pdf(
             logger.info(
                 "DOI contains eLife, attempting fallback to eLife XML repository on GitHub."
             )
-            if not FALLBACKS["elife"](doi, output_path):
+            success = FALLBACKS["elife"](doi, output_path)
+            if not success:
                 logger.warning(
                     f"eLife XML fallback failed for {paper_metadata['doi']}."
                 )
         elif (
             api_keys and "ELSEVIER_TDM_API_KEY" in api_keys
         ):  # elsevier journals can be accessed via the Elsevier TDM API (requires API key)
-            FALLBACKS["elsevier"](paper_metadata, output_path, api_keys)
+            success = FALLBACKS["elsevier"](paper_metadata, output_path, api_keys)
         else:
             logger.warning(
                 f"Retrieval failed. No citation_pdf_url meta tag found for {url} and no applicable fallback mechanism available."
             )
-
-    if not save_metadata:
-        return
-
-    metadata = {}
-    # Extract title
-    title_tag = soup.find("meta", {"name": "citation_title"})
-    metadata["title"] = title_tag.get("content") if title_tag else "Title not found"
-
-    # Extract authors
-    authors = []
-    for author_tag in soup.find_all("meta", {"name": "citation_author"}):
-        if author_tag.get("content"):
-            authors.append(author_tag["content"])
-    metadata["authors"] = authors if authors else ["Author information not found"]
-
-    # Extract abstract
-    domain = tldextract.extract(url).domain
-    abstract_keys = ABSTRACT_ATTRIBUTE.get(domain, DEFAULT_ATTRIBUTES)
-
-    for key in abstract_keys:
-        abstract_tag = soup.find("meta", {"name": key})
-        if abstract_tag:
-            raw_abstract = BeautifulSoup(
-                abstract_tag.get("content", "None"), "html.parser"
-            ).get_text(separator="\n")
-            if raw_abstract.strip().startswith("Abstract"):
-                raw_abstract = raw_abstract.strip()[8:]
-            metadata["abstract"] = raw_abstract.strip()
-            break
-
-    if "abstract" not in metadata.keys():
-        metadata["abstract"] = "Abstract not found"
-        logger.warning(f"Could not find abstract for {url}")
-    elif metadata["abstract"].endswith("..."):
-        logger.warning(f"Abstract truncated from {url}")
-
-    # Save metadata to JSON
-    try:
-        with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-    except Exception as e:
-        logger.error(f"Failed to save metadata to {str(output_path)}: {e}")
+    return success
 
 
 def save_pdf_from_dump(
