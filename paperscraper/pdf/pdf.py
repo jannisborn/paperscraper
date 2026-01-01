@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 from ..utils import load_jsonl
 from .fallbacks import FALLBACKS
-from .utils import load_api_keys, download_pdf_to_path
+from .utils import download_pdf_to_path, load_api_keys
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -67,6 +67,24 @@ def save_pdf(
     user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
     success = False
 
+    # Forward to publisher URL
+    resolved_url = url
+    try:
+        r_resolve = requests.head(
+            url, timeout=60, headers=user_agent, allow_redirects=True
+        )
+        if r_resolve.url:
+            resolved_url = r_resolve.url
+    except Exception:
+        try:
+            r_resolve = requests.get(
+                url, timeout=60, headers=user_agent, allow_redirects=True
+            )
+            if r_resolve.url:
+                resolved_url = r_resolve.url
+        except Exception:
+            pass
+
     # Arxiv PDFs can be downloaded directly
     if "arxiv" in doi:
         soup = None
@@ -102,7 +120,7 @@ def save_pdf(
             )
 
     # Try to load biorxiv PDF but may be blocked by Cloudflare
-    if "biorxiv" in doi:
+    if is_biorxiv := "biorxiv" in resolved_url.lower():
         # Try manual download
         response = requests.get(url, timeout=60)
 
@@ -123,6 +141,7 @@ def save_pdf(
         response = requests.get(url, timeout=60)
         soup = BeautifulSoup(response.text, features="lxml")
         response.raise_for_status()
+        error = ""
     except Exception as e:
         error = str(e)
         logger.warning(f"Could not download from: {url} - {e}. ")
@@ -142,7 +161,7 @@ def save_pdf(
         metadata["authors"] = authors if authors else ["Author information not found"]
 
         # Extract abstract
-        domain = tldextract.extract(url).domain
+        domain = tldextract.extract(resolved_url).domain
         abstract_keys = ABSTRACT_ATTRIBUTE.get(domain, DEFAULT_ATTRIBUTES)
 
         for key in abstract_keys:
@@ -172,7 +191,7 @@ def save_pdf(
     if success:
         return True
 
-    if "biorxiv" in error:
+    if is_biorxiv:
         if (
             api_keys.get("AWS_ACCESS_KEY_ID") is None
             or api_keys.get("AWS_SECRET_ACCESS_KEY") is None
