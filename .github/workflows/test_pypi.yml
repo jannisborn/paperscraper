@@ -6,14 +6,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.9"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          enable-cache: false
       - name: Install package from PyPI
         run: |
-          python -m pip install --upgrade pip
-          pip install paperscraper
-          pip install pytest
+          uv pip install --system paperscraper pytest
       - name: Test package from PyPI
         run: |
           python -c "import paperscraper"
@@ -27,5 +30,3 @@ jobs:
           python -c "import paperscraper.tests"
           python -c "import paperscraper.impact"
           python -c "import paperscraper.citations"
-
-

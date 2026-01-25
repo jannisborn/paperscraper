@@ -6,15 +6,14 @@ import sys
 from datetime import datetime
 from typing import Optional
 
-import pkg_resources
-
+from ..utils import get_server_dumps_dir
 from .utils.chemrxiv import ChemrxivAPI, download_full, parse_dump
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 today = datetime.today().strftime("%Y-%m-%d")
-save_folder = pkg_resources.resource_filename("paperscraper", "server_dumps")
+save_folder = get_server_dumps_dir()
 save_path = os.path.join(save_folder, f"chemrxiv_{today}.jsonl")
 
 

@@ -5,14 +5,14 @@ import os
 from datetime import datetime
 from typing import Optional
 
-import pkg_resources
 from tqdm import tqdm
 
+from ..utils import get_server_dumps_dir
 from ..xrxiv.xrxiv_api import BioRxivApi
 
 today = datetime.today().strftime("%Y-%m-%d")
 save_path = os.path.join(
-    pkg_resources.resource_filename("paperscraper", "server_dumps"),
+    get_server_dumps_dir(),
     f"biorxiv_{today}.jsonl",
 )
 

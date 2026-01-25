@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paperscraper"
+dynamic = ["version"]
+description = "paperscraper: Package to scrape papers."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+  {name = "Jannis Born", email = "jannis.born@gmx.de"},
+  {name = "Matteo Manica", email = "drugilsberg@gmail.com"},
+]
+keywords = [
+  "Academics",
+  "Science",
+  "Publication",
+  "Search",
+  "PubMed",
+  "Arxiv",
+  "Medrxiv",
+  "Biorxiv",
+  "Chemrxiv",
+  "Google Scholar",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "arxiv>=1.4.7",
+  "pymed-paperscraper>=1.0.4",
+  "pandas>=1.0.4",
+  "requests==2.32.0",
+  "tqdm>=4.51.0",
+  "scholarly>=1.0.0",
+  "seaborn>=0.11.0",
+  "matplotlib>=3.3.2",
+  "matplotlib-venn>=0.11.5",
+  "bs4>=0.0.1",
+  "impact-factor>=1.1.3",
+  "thefuzz>=0.20.0",
+  "pytest",
+  "tldextract",
+  "semanticscholar>=0.8.4",
+  "pydantic",
+  "unidecode",
+  "dotenv",
+  "boto3",
+]
+
+[project.urls]
+Homepage = "https://github.com/jannisborn/paperscraper"
+Documentation = "https://jannisborn.github.io/paperscraper/"
+Repository = "https://github.com/jannisborn/paperscraper"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = {attr = "paperscraper.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["paperscraper*"]
+
+[tool.setuptools.package-data]
+"paperscraper.server_dumps" = ["*"]
+
+[dependency-groups]
+dev = [
+  "coverage",
+  "pytest-cov",
+  "build",
+  "twine",
+  "mkdocs-material>=9.6",
+  "mkdocstrings[python]>=0.24",
+  "mkdocs-material-extensions",
+]
