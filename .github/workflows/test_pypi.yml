@@ -5,27 +5,25 @@ jobs:
   verify-current-pypi:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: 3.9
+          enable-cache: true
       - name: Install package from PyPI
         run: |
-          python -m pip install --upgrade pip
-          pip install paperscraper
-          pip install pytest
+          uv pip install paperscraper pytest
       - name: Test package from PyPI
         run: |
-          python -c "import paperscraper"
-          python -c "import paperscraper.pdf"
-          python -c "import paperscraper.arxiv"
-          python -c "import paperscraper.scholar"
-          python -c "import paperscraper.plotting"
-          python -c "import paperscraper.pubmed"
-          python -c "import paperscraper.get_dumps"
-          python -c "import paperscraper.server_dumps"
-          python -c "import paperscraper.tests"
-          python -c "import paperscraper.impact"
-          python -c "import paperscraper.citations"
-
+          uv run python -c "import paperscraper"
+          uv run python -c "import paperscraper.pdf"
+          uv run python -c "import paperscraper.arxiv"
+          uv run python -c "import paperscraper.scholar"
+          uv run python -c "import paperscraper.plotting"
+          uv run python -c "import paperscraper.pubmed"
+          uv run python -c "import paperscraper.get_dumps"
+          uv run python -c "import paperscraper.server_dumps"
+          uv run python -c "import paperscraper.tests"
+          uv run python -c "import paperscraper.impact"
+          uv run python -c "import paperscraper.citations"
 

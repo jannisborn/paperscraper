@@ -39,6 +39,18 @@ pip install paperscraper
 
 This is enough to query PubMed, arXiv or Google Scholar.
 
+### Local development
+
+```console
+uv sync
+```
+
+This installs the project and dev tooling into `.venv`. Use `uv run` to execute commands, for example:
+
+```console
+uv run python -c "import paperscraper"
+```
+
 #### Download X-rxiv Dumps
 
 However, to scrape publication data from the preprint servers [biorxiv](https://www.biorxiv.org), [medrxiv](https://www.medrxiv.org) and [chemrxiv](https://www.chemrxiv.org), the setup is different. The entire history of papers is downloaded and stored in the `server_dumps` folder in a `.jsonl` format (one paper per line). This takes a while, as of November 2025:
