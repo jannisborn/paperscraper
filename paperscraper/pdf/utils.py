@@ -1,7 +1,8 @@
 import os
-from typing import Dict, Optional
 from pathlib import Path
+from typing import Dict, Optional
 
+import requests
 from dotenv import find_dotenv, load_dotenv
 
 

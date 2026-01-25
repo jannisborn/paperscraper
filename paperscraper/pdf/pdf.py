@@ -26,6 +26,91 @@ ABSTRACT_ATTRIBUTE = {
     "chemrxiv": ["citation_abstract"],
 }
 DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
+CHEMRXIV_API_BASE = "https://www.cambridge.org/engage/coe/public-api/v1/items/doi/"
+
+
+def _get_chemrxiv_item(doi: str, user_agent: Dict[str, str]) -> Optional[Dict[str, Any]]:
+    """Fetch ChemRxiv metadata from the Cambridge Open Engage API.
+
+    Args:
+        doi: The DOI to look up.
+        user_agent: Headers to use for the request.
+
+    Returns:
+        Item metadata if available, otherwise None.
+    """
+    api_url = f"{CHEMRXIV_API_BASE}{doi}"
+    try:
+        response = requests.get(api_url, timeout=60, headers=user_agent)
+        response.raise_for_status()
+        data = response.json()
+    except Exception as exc:
+        logger.warning(f"ChemRxiv API lookup failed for {doi}: {exc}")
+        return None
+
+    if isinstance(data, dict) and isinstance(data.get("item"), dict):
+        return data["item"]
+    return data if isinstance(data, dict) else None
+
+
+def _chemrxiv_metadata_from_item(item: Dict[str, Any], doi: str) -> Dict[str, Any]:
+    """Build metadata from a ChemRxiv API item payload.
+
+    Args:
+        item: API response payload for the item.
+        doi: DOI for logging context.
+
+    Returns:
+        A metadata dict with title, authors, and abstract.
+    """
+    metadata: Dict[str, Any] = {
+        "title": item.get("title") or "Title not found",
+        "authors": [],
+    }
+
+    authors = []
+    for author in item.get("authors", []) or []:
+        first = (author or {}).get("firstName") or ""
+        last = (author or {}).get("lastName") or ""
+        name = " ".join(part for part in [first, last] if part).strip()
+        if name:
+            authors.append(name)
+    metadata["authors"] = authors if authors else ["Author information not found"]
+
+    abstract = item.get("abstract")
+    if abstract:
+        abstract_text = BeautifulSoup(abstract, "html.parser").get_text(separator="\n")
+        abstract_text = abstract_text.strip()
+        if abstract_text.startswith("Abstract"):
+            abstract_text = abstract_text[8:].strip()
+        metadata["abstract"] = abstract_text
+    else:
+        metadata["abstract"] = "Abstract not found"
+        logger.warning(f"Could not find abstract for {doi}")
+
+    return metadata
+
+
+def _chemrxiv_pdf_url(item: Dict[str, Any]) -> Optional[str]:
+    """Extract the PDF URL from a ChemRxiv API item payload."""
+    asset = item.get("asset")
+    if not isinstance(asset, dict):
+        return None
+    original = asset.get("original")
+    if isinstance(original, dict) and original.get("url"):
+        return original.get("url")
+    return asset.get("url")
+
+
+def _write_metadata(metadata: Dict[str, Any], output_path: Path) -> bool:
+    """Write metadata to a JSON file next to the PDF."""
+    try:
+        with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as exc:
+        logger.error(f"Failed to save metadata to {str(output_path)}: {exc}")
+        return False
 
 
 def save_pdf(
@@ -66,6 +151,7 @@ def save_pdf(
     url = f"https://doi.org/{doi}"
     user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
     success = False
+    metadata_written = False
 
     # Forward to publisher URL
     resolved_url = url
@@ -86,7 +172,7 @@ def save_pdf(
             pass
 
     # Arxiv PDFs can be downloaded directly
-    if "arxiv" in doi:
+    if "arxiv" in doi.lower():
         soup = None
         try:
             match = re.search(
@@ -119,6 +205,28 @@ def save_pdf(
                 f"Direct arXiv PDF fetch failed for {doi}: {e}. Falling back."
             )
 
+    if "chemrxiv" in doi.lower():
+        item = _get_chemrxiv_item(doi, user_agent)
+        if item:
+            if save_metadata:
+                metadata_written = _write_metadata(
+                    _chemrxiv_metadata_from_item(item, doi), output_path
+                )
+            pdf_url = _chemrxiv_pdf_url(item)
+            if pdf_url:
+                try:
+                    if download_pdf_to_path(pdf_url, output_path, user_agent):
+                        return True
+                    logger.warning(
+                        f"ChemRxiv Open Engage PDF endpoint did not return a PDF: {pdf_url}"
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"ChemRxiv Open Engage PDF download failed for {doi}: {e}"
+                    )
+            else:
+                logger.warning(f"ChemRxiv API response missing PDF URL for {doi}")
+
     # Try to load biorxiv PDF but may be blocked by Cloudflare
     if is_biorxiv := "biorxiv" in resolved_url.lower():
         # Try manual download
@@ -148,7 +256,7 @@ def save_pdf(
         soup = None
 
     # Try to save the metadata
-    if soup is not None and save_metadata:
+    if soup is not None and save_metadata and not metadata_written:
         metadata = {}
         title_tag = soup.find("meta", {"name": "citation_title"})
         metadata["title"] = title_tag.get("content") if title_tag else "Title not found"
@@ -182,11 +290,7 @@ def save_pdf(
             logger.warning(f"Abstract truncated from {url}")
 
         # Save metadata to JSON
-        try:
-            with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
-                json.dump(metadata, f, ensure_ascii=False, indent=4)
-        except Exception as e:
-            logger.error(f"Failed to save metadata to {str(output_path)}: {e}")
+        _write_metadata(metadata, output_path)
 
     if success:
         return True

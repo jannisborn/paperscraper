@@ -122,7 +122,13 @@ class TestDumper:
 
     def test_arxiv_dumping(self):
         query = [covid19, ai, mi]
-        get_and_dump_arxiv_papers(query, output_filepath="covid19_ai_imaging.jsonl")
+        get_and_dump_arxiv_papers(
+            query,
+            output_filepath="covid19_ai_imaging.jsonl",
+            backend="api",
+            max_results=50,
+            client_options={"delay_seconds": 6.0, "page_size": 50, "num_retries": 3},
+        )
         assert os.path.exists("covid19_ai_imaging.jsonl")
 
     def test_get_arxiv_date(self):
