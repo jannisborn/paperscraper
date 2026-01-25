@@ -5,13 +5,13 @@ import os
 from datetime import datetime
 from typing import Optional
 
-import pkg_resources
 from tqdm import tqdm
 
+from ..utils import get_server_dumps_dir
 from ..xrxiv.xrxiv_api import MedRxivApi
 
 today = datetime.today().strftime("%Y-%m-%d")
-save_folder = pkg_resources.resource_filename("paperscraper", "server_dumps")
+save_folder = get_server_dumps_dir()
 save_path = os.path.join(save_folder, f"medrxiv_{today}.jsonl")
 
 

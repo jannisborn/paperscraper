@@ -6,17 +6,16 @@ from typing import Dict, List, Literal, Union
 
 import arxiv
 import pandas as pd
-import pkg_resources
 from tqdm import tqdm
 
-from ..utils import dump_papers
+from ..utils import dump_papers, get_server_dumps_dir
 from ..xrxiv.xrxiv_query import XRXivQuery
 from .utils import get_query_from_keywords, infer_backend
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+dump_root = get_server_dumps_dir()
 
 global ARXIV_QUERIER
 ARXIV_QUERIER = None

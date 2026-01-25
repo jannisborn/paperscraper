@@ -17,14 +17,18 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
           enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install project + docs deps
         run: |
-          uv sync
+          uv sync --group dev
 
       - name: Build docs
         run: uv run mkdocs build

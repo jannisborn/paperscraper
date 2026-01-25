@@ -3,10 +3,9 @@ import logging
 import os
 import sys
 
-import pkg_resources
-
 from .arxiv import get_and_dump_arxiv_papers
 from .pubmed import get_and_dump_pubmed_papers
+from .utils import get_server_dumps_dir
 from .xrxiv.xrxiv_query import XRXivQuery
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -18,7 +17,7 @@ QUERY_FN_DICT = {
     "pubmed": get_and_dump_pubmed_papers,
 }
 # For biorxiv, chemrxiv and medrxiv search for local dumps
-dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+dump_root = get_server_dumps_dir()
 
 for db in ["biorxiv", "chemrxiv", "medrxiv"]:
     dump_paths = glob.glob(os.path.join(dump_root, db + "*"))
