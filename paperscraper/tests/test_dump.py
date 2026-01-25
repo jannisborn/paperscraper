@@ -125,7 +125,7 @@ class TestDumper:
         get_and_dump_arxiv_papers(
             query,
             output_filepath="covid19_ai_imaging.jsonl",
-            backend="infer",
+            backend="api",
             max_results=50,
             client_options={"delay_seconds": 6.0, "page_size": 50, "num_retries": 3},
         )

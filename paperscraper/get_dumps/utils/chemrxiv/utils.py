@@ -7,15 +7,8 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from requests.exceptions import (
-    ChunkedEncodingError,
-    ContentDecodingError,
-    JSONDecodeError,
-    SSLError,
-)
-from requests.models import HTTPError
+from requests.exceptions import JSONDecodeError
 from tqdm import tqdm
-from urllib3.exceptions import DecodeError
 
 from .chemrxiv_api import ChemrxivAPI
 
@@ -99,8 +92,17 @@ def parse_dump(source_path: str, target_path: str) -> None:
         if not file_name.endswith(".json"):
             continue
         filepath = os.path.join(source_path, file_name)
-        with open(filepath, "r") as f:
-            source_paper = json.load(f)
+        if os.path.getsize(filepath) == 0:
+            logger.warning(f"Empty chemRxiv dump file {filepath}; skipping.")
+            os.remove(filepath)
+            continue
+        try:
+            with open(filepath, "r") as f:
+                source_paper = json.load(f)
+        except JSONDecodeError as exc:
+            logger.warning(f"Invalid JSON in chemRxiv dump file {filepath}: {exc}")
+            os.remove(filepath)
+            continue
 
         target_paper = {
             "title": source_paper["title"],
@@ -149,5 +151,11 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
                     f"Enrich failed for {item['id']}: {e}; writing listing payload"
                 )
 
-        with open(path, "w") as file:
-            json.dump(item, file, indent=2)
+        tmp_path = f"{path}.tmp"
+        try:
+            with open(tmp_path, "w") as file:
+                json.dump(item, file, indent=2)
+            os.replace(tmp_path, path)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
