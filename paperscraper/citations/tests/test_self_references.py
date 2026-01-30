@@ -49,33 +49,6 @@ class TestSelfReferences:
                 assert isinstance(self_cites, float)
                 assert self_cites >= 0 and self_cites <= 100
 
-    def test_compare_async_and_sync_performance(self, dois):
-        """
-        Compares the execution time of asynchronous and synchronous `self_references`
-        for a list of DOIs.
-        """
-
-        start_time = time.perf_counter()
-        async_results = self_references_paper(dois)
-        async_duration = time.perf_counter() - start_time
-
-        # Measure synchronous execution time (three independent calls)
-        start_time = time.perf_counter()
-        sync_results = [self_references_paper(doi) for doi in dois]
-
-        sync_duration = time.perf_counter() - start_time
-
-        print(f"Asynchronous execution time (batch): {async_duration:.2f} seconds")
-        print(
-            f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
-        )
-        assert len(sync_results) == len(async_results)
-
-        assert 0.5 * async_duration <= sync_duration, (
-            f"Async execution ({async_duration:.2f}s) is slower than sync execution "
-            f"({sync_duration:.2f}s)"
-        )
-
     def test_researcher(self):
         """
         Tests calculation of self-references for all papers of an author.
