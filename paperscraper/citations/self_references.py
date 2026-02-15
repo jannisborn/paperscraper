@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import re
 import sys
 from typing import Any, Dict, List, Literal, Union
@@ -11,21 +10,20 @@ from pydantic import BaseModel
 from tqdm import tqdm
 
 from ..async_utils import optional_async, retry_with_exponential_backoff
-from .utils import DOI_PATTERN, find_matching
+from .utils import (
+    DOI_PATTERN,
+    HEADERS,
+    HTTPX_LIMITS,
+    REQUEST_SEMAPHORE,
+    REQUEST_TIMEOUT_SECONDS,
+    find_matching,
+    wait_for_request_slot,
+)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 ModeType = Literal[tuple(MODES := ("doi", "infer", "ssid"))]
-
-
-SS_API_KEY = os.getenv("SS_API_KEY")
-HEADERS: Dict[str, str] = {}
-if SS_API_KEY:
-    HEADERS["x-api-key"] = SS_API_KEY
-
-CONCURRENCY_LIMIT = 10
-_SEM = asyncio.Semaphore(CONCURRENCY_LIMIT)
 
 
 class ReferenceResult(BaseModel):
@@ -42,6 +40,7 @@ async def _fetch_paper_with_references(
 ) -> Dict[str, Any]:
     """
     Fetch raw paper data from Semantic Scholar by DOI or SSID suffix.
+    Respects rate limiting to avoid exceeding API limits.
 
     Args:
         client: An active httpx.AsyncClient.
@@ -50,6 +49,8 @@ async def _fetch_paper_with_references(
     Returns:
         The JSON-decoded response as a dictionary.
     """
+    await wait_for_request_slot()
+
     response = await client.get(
         f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
         params={"fields": "title,authors,references.authors"},
@@ -72,7 +73,7 @@ async def _process_single_reference(
     Returns:
         A ReferenceResult containing counts and percentages of self-references.
     """
-    async with _SEM:
+    async with REQUEST_SEMAPHORE:
         # Determine prefix for API
         if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
             prefix = ""
@@ -134,18 +135,24 @@ async def self_references_paper(
     single_input = isinstance(inputs, str)
     identifiers = [inputs] if single_input else list(inputs)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
         tasks = [_process_single_reference(client, ident) for ident in identifiers]
         results: List[ReferenceResult] = []
 
-        iterator = asyncio.as_completed(tasks)
-        if verbose:
-            iterator = tqdm(
-                iterator, total=len(tasks), desc="Collecting self-references"
-            )
+        iterator = tqdm(
+            asyncio.as_completed(tasks),
+            total=len(tasks),
+            desc="Collecting self-references",
+        )
 
         for coro in iterator:
-            res = await coro
+            try:
+                res = await coro
+            except Exception as exc:
+                logger.warning(f"Self-reference fetch failed: {exc}")
+                continue
             results.append(res)
 
     if verbose:
@@ -157,4 +164,8 @@ async def self_references_paper(
             for author, pct in res.self_references.items():
                 logger.info(f"  {author}: {pct}% self-references")
 
-    return results[0] if single_input else results
+    if single_input:
+        if not results:
+            raise RuntimeError("Failed to fetch self-references for input.")
+        return results[0]
+    return results
