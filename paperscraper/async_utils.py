@@ -48,6 +48,16 @@ def optional_async(
     return wrapper
 
 
+def run_sync(coroutine: Awaitable[T]) -> T:
+    """
+    Run a coroutine on the background loop and block for the result.
+
+    This is safe to call from sync or async contexts, but will block the caller.
+    """
+    future = asyncio.run_coroutine_threadsafe(coroutine, _background_loop)
+    return future.result()
+
+
 def retry_with_exponential_backoff(
     *,
     max_retries: int = 5,
@@ -96,7 +106,7 @@ def retry_with_exponential_backoff(
                                 pass
                     delay *= factor
 
-                except httpx.ReadError as e:
+                except (httpx.ReadError, httpx.TimeoutException, httpx.TransportError) as e:
                     last_exception = e
                     sleep_for = delay
                     delay *= factor

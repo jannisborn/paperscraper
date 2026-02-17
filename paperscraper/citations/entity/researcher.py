@@ -1,9 +1,9 @@
-import asyncio
 import os
 from typing import Any, List, Literal, Optional, Tuple
 
 from semanticscholar import SemanticScholar
 
+from ...async_utils import run_sync
 from ..orcid import orcid_to_author_name
 from ..self_citations import CitationResult, self_citations_paper
 from ..self_references import ReferenceResult, self_references_paper
@@ -128,7 +128,7 @@ class Researcher(Entity):
         Returns:
             A ResearcherResult containing aggregated self-reference data.
         """
-        reference_results = asyncio.run(self._self_references_async(verbose=verbose))
+        reference_results = run_sync(self._self_references_async(verbose=verbose))
 
         individual_self_references = {
             getattr(result, "title"): getattr(result, "self_references").get(
@@ -182,8 +182,11 @@ class Researcher(Entity):
     def self_citations(self, verbose: bool = False) -> ResearcherResult:
         """
         Sifts through all papers of a researcher and finds how often they are self-cited.
+
+        Args:
+            verbose: If True, logs detailed information for each paper.
         """
-        citation_results = asyncio.run(self._self_citations_async(verbose=verbose))
+        citation_results = run_sync(self._self_citations_async(verbose=verbose))
         individual_self_citations = {
             getattr(result, "title"): getattr(result, "self_citations").get(
                 self.name, 0.0
@@ -214,8 +217,8 @@ class Researcher(Entity):
         """
         Provides the result of the analysis.
         """
-        if not hasattr(self, "self_ref"):
+        if getattr(self.result, "num_references", -1) < 0:
             self.self_references()
-        if not hasattr(self, "self_cite"):
+        if getattr(self.result, "num_citations", -1) < 0:
             self.self_citations()
         return self.result

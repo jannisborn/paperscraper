@@ -1,8 +1,10 @@
+import asyncio
 import logging
 import os
 import re
 import sys
-from typing import Any, Dict, List, Literal, Optional, Tuple
+import time
+from typing import Dict, List, Literal, Optional, Tuple
 
 import httpx
 import requests
@@ -15,6 +17,11 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
+REQUEST_TIMEOUT_SECONDS = float(os.getenv("SS_REQUEST_TIMEOUT", "20"))
+CONCURRENCY_LIMIT = max(1, int(os.getenv("SS_CONCURRENCY_LIMIT", "1")))
+# Minimum delay between outbound requests to Semantic Scholar.
+RATE_LIMIT_DELAY = max(0.0, float(os.getenv("SS_RATE_LIMIT_DELAY", "1.1")))
+
 DOI_PATTERN = r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b"
 PAPER_URL: str = "https://api.semanticscholar.org/graph/v1/paper/"
 AUTHOR_URL: str = "https://api.semanticscholar.org/graph/v1/author/search"
@@ -24,6 +31,30 @@ SS_API_KEY = os.getenv("SS_API_KEY")
 HEADERS: Dict[str, str] = {}
 if SS_API_KEY:
     HEADERS["x-api-key"] = SS_API_KEY
+
+HTTPX_LIMITS = httpx.Limits(
+    max_connections=CONCURRENCY_LIMIT, max_keepalive_connections=CONCURRENCY_LIMIT
+)
+REQUEST_SEMAPHORE = asyncio.Semaphore(CONCURRENCY_LIMIT)
+_REQUEST_SCHEDULER_LOCK = asyncio.Lock()
+_NEXT_REQUEST_TIME = 0.0
+
+
+async def wait_for_request_slot() -> None:
+    """
+    Enforces global pacing between Semantic Scholar requests.
+    Uses a shared scheduler to avoid bursts across modules.
+    """
+    global _NEXT_REQUEST_TIME
+
+    async with _REQUEST_SCHEDULER_LOCK:
+        now = time.monotonic()
+        scheduled = max(_NEXT_REQUEST_TIME, now)
+        _NEXT_REQUEST_TIME = scheduled + RATE_LIMIT_DELAY
+
+    delay = scheduled - now
+    if delay > 0:
+        await asyncio.sleep(delay)
 
 
 def get_doi_from_title(title: str) -> Optional[str]:
@@ -62,7 +93,9 @@ async def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
     Returns:
       str or None: The DOI of the paper, or None if not found or in case of an error.
     """
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
         logger.warning(
             "Semantic Scholar API is easily overloaded when passing SS IDs, provide DOIs to improve throughput."
         )
@@ -99,7 +132,9 @@ async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
     Returns:
         dict or None: A dictionary with keys 'title' and 'ssid'.
     """
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
         # Send the GET request to Semantic Scholar
         response = await client.get(f"{PAPER_URL}DOI:{doi}", headers=HEADERS)
         if response.status_code == 200:
@@ -115,6 +150,7 @@ async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
 async def author_name_to_ssaid(author_name: str) -> Tuple[str, str]:
     """
     Given an author name, returns the Semantic Scholar author ID.
+    Respects rate limiting to avoid exceeding API limits.
 
     Parameters:
         author_name (str): The full name of the author.
@@ -123,7 +159,11 @@ async def author_name_to_ssaid(author_name: str) -> Tuple[str, str]:
         Tuple[str, str] or None: The SS author ID alongside the SS name (may differ
             slightly from input name) or None if no author is found.
     """
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
+        await wait_for_request_slot()
+
         response = await client.get(
             AUTHOR_URL,
             params={"query": author_name, "fields": "name", "limit": 1},
@@ -139,7 +179,7 @@ async def author_name_to_ssaid(author_name: str) -> Tuple[str, str]:
         logger.error(
             f"Error in retrieving name from SS Author ID: {response.status_code} - {response.text}"
         )
-        return ('-1', 'N.A.')
+        return ("-1", "N.A.")
 
 
 def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
@@ -164,6 +204,7 @@ def determine_paper_input_type(input: str) -> Literal["ssid", "doi", "title"]:
     return mode
 
 
+@optional_async
 @retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 async def get_papers_for_author(ss_author_id: str) -> List[str]:
     """
@@ -179,7 +220,9 @@ async def get_papers_for_author(ss_author_id: str) -> List[str]:
     offset = 0
     limit = 100
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
         while True:
             response = await client.get(
                 f"https://api.semanticscholar.org/graph/v1/author/{ss_author_id}/papers",
