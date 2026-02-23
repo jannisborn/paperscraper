@@ -7,7 +7,7 @@ name = "paperscraper"
 dynamic = ["version"]
 description = "paperscraper: Package to scrape papers."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.14"
 license = {text = "MIT"}
 authors = [
   {name = "Jannis Born", email = "jannis.born@gmx.de"},

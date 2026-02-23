@@ -64,12 +64,15 @@ class TestSelfCitations:
             f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
         )
 
-        assert 0.1 * async_duration <= sync_duration, (
+        assert async_duration <= sync_duration, (
             f"Async execution ({async_duration:.2f}s) is slower than sync execution "
             f"({sync_duration:.2f}s)"
         )
 
-        for a, s in zip(result, sync_result):
+        for a, s in zip(
+            sorted(result, key=lambda r: r.ssid),
+            sorted(sync_result, key=lambda r: r.ssid),
+        ):
             assert a == s, f"{a} vs {s}"
 
     def test_researcher(self):
