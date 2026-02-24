@@ -29,8 +29,6 @@ class ChemrxivAPI:
     """
 
     base_primary = "https://chemrxiv.org/engage/chemrxiv/public-api/v1/"
-    base_cambridge = "https://www.cambridge.org/engage/coe/public-api/v1/"
-    cambridge_origin = "CHEMRXIV"
 
     def __init__(
         self,
@@ -199,13 +197,9 @@ class ChemrxivAPI:
                 except requests.HTTPError as e:
                     status = getattr(e.response, "status_code", None)
                     if status == 403 and query == "items":
-                        if self._switch_to_cambridge():
-                            logger.warning(
-                                "ChemRxiv API returned 403 (likely Cloudflare); "
-                                "retrying via Cambridge Open Engage API."
-                            )
-                            continue
-                        raise
+                        raise PermissionError(
+                            "ChemRxiv OpenEngage API returned 403 (likely Cloudflare / bot protection)."
+                        ) from e
                     logger.warning(
                         f"Stopping year window {year_from}..{year_to} at skip={page * self.page_size} "
                         f"due to HTTPError {status}"
@@ -215,11 +209,6 @@ class ChemrxivAPI:
                 if not items:
                     break
                 for item in items:
-                    if (
-                        self._origin_filter
-                        and item.get("item", {}).get("origin") != self._origin_filter
-                    ):
-                        continue
                     yield item
                 page += 1
 
@@ -237,17 +226,4 @@ class ChemrxivAPI:
         return self.query("items")["totalCount"]
 
     def _set_base(self, base_url: str) -> None:
-        """Configure base URL and origin filter."""
         self.base = base_url
-        self._origin_filter = (
-            self.cambridge_origin
-            if base_url == self.base_cambridge
-            else None
-        )
-
-    def _switch_to_cambridge(self) -> bool:
-        """Switch the API base to the Cambridge Open Engage endpoint."""
-        if self.base == self.base_cambridge:
-            return False
-        self._set_base(self.base_cambridge)
-        return True

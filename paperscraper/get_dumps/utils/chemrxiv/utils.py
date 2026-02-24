@@ -11,6 +11,7 @@ from requests.exceptions import JSONDecodeError
 from tqdm import tqdm
 
 from .chemrxiv_api import ChemrxivAPI
+from .crossref_api import CrossrefChemrxivAPI, crossref_item_to_paper
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -159,3 +160,75 @@ def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
         finally:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
+
+
+def download_full_crossref(
+    save_dir: str, api: Optional[CrossrefChemrxivAPI] = None
+) -> None:
+    """Download ChemRxiv records via Crossref into per-item JSON payloads.
+
+    This mirrors the behavior of the OpenEngage backend by
+    storing one JSON payload per record in ``save_dir``. The payloads are raw
+    Crossref work items.
+
+    Args:
+        save_dir: Directory where per-item payloads are stored.
+        api: Crossref API client. If None, uses the widest possible date range.
+    """
+    if api is None:
+        api = CrossrefChemrxivAPI(start_date="2017-01-01", end_date=today)
+    os.makedirs(save_dir, exist_ok=True)
+
+    for item in tqdm(api.iter_items()):
+        doi = (item.get("DOI") or "").strip().lower()
+        if not doi:
+            continue
+        safe_name = doi.replace("/", "_")
+        path = os.path.join(save_dir, f"{safe_name}.json")
+        if os.path.exists(path):
+            continue
+
+        tmp_path = f"{path}.tmp"
+        try:
+            with open(tmp_path, "w") as file:
+                json.dump(item, file, indent=2)
+            os.replace(tmp_path, path)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+
+def parse_dump_crossref(source_path: str, target_path: str) -> None:
+    """Parse Crossref payloads into the ChemRxiv JSONL dump format.
+
+    Args:
+        source_path: Directory containing per-item Crossref JSON payloads.
+        target_path: JSONL output path.
+    """
+    dump: List[Dict] = []
+
+    for file_name in tqdm(os.listdir(source_path)):
+        if not file_name.endswith(".json"):
+            continue
+        filepath = os.path.join(source_path, file_name)
+        if os.path.getsize(filepath) == 0:
+            logger.warning(f"Empty Crossref payload file {filepath}; skipping.")
+            os.remove(filepath)
+            continue
+        try:
+            with open(filepath, "r") as f:
+                source_item = json.load(f)
+        except JSONDecodeError as exc:
+            logger.warning(f"Invalid JSON in Crossref payload file {filepath}: {exc}")
+            os.remove(filepath)
+            continue
+
+        dump.append(crossref_item_to_paper(source_item))
+        os.remove(filepath)
+
+    with open(target_path, "w") as f:
+        for idx, paper in enumerate(dump):
+            if idx > 0:
+                f.write(os.linesep)
+            f.write(json.dumps(paper))
+    logger.info("Done, shutting down")
