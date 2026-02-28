@@ -20,7 +20,11 @@ QUERY_FN_DICT = {
 dump_root = get_server_dumps_dir()
 
 for db in ["biorxiv", "chemrxiv", "medrxiv"]:
-    dump_paths = glob.glob(os.path.join(dump_root, db + "*"))
+    dump_paths = [
+        path
+        for path in glob.glob(os.path.join(dump_root, db + "*"))
+        if os.path.isfile(path) and path.endswith(".jsonl")
+    ]
     if not dump_paths:
         logger.warning(f" No dump found for {db}. Skipping entry.")
         continue

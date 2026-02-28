@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from functools import partial
 
 import pytest
+import arxiv as arxiv_api
 
 import paperscraper.load_dumps as load_dumps_module
 from paperscraper import dump_queries
@@ -30,6 +31,22 @@ def target_func(queue, func):
 
 
 class TestDumper:
+    def run_with_arxiv_retries(self, func, retries=3, sleep_seconds=2):
+        retryable_statuses = {406, 429, 500, 502, 503, 504}
+        last_exc = None
+
+        for attempt in range(1, retries + 1):
+            try:
+                return func()
+            except arxiv_api.HTTPError as exc:
+                if getattr(exc, "status", None) not in retryable_statuses or attempt == retries:
+                    raise
+                last_exc = exc
+                time.sleep(sleep_seconds * attempt)
+
+        if last_exc is not None:
+            raise last_exc
+
     def test_dump_existence_initial(self):
         # This test checks the initial state, should be run first if order matters
         assert len(QUERY_FN_DICT) == 2, "Initial length of QUERY_FN_DICT should be 2"
@@ -67,32 +84,32 @@ class TestDumper:
         else:
             return True
 
-    @pytest.mark.timeout(30)
+    @pytest.mark.timeout(15)
     def test_medrxiv(self, setup_medrxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(setup_medrxiv, 15), (
             "medrxiv should still be running after 15 seconds"
         )
 
-    @pytest.mark.timeout(30)
+    @pytest.mark.timeout(15)
     def test_biorxiv(self, setup_biorxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(setup_biorxiv, 15), (
             "biorxiv should still be running after 15 seconds"
         )
 
-    @pytest.mark.timeout(30)
+    @pytest.mark.timeout(15)
     def test_chemrxiv(self, setup_chemrxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(setup_chemrxiv, 15), (
             "chemrxiv should still be running after 15 seconds"
         )
 
-    @pytest.mark.timeout(30)
+    @pytest.mark.timeout(15)
     def test_arxiv(self, setup_arxiv):
         # Check that the function runs for at least 15 seconds
         assert self.run_function_with_timeout(setup_arxiv, 15), (
-            "arxiv should still be running after 90 seconds"
+            "arxiv should still be running after 15 seconds"
         )
 
     def test_chemrxiv_date(self):
@@ -132,25 +149,28 @@ class TestDumper:
         assert os.path.exists("covid19_ai_imaging.jsonl")
 
     def test_get_arxiv_date(self):
-        get_and_dump_arxiv_papers(
-            [["MPEGO"]],
-            output_filepath="mpego.jsonl",
-            start_date="2020-06-01",
-            end_date="2024-06-02",
-            backend="api",
-        )
-        get_and_dump_arxiv_papers(
-            [["PaccMann"]],
-            output_filepath="paccmann.jsonl",
-            end_date="2023-06-02",
-            backend="infer",
-        )
-        get_and_dump_arxiv_papers(
-            [["QontOT"]],
-            output_filepath="qontot.jsonl",
-            start_date="2023-01-02",
-            backend="local",
-        )
+        def run_once():
+            get_and_dump_arxiv_papers(
+                [["MPEGO"]],
+                output_filepath="mpego.jsonl",
+                start_date="2020-06-01",
+                end_date="2024-06-02",
+                backend="api",
+            )
+            get_and_dump_arxiv_papers(
+                [["PaccMann"]],
+                output_filepath="paccmann.jsonl",
+                end_date="2023-06-02",
+                backend="infer",
+            )
+            get_and_dump_arxiv_papers(
+                [["QontOT"]],
+                output_filepath="qontot.jsonl",
+                start_date="2023-01-02",
+                backend="local",
+            )
+
+        self.run_with_arxiv_retries(run_once, retries=3)
 
     def test_dump_existence(self):
         importlib.reload(load_dumps_module)
