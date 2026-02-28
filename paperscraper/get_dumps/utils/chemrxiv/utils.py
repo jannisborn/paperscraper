@@ -73,6 +73,7 @@ def get_metrics(metrics_list: List[Dict]) -> Dict:
     # This assumes that the .jsonl is constructed at roughly the same date
     # where this entry was obtained from the API
     metric_dict.update({"timestamp": today})
+    return metric_dict
 
 
 def parse_dump(source_path: str, target_path: str) -> None:
