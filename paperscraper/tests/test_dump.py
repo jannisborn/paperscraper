@@ -39,10 +39,18 @@ class TestDumper:
             try:
                 return func()
             except arxiv_api.HTTPError as exc:
-                if getattr(exc, "status", None) not in retryable_statuses or attempt == retries:
+                status = getattr(exc, "status", None)
+                if status not in retryable_statuses:
+                    raise
+                if attempt == retries:
                     raise
                 last_exc = exc
-                time.sleep(sleep_seconds * attempt)
+                # arXiv frequently rate-limits shared CI runners. Use a longer
+                # cooldown for HTTP 429 while still retrying the real API call.
+                base_sleep = sleep_seconds * attempt
+                if status == 429:
+                    base_sleep = max(base_sleep, 20 * attempt)
+                time.sleep(base_sleep)
 
         if last_exc is not None:
             raise last_exc
@@ -136,18 +144,25 @@ class TestDumper:
             arxiv(start_date="2024-06-02", end_date="2024-06-01")
 
     def test_dumping(self):
-        queries = [[covid19, ai, mi]]
-        self.run_with_arxiv_retries(lambda: dump_queries(queries, "tmpdir"))
+        queries = [["MPEGO"]]
+        self.run_with_arxiv_retries(
+            lambda: dump_queries(queries, "tmpdir"),
+            retries=5,
+            sleep_seconds=10,
+        )
         assert os.path.exists("tmpdir/pubmed")
 
     def test_arxiv_dumping(self):
-        query = [covid19, ai, mi]
-        get_and_dump_arxiv_papers(
-            query,
-            output_filepath="covid19_ai_imaging.jsonl",
-            backend="api",
-            max_results=50,
-            client_options={"delay_seconds": 6.0, "page_size": 50, "num_retries": 3},
+        self.run_with_arxiv_retries(
+            lambda: get_and_dump_arxiv_papers(
+                ["MPEGO"],
+                output_filepath="covid19_ai_imaging.jsonl",
+                backend="api",
+                max_results=5,
+                client_options={"delay_seconds": 6.0, "page_size": 50, "num_retries": 3},
+            ),
+            retries=5,
+            sleep_seconds=10,
         )
         assert os.path.exists("covid19_ai_imaging.jsonl")
 
@@ -173,7 +188,11 @@ class TestDumper:
                 backend="local",
             )
 
-        self.run_with_arxiv_retries(run_once, retries=3)
+        self.run_with_arxiv_retries(
+            run_once,
+            retries=5,
+            sleep_seconds=10,
+        )
 
     def test_dump_existence(self):
         importlib.reload(load_dumps_module)
