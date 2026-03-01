@@ -335,10 +335,37 @@ def save_pdf(
     ):
         pdf_url = meta_pdf.get("content")
         try:
-            response = requests.get(pdf_url, timeout=60)
-            response.raise_for_status()
+            pdf_headers = {
+                **user_agent,
+                "Accept": "application/pdf,application/octet-stream;q=0.9,*/*;q=0.8",
+                "Referer": resolved_url,
+            }
+            pdf_response = None
+            # Some publisher endpoints (e.g. Nature) are sensitive to cookies and
+            # referer headers. Try with cookies from the landing page first.
+            if "response" in locals():
+                try:
+                    pdf_response = requests.get(
+                        pdf_url,
+                        timeout=60,
+                        headers=pdf_headers,
+                        cookies=response.cookies,
+                        allow_redirects=True,
+                    )
+                    pdf_response.raise_for_status()
+                except Exception:
+                    pdf_response = None
 
-            if response.content[:4] != b"%PDF":
+            if pdf_response is None:
+                pdf_response = requests.get(
+                    pdf_url,
+                    timeout=60,
+                    headers=pdf_headers,
+                    allow_redirects=True,
+                )
+                pdf_response.raise_for_status()
+
+            if pdf_response.content[:4] != b"%PDF":
                 logger.warning(
                     f"The file from {url} does not appear to be a valid PDF."
                 )
@@ -360,7 +387,7 @@ def save_pdf(
                     return True
             else:
                 with open(output_path.with_suffix(".pdf"), "wb+") as f:
-                    f.write(response.content)
+                    f.write(pdf_response.content)
         except Exception as e:
             logger.warning(f"Could not download {pdf_url}: {e}")
     else:  # if no citation_pdf_url meta tag found, try other fallbacks
