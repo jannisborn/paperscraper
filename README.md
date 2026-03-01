@@ -57,9 +57,9 @@ However, to scrape publication data from the preprint servers [biorxiv](https://
 
 ```py
 from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
-chemrxiv()  #  Takes 30min -> +30K papers (~50 MB file)
-medrxiv()  #  Takes <1h -> +90K papers (~200 MB file)
-biorxiv()  # Up to 6h -> +400K papers (~800 MB file)
+chemrxiv()  #  Takes <15min -> +50K papers (~30 MB file)
+medrxiv()  #  Takes <30min -> +100K papers (~200 MB file)
+biorxiv()  # Takes <3h -> +450 papers (~800 MB file)
 ```
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter so that the changes take effect. 
 *NOTE*: If you experience API connection issues, retries and request behavior can be tuned, e.g.:

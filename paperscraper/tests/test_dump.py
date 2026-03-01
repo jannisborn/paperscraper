@@ -115,6 +115,9 @@ class TestDumper:
     def test_chemrxiv_date(self):
         chemrxiv(start_date="2024-06-01", end_date="2024-06-01")
 
+    def test_medrxiv_date(self):
+        medrxiv(start_date="2024-06-01", end_date="2024-06-01")
+
     def test_biorxiv_date(self):
         biorxiv(start_date="2014-06-01", end_date="2014-06-04")
 
@@ -134,7 +137,7 @@ class TestDumper:
 
     def test_dumping(self):
         queries = [[covid19, ai, mi]]
-        dump_queries(queries, "tmpdir")
+        self.run_with_arxiv_retries(lambda: dump_queries(queries, "tmpdir"))
         assert os.path.exists("tmpdir/pubmed")
 
     def test_arxiv_dumping(self):
