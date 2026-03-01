@@ -2,6 +2,7 @@ import importlib
 import logging
 import multiprocessing
 import os
+import shutil
 import time
 from datetime import datetime, timedelta
 from functools import partial
@@ -14,6 +15,7 @@ from paperscraper import dump_queries
 from paperscraper.arxiv import get_and_dump_arxiv_papers
 from paperscraper.get_dumps import arxiv, biorxiv, chemrxiv, medrxiv
 from paperscraper.load_dumps import QUERY_FN_DICT
+from paperscraper.utils import get_server_dumps_dir
 
 logging.disable(logging.INFO)
 
@@ -175,6 +177,16 @@ class TestDumper:
                 end_date="2024-06-02",
                 backend="api",
             )
+            # Ensure infer/local backends read a valid local dump even if a
+            # broken bundled arxiv dump is present in server_dumps.
+            local_dump_path = os.path.join(
+                get_server_dumps_dir(),
+                "arxiv_9999-12-31.jsonl",
+            )
+            shutil.copyfile("mpego.jsonl", local_dump_path)
+            arxiv_module = importlib.import_module("paperscraper.arxiv.arxiv")
+            arxiv_module.ARXIV_QUERIER = None
+
             get_and_dump_arxiv_papers(
                 [["PaccMann"]],
                 output_filepath="paccmann.jsonl",
