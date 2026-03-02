@@ -57,12 +57,22 @@ However, to scrape publication data from the preprint servers [biorxiv](https://
 
 ```py
 from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
-chemrxiv()  #  Takes 30min -> +30K papers (~50 MB file)
-medrxiv()  #  Takes <1h -> +90K papers (~200 MB file)
-biorxiv()  # Up to 6h -> +400K papers (~800 MB file)
+chemrxiv()  #  Takes <15min -> +50K papers (~30 MB file)
+medrxiv()  #  Takes <30min -> +100K papers (~200 MB file)
+biorxiv()  # Takes <3h -> +450 papers (~800 MB file)
 ```
 *NOTE*: Once the dumps are stored, please make sure to restart the python interpreter so that the changes take effect. 
-*NOTE*: If you experience API connection issues, since v0.2.12 there are automatic retries which you can even control and raise from the default of 10, as in `biorxiv(max_retries=20)`.
+*NOTE*: If you experience API connection issues, retries and request behavior can be tuned, e.g.:
+
+```py
+biorxiv(
+    max_retries=12,
+    request_timeout=(5.0, 45.0),      # connect timeout, read timeout
+    retry_backoff_seconds=1.0,        # initial retry backoff
+    max_workers=8,                    # number of parallel date windows
+    window_days=30,                   # smaller windows increase parallelism
+)
+```
 
 Since v0.2.5 `paperscraper` also allows to scrape {med/bio/chem}rxiv for specific dates.
 ```py
