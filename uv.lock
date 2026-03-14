@@ -2773,7 +2773,7 @@ requires-dist = [
     { name = "matplotlib-venn", specifier = ">=0.11.5" },
     { name = "pandas", specifier = ">=1.0.4" },
     { name = "pydantic" },
-    { name = "pymed-paperscraper", specifier = ">=1.0.4" },
+    { name = "pymed-paperscraper", specifier = ">=1.0.6" },
     { name = "pytest" },
     { name = "requests", specifier = ">=2.32.2" },
     { name = "scholarly", specifier = ">=1.0.0" },
@@ -3229,15 +3229,15 @@ wheels = [
 
 [[package]]
 name = "pymed-paperscraper"
-version = "1.0.5"
+version = "1.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/20/67/33cd8402df1f0f057109a0e6d1271dc7d693d944f392df5f4110ca189470/pymed_paperscraper-1.0.5.tar.gz", hash = "sha256:adc5dd21af979f5bda280b4f8879db3dfd71ac6153f5269112efd97c7ac13336", size = 259085, upload-time = "2025-10-26T17:00:39.821Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/0d/af0e31b4134903ec327c901e2c837219483fa8d7b0be21699d12b2a93807/pymed_paperscraper-1.0.6.tar.gz", hash = "sha256:3ca2297572e60f667b6c9962c1a88bd1cb656f241d72cdd802dffe6aabe22de7", size = 284026, upload-time = "2026-03-14T10:31:26.489Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/1a/c9e5d98288fdef6f936c76e908332a7fd675b2920c821727586d00fe343a/pymed_paperscraper-1.0.5-py3-none-any.whl", hash = "sha256:4c2a5bf027c5708eedd279791468d5e5ce760cb50616372b450ff11c3ace6be0", size = 11113, upload-time = "2025-10-26T17:00:38.597Z" },
+    { url = "https://files.pythonhosted.org/packages/81/20/02923c147f74a9206a60e56be4ab303ae8e357245c760cd42b3fb1c7fba9/pymed_paperscraper-1.0.6-py3-none-any.whl", hash = "sha256:2f6daa07ad6ce13be765b308b968276e7f5bc174203fd7d6e2f3fd3ef235817e", size = 11737, upload-time = "2026-03-14T10:31:25.528Z" },
 ]
 
 [[package]]
