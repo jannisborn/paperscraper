@@ -40,7 +40,7 @@ classifiers = [
 ]
 dependencies = [
   "arxiv>=2.4.0",
-  "pymed-paperscraper>=1.0.4",
+  "pymed-paperscraper>=1.0.6",
   "pandas>=1.0.4",
   "requests>=2.32.2",
   "tqdm>=4.51.0",
