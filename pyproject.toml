@@ -106,3 +106,8 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 known_first_party = ["paperscraper"]
+
+[tool.pytest.ini_options]
+markers = [
+  "timeout(seconds): mark tests that enforce a wall-clock timeout",
+]

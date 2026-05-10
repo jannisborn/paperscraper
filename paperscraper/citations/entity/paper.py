@@ -20,7 +20,7 @@ class PaperResult(ReferenceResult, CitationResult):
     title: str
 
 
-ModeType = Literal[tuple(MODES := ("doi", "title", "ss_id", "infer"))]
+ModeType = Literal[tuple(MODES := ("doi", "title", "ssid", "infer"))]
 
 BASE_URL: str = "https://api.semanticscholar.org/graph/v1/paper/search"
 

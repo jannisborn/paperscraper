@@ -90,7 +90,12 @@ class TestDumper:
         process.join()
 
         if not was_alive and not queue.empty():
-            raise queue.get()
+            result = queue.get()
+            if result is True:
+                return True
+            if isinstance(result, BaseException):
+                raise result
+            return False
         elif not was_alive:
             return False
         else:
