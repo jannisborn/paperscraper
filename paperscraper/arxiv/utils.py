@@ -5,10 +5,15 @@ from typing import List, Union
 
 from ..utils import get_server_dumps_dir
 
-finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
-finalize_conjunction = lambda x: x[:-5]
-
 EARLIEST_START = "1970-01-01"
+
+
+def finalize_disjunction(query: str) -> str:
+    return "(" + query[:-4] + ") AND "
+
+
+def finalize_conjunction(query: str) -> str:
+    return query[:-5]
 
 
 def format_date(date_str: str) -> str:

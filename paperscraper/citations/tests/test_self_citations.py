@@ -64,7 +64,7 @@ class TestSelfCitations:
             f"Synchronous execution time (independent calls): {sync_duration:.2f} seconds"
         )
 
-        assert async_duration*0.8 <= sync_duration, (
+        assert async_duration * 0.8 <= sync_duration, (
             f"Async execution ({async_duration:.2f}s) is slower than sync execution "
             f"({sync_duration:.2f}s)"
         )

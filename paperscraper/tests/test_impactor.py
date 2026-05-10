@@ -67,15 +67,15 @@ class TestImpactor:
         # Ensure that the results match the expected results
         assert len(results) == len(expected_results), "Number of results does not match"
         for expected, actual in zip(expected_results, results):
-            assert (
-                expected["journal"] == actual["journal"]
-            ), f"Journal name does not match for {expected['journal']}"
-            assert (
-                abs(expected["factor"] - actual["factor"]) < 0.001
-            ), f"Impact factor does not match for {expected['journal']}"
-            assert (
-                expected["score"] == actual["score"]
-            ), f"Score does not match for {expected['journal']}"
+            assert expected["journal"] == actual["journal"], (
+                f"Journal name does not match for {expected['journal']}"
+            )
+            assert abs(expected["factor"] - actual["factor"]) < 0.001, (
+                f"Impact factor does not match for {expected['journal']}"
+            )
+            assert expected["score"] == actual["score"], (
+                f"Score does not match for {expected['journal']}"
+            )
 
         results = impactor.search(
             "Quantum information", threshold=90, sort_by="score", min_impact=2

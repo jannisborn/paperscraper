@@ -106,7 +106,11 @@ def retry_with_exponential_backoff(
                                 pass
                     delay *= factor
 
-                except (httpx.ReadError, httpx.TimeoutException, httpx.TransportError) as e:
+                except (
+                    httpx.ReadError,
+                    httpx.TimeoutException,
+                    httpx.TransportError,
+                ) as e:
                     last_exception = e
                     sleep_for = delay
                     delay *= factor

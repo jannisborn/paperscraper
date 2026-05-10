@@ -1,7 +1,7 @@
 import logging
 
 from paperscraper.citations import get_citations_by_doi
-from paperscraper.citations.utils import check_overlap, author_name_to_ssaid
+from paperscraper.citations.utils import author_name_to_ssaid, check_overlap
 
 logging.disable(logging.INFO)
 
@@ -17,9 +17,9 @@ class TestCitations:
 
     def test_author_name_to_ssid(self):
 
-        ssaid, name = author_name_to_ssaid('Fabian H Sinz')
-        assert ssaid == '50095217'
-        assert name == 'Fabian H Sinz'
+        ssaid, name = author_name_to_ssaid("Fabian H Sinz")
+        assert ssaid == "50095217"
+        assert name == "Fabian H Sinz"
 
     def test_name_overlap(self):
         assert check_overlap("John Smith", "J. Smith")
