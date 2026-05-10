@@ -236,11 +236,16 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     article_num = parts[1].strip()
 
     index = get_elife_xml_index()
-    if article_num not in index:
-        logger.warning(f"No eLife XML found for DOI {doi}.")
-        return False
-    candidate_files = index[article_num]
-    latest_version, latest_download_url = max(candidate_files, key=lambda x: x[0])
+    if article_num in index:
+        candidate_files = index[article_num]
+        latest_version, latest_download_url = max(candidate_files, key=lambda x: x[0])
+    else:
+        candidate_files = _direct_elife_xml_candidates(article_num)
+        if not candidate_files:
+            logger.warning(f"No eLife XML found for DOI {doi}.")
+            return False
+        latest_version, latest_download_url = candidate_files[0]
+
     try:
         r = requests.get(latest_download_url, timeout=60)
         r.raise_for_status()
@@ -256,6 +261,23 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
         f"Successfully downloaded XML via eLife API ({latest_version}) for DOI {doi} to {xml_path}."
     )
     return True
+
+
+def _direct_elife_xml_candidates(article_num: str) -> list:
+    """
+    Find versioned eLife XML files directly when the GitHub tree API is unavailable.
+    """
+    base_url = "https://raw.githubusercontent.com/elifesciences/elife-article-xml/master"
+    candidates = []
+    for version in range(1, 8):
+        download_url = f"{base_url}/articles/elife-{article_num}-v{version}.xml"
+        try:
+            response = requests.head(download_url, allow_redirects=True, timeout=20)
+            if response.status_code == 200:
+                candidates.append((version, download_url))
+        except requests.RequestException as e:
+            logger.debug(f"Could not check eLife XML candidate {download_url}: {e}")
+    return sorted(candidates, key=lambda x: x[0], reverse=True)
 
 
 def get_elife_xml_index() -> dict:
@@ -277,8 +299,17 @@ def get_elife_xml_index() -> dict:
         ELIFE_XML_INDEX = {}
         # Use the git tree API to get the full repository tree.
         base_tree_url = "https://api.github.com/repos/elifesciences/elife-article-xml/git/trees/master?recursive=1"
-        r = requests.get(base_tree_url, timeout=60)
-        r.raise_for_status()
+        for attempt in range(1, 4):
+            try:
+                r = requests.get(base_tree_url, timeout=60)
+                r.raise_for_status()
+                break
+            except requests.RequestException as e:
+                if attempt == 3:
+                    logger.error(f"Could not fetch eLife XML index from GitHub: {e}")
+                    return ELIFE_XML_INDEX
+                logger.info("Retrying eLife XML index fetch from GitHub...")
+                time.sleep(2 * attempt)
         tree_data = r.json()
         items = tree_data.get("tree", [])
         # Look for files in the 'articles' directory matching the pattern.

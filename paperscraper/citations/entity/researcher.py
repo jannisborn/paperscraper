@@ -1,13 +1,14 @@
-import os
 from typing import Any, List, Literal, Optional, Tuple
-
-from semanticscholar import SemanticScholar
 
 from ...async_utils import run_sync
 from ..orcid import orcid_to_author_name
 from ..self_citations import CitationResult, self_citations_paper
 from ..self_references import ReferenceResult, self_references_paper
-from ..utils import author_name_to_ssaid, get_papers_for_author
+from ..utils import (
+    author_name_to_ssaid,
+    get_author_name_from_ssaid,
+    get_papers_for_author,
+)
 from .core import Entity, EntityResult
 
 
@@ -39,9 +40,6 @@ class ResearcherResult(EntityResult):
 
 
 ModeType = Literal[tuple(MODES := ("name", "orcid", "ssaid", "infer"))]
-
-sch = SemanticScholar(api_key=os.getenv("SS_API_KEY"))
-
 
 class Researcher(Entity):
     name: str
@@ -77,7 +75,7 @@ class Researcher(Entity):
             else:
                 mode = "name"
         if mode == "ssaid":
-            self.name = sch.get_author(input)._name
+            self.name = get_author_name_from_ssaid(input)
             self.ssaid = input
         elif mode == "orcid":
             orcid_name = orcid_to_author_name(input)
