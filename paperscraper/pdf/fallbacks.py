@@ -267,7 +267,9 @@ def _direct_elife_xml_candidates(article_num: str) -> list:
     """
     Find versioned eLife XML files directly when the GitHub tree API is unavailable.
     """
-    base_url = "https://raw.githubusercontent.com/elifesciences/elife-article-xml/master"
+    base_url = (
+        "https://raw.githubusercontent.com/elifesciences/elife-article-xml/master"
+    )
     candidates = []
     for version in range(1, 8):
         download_url = f"{base_url}/articles/elife-{article_num}-v{version}.xml"

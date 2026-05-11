@@ -41,6 +41,7 @@ class ResearcherResult(EntityResult):
 
 ModeType = Literal[tuple(MODES := ("name", "orcid", "ssaid", "infer"))]
 
+
 class Researcher(Entity):
     name: str
     ssaid: int

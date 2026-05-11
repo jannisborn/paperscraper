@@ -1,0 +1,14 @@
+# Note that one can skip some hooks e.g. with `SKIP=detect-secrets git commit ...`
+repos:
+  - repo: local
+    hooks:
+      - id: Linting
+        name: Style checks (ruff, isort)
+        entry: sh -exc
+        language: system
+        always_run: true
+        pass_filenames: false
+        args:
+          - |
+            uv run --frozen uv run isort --check paperscraper
+            uv run --frozen uv run ruff format --check paperscraper
