@@ -10,5 +10,5 @@ repos:
         pass_filenames: false
         args:
           - |
-            uv run --frozen uv run isort --check paperscraper
-            uv run --frozen uv run ruff format --check paperscraper
+            uv run --frozen isort --check paperscraper
+            uv run --frozen ruff format --check paperscraper

@@ -1,10 +1,10 @@
 import asyncio
 import logging
 import os
+import random
 import re
 import sys
 import time
-import random
 from typing import Dict, List, Literal, Optional, Tuple
 
 import httpx
@@ -116,7 +116,9 @@ def _semantic_scholar_requests_get_with_backoff(
             # Keep a minimum pacing between outbound requests.
             if RATE_LIMIT_DELAY > 0:
                 time.sleep(RATE_LIMIT_DELAY)
-            resp = semantic_scholar_requests_get(url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs)
+            resp = semantic_scholar_requests_get(
+                url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs
+            )
         except requests.exceptions.RequestException as exc:
             last_exc = exc
             sleep_for = min(delay, max_delay)
@@ -124,7 +126,11 @@ def _semantic_scholar_requests_get_with_backoff(
             if resp.status_code in (200, 201, 204):
                 return resp
 
-            retryable = resp.status_code == 429 or resp.status_code == 408 or 500 <= resp.status_code <= 599
+            retryable = (
+                resp.status_code == 429
+                or resp.status_code == 408
+                or 500 <= resp.status_code <= 599
+            )
             if not retryable:
                 resp.raise_for_status()
                 return resp

@@ -1,8 +1,8 @@
 import asyncio
 import logging
+import random
 import sys
 import threading
-import random
 from functools import wraps
 from typing import Any, Awaitable, Callable, TypeVar, Union
 
@@ -98,7 +98,9 @@ def retry_with_exponential_backoff(
                     return await func(*args, **kwargs)
                 except httpx.HTTPStatusError as e:
                     status = e.response.status_code if e.response is not None else None
-                    retryable = status == 429 or (status is not None and (status == 408 or 500 <= status <= 599))
+                    retryable = status == 429 or (
+                        status is not None and (status == 408 or 500 <= status <= 599)
+                    )
                     if not retryable:
                         raise
                     last_exception = e
