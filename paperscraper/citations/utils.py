@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import time
+import random
 from typing import Dict, List, Literal, Optional, Tuple
 
 import httpx
@@ -93,6 +94,64 @@ def semantic_scholar_requests_get(url: str, **kwargs) -> requests.Response:
     return response
 
 
+def _semantic_scholar_requests_get_with_backoff(
+    url: str,
+    *,
+    max_retries: int = 10,
+    base_delay: float = 1.0,
+    factor: float = 1.3,
+    max_delay: float = 60.0,
+    jitter_ratio: float = 0.1,
+    **kwargs,
+) -> requests.Response:
+    """
+    Synchronous GET with backoff for transient Semantic Scholar errors.
+
+    Retries 429 / 408 / 5xx and respects Retry-After when present.
+    """
+    delay = base_delay
+    last_exc: BaseException | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Keep a minimum pacing between outbound requests.
+            if RATE_LIMIT_DELAY > 0:
+                time.sleep(RATE_LIMIT_DELAY)
+            resp = semantic_scholar_requests_get(url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs)
+        except requests.exceptions.RequestException as exc:
+            last_exc = exc
+            sleep_for = min(delay, max_delay)
+        else:
+            if resp.status_code in (200, 201, 204):
+                return resp
+
+            retryable = resp.status_code == 429 or resp.status_code == 408 or 500 <= resp.status_code <= 599
+            if not retryable:
+                resp.raise_for_status()
+                return resp
+
+            sleep_for = min(delay, max_delay)
+            ra = resp.headers.get("Retry-After")
+            if ra is not None:
+                try:
+                    sleep_for = min(float(ra), max_delay)
+                except ValueError:
+                    pass
+
+        if attempt == max_retries:
+            raise RuntimeError(
+                f"_semantic_scholar_requests_get_with_backoff failed after {attempt} attempts "
+                f"with last delay {sleep_for:.2f}s"
+            ) from last_exc
+
+        delay = min(delay * factor, max_delay)
+        if jitter_ratio > 0:
+            jitter = sleep_for * jitter_ratio
+            sleep_for = max(0.0, sleep_for + random.uniform(-jitter, jitter))
+        time.sleep(sleep_for)
+
+    raise RuntimeError("_semantic_scholar_requests_get_with_backoff: unreachable")
+
+
 async def wait_for_request_slot() -> None:
     """
     Enforces global pacing between Semantic Scholar requests.
@@ -138,12 +197,10 @@ def get_author_name_from_ssaid(ss_author_id: str) -> Optional[str]:
     """
     Given a Semantic Scholar author ID, return the author's name.
     """
-    response = semantic_scholar_requests_get(
+    response = _semantic_scholar_requests_get_with_backoff(
         f"https://api.semanticscholar.org/graph/v1/author/{ss_author_id}",
         params={"fields": "name"},
-        timeout=REQUEST_TIMEOUT_SECONDS,
     )
-    response.raise_for_status()
     data = response.json()
     return data.get("name")
 
