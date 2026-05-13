@@ -12,11 +12,11 @@ from tqdm import tqdm
 from ..async_utils import optional_async, retry_with_exponential_backoff
 from .utils import (
     DOI_PATTERN,
-    HEADERS,
     HTTPX_LIMITS,
     REQUEST_SEMAPHORE,
     REQUEST_TIMEOUT_SECONDS,
     find_matching,
+    semantic_scholar_get,
     wait_for_request_slot,
 )
 
@@ -50,10 +50,10 @@ async def _fetch_citation_data(
     """
     await wait_for_request_slot()
 
-    response = await client.get(
+    response = await semantic_scholar_get(
+        client,
         f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
         params={"fields": "title,authors,citations.authors"},
-        headers=HEADERS,
     )
     response.raise_for_status()
     return response.json()

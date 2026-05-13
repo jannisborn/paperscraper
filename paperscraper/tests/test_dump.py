@@ -43,7 +43,9 @@ class TestDumper:
             except arxiv_api.HTTPError as exc:
                 status = getattr(exc, "status", None)
                 if status == 429:
-                    pytest.skip("Skipping arXiv-backed test due to HTTP 429 rate limiting")
+                    pytest.skip(
+                        "Skipping arXiv-backed test due to HTTP 429 rate limiting"
+                    )
                 if status not in retryable_statuses:
                     raise
                 if attempt == retries:
@@ -88,7 +90,12 @@ class TestDumper:
         process.join()
 
         if not was_alive and not queue.empty():
-            raise queue.get()
+            result = queue.get()
+            if result is True:
+                return True
+            if isinstance(result, BaseException):
+                raise result
+            return False
         elif not was_alive:
             return False
         else:
@@ -161,7 +168,11 @@ class TestDumper:
                 output_filepath="covid19_ai_imaging.jsonl",
                 backend="api",
                 max_results=5,
-                client_options={"delay_seconds": 6.0, "page_size": 50, "num_retries": 3},
+                client_options={
+                    "delay_seconds": 6.0,
+                    "page_size": 50,
+                    "num_retries": 3,
+                },
             ),
             retries=5,
             sleep_seconds=10,

@@ -144,7 +144,9 @@ class CrossrefChemrxivAPI:
         }
 
         for attempt in range(self.max_retries):
-            resp = requests.get(self.base_url, params=params, headers=headers, timeout=30)
+            resp = requests.get(
+                self.base_url, params=params, headers=headers, timeout=30
+            )
             if resp.status_code in transient_status:
                 logger.warning(
                     f"Crossref returned {resp.status_code} (attempt {attempt + 1}/{self.max_retries}); "

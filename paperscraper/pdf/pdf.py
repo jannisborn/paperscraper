@@ -29,7 +29,9 @@ DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
 CHEMRXIV_API_BASE = "https://www.cambridge.org/engage/coe/public-api/v1/items/doi/"
 
 
-def _get_chemrxiv_item(doi: str, user_agent: Dict[str, str]) -> Optional[Dict[str, Any]]:
+def _get_chemrxiv_item(
+    doi: str, user_agent: Dict[str, str]
+) -> Optional[Dict[str, Any]]:
     """Fetch ChemRxiv metadata from the Cambridge Open Engage API.
 
     Args:

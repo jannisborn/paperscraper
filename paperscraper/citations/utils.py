@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import random
 import re
 import sys
 import time
@@ -31,6 +32,7 @@ SS_API_KEY = os.getenv("SS_API_KEY")
 HEADERS: Dict[str, str] = {}
 if SS_API_KEY:
     HEADERS["x-api-key"] = SS_API_KEY
+_SEMANTIC_SCHOLAR_KEY_DISABLED = False
 
 HTTPX_LIMITS = httpx.Limits(
     max_connections=CONCURRENCY_LIMIT, max_keepalive_connections=CONCURRENCY_LIMIT
@@ -38,6 +40,122 @@ HTTPX_LIMITS = httpx.Limits(
 REQUEST_SEMAPHORE = asyncio.Semaphore(CONCURRENCY_LIMIT)
 _REQUEST_SCHEDULER_LOCK = asyncio.Lock()
 _NEXT_REQUEST_TIME = 0.0
+
+
+def disable_semantic_scholar_api_key() -> None:
+    """
+    Disable the configured Semantic Scholar API key after the API rejects it.
+    """
+    global _SEMANTIC_SCHOLAR_KEY_DISABLED
+    if "x-api-key" not in HEADERS:
+        return
+
+    HEADERS.clear()
+    _SEMANTIC_SCHOLAR_KEY_DISABLED = True
+    logger.error(
+        "Semantic Scholar rejected SS_API_KEY with HTTP 403 Forbidden. "
+        "Continuing without the API key for subsequent requests."
+    )
+
+
+def semantic_scholar_key_disabled() -> bool:
+    """
+    Return whether the configured Semantic Scholar API key was disabled.
+    """
+    return _SEMANTIC_SCHOLAR_KEY_DISABLED
+
+
+def _should_retry_without_key(status_code: int) -> bool:
+    if status_code != 403 or "x-api-key" not in HEADERS:
+        return False
+    disable_semantic_scholar_api_key()
+    return True
+
+
+async def semantic_scholar_get(
+    client: httpx.AsyncClient, url: str, **kwargs
+) -> httpx.Response:
+    """
+    Perform a Semantic Scholar GET request and retry without a rejected API key.
+    """
+    response = await client.get(url, headers=HEADERS, **kwargs)
+    if _should_retry_without_key(response.status_code):
+        response = await client.get(url, headers=HEADERS, **kwargs)
+    return response
+
+
+def semantic_scholar_requests_get(url: str, **kwargs) -> requests.Response:
+    """
+    Perform a synchronous Semantic Scholar GET request and retry without a rejected API key.
+    """
+    response = requests.get(url, headers=HEADERS, **kwargs)
+    if _should_retry_without_key(response.status_code):
+        response = requests.get(url, headers=HEADERS, **kwargs)
+    return response
+
+
+def _semantic_scholar_requests_get_with_backoff(
+    url: str,
+    *,
+    max_retries: int = 10,
+    base_delay: float = 1.0,
+    factor: float = 1.3,
+    max_delay: float = 60.0,
+    jitter_ratio: float = 0.1,
+    **kwargs,
+) -> requests.Response:
+    """
+    Synchronous GET with backoff for transient Semantic Scholar errors.
+
+    Retries 429 / 408 / 5xx and respects Retry-After when present.
+    """
+    delay = base_delay
+    last_exc: BaseException | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Keep a minimum pacing between outbound requests.
+            if RATE_LIMIT_DELAY > 0:
+                time.sleep(RATE_LIMIT_DELAY)
+            resp = semantic_scholar_requests_get(
+                url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs
+            )
+        except requests.exceptions.RequestException as exc:
+            last_exc = exc
+            sleep_for = min(delay, max_delay)
+        else:
+            if resp.status_code in (200, 201, 204):
+                return resp
+
+            retryable = (
+                resp.status_code == 429
+                or resp.status_code == 408
+                or 500 <= resp.status_code <= 599
+            )
+            if not retryable:
+                resp.raise_for_status()
+                return resp
+
+            sleep_for = min(delay, max_delay)
+            ra = resp.headers.get("Retry-After")
+            if ra is not None:
+                try:
+                    sleep_for = min(float(ra), max_delay)
+                except ValueError:
+                    pass
+
+        if attempt == max_retries:
+            raise RuntimeError(
+                f"_semantic_scholar_requests_get_with_backoff failed after {attempt} attempts "
+                f"with last delay {sleep_for:.2f}s"
+            ) from last_exc
+
+        delay = min(delay * factor, max_delay)
+        if jitter_ratio > 0:
+            jitter = sleep_for * jitter_ratio
+            sleep_for = max(0.0, sleep_for + random.uniform(-jitter, jitter))
+        time.sleep(sleep_for)
+
+    raise RuntimeError("_semantic_scholar_requests_get_with_backoff: unreachable")
 
 
 async def wait_for_request_slot() -> None:
@@ -67,10 +185,9 @@ def get_doi_from_title(title: str) -> Optional[str]:
     Returns:
         DOI according to semantic scholar API
     """
-    response = requests.get(
+    response = semantic_scholar_requests_get(
         PAPER_URL + "search",
         params={"query": title, "fields": "externalIds", "limit": 1},
-        headers=HEADERS,
     )
     data = response.json()
 
@@ -80,6 +197,18 @@ def get_doi_from_title(title: str) -> Optional[str]:
         if doi:
             return doi
     logger.warning(f"Did not find DOI for title={title}")
+
+
+def get_author_name_from_ssaid(ss_author_id: str) -> Optional[str]:
+    """
+    Given a Semantic Scholar author ID, return the author's name.
+    """
+    response = _semantic_scholar_requests_get_with_backoff(
+        f"https://api.semanticscholar.org/graph/v1/author/{ss_author_id}",
+        params={"fields": "name"},
+    )
+    data = response.json()
+    return data.get("name")
 
 
 @optional_async
@@ -104,10 +233,10 @@ async def get_doi_from_ssid(ssid: str, max_retries: int = 10) -> Optional[str]:
             range(1, max_retries + 1), desc=f"Fetching DOI for {ssid}", unit="attempt"
         ):
             # Make the GET request to Semantic Scholar.
-            response = await client.get(
+            response = await semantic_scholar_get(
+                client,
                 f"{PAPER_URL}{ssid}",
                 params={"fields": "externalIds", "limit": 1},
-                headers=HEADERS,
             )
 
             # If successful, try to extract and return the DOI.
@@ -136,7 +265,7 @@ async def get_title_and_id_from_doi(doi: str) -> Dict[str, str] | None:
         timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
     ) as client:
         # Send the GET request to Semantic Scholar
-        response = await client.get(f"{PAPER_URL}DOI:{doi}", headers=HEADERS)
+        response = await semantic_scholar_get(client, f"{PAPER_URL}DOI:{doi}")
         if response.status_code == 200:
             data = response.json()
             return {"title": data.get("title"), "ssid": data.get("paperId")}
@@ -164,10 +293,10 @@ async def author_name_to_ssaid(author_name: str) -> Tuple[str, str]:
     ) as client:
         await wait_for_request_slot()
 
-        response = await client.get(
+        response = await semantic_scholar_get(
+            client,
             AUTHOR_URL,
             params={"query": author_name, "fields": "name", "limit": 1},
-            headers=HEADERS,
         )
         response.raise_for_status()
         data = response.json()
@@ -224,7 +353,8 @@ async def get_papers_for_author(ss_author_id: str) -> List[str]:
         timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
     ) as client:
         while True:
-            response = await client.get(
+            response = await semantic_scholar_get(
+                client,
                 f"https://api.semanticscholar.org/graph/v1/author/{ss_author_id}/papers",
                 params={"fields": "paperId", "offset": offset, "limit": limit},
             )

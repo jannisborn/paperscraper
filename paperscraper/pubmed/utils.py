@@ -3,9 +3,15 @@ from typing import List, Union
 
 from pymed_paperscraper.article import PubMedArticle
 
-finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
-finalize_conjunction = lambda x: x[:-5]
 date_root = '("{0}"[Date - Create] : "{1}"[Date - Create])'
+
+
+def finalize_disjunction(query: str) -> str:
+    return "(" + query[:-4] + ") AND "
+
+
+def finalize_conjunction(query: str) -> str:
+    return query[:-5]
 
 
 def get_query_from_keywords(keywords: List[Union[str, List]]) -> str:

@@ -84,7 +84,31 @@ dev = [
   "pytest-cov",
   "build",
   "twine",
+  "ruff>=0.15",
+  "isort>=6",
   "mkdocs-material>=9.6",
   "mkdocstrings[python]>=0.24",
   "mkdocs-material-extensions",
+  "pre-commit>=4.3.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+known_first_party = ["paperscraper"]
+
+[tool.pytest.ini_options]
+markers = [
+  "timeout(seconds): mark tests that enforce a wall-clock timeout",
 ]

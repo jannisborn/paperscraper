@@ -27,6 +27,11 @@ jobs:
           cache-dependency-glob: "pyproject.toml"
       - name: Sync dependencies
         run: uv sync --group dev
+      - name: Lint and import order
+        run: |
+          uv run ruff format --check paperscraper
+          uv run ruff check paperscraper
+          uv run isort --check-only paperscraper
       - name: Export AWS secrets
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

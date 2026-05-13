@@ -299,7 +299,9 @@ class XRXivApi:
             raise ValueError(f"max_workers must be >= 1, got {max_workers}")
         worker_retries = max_retries if max_retries is not None else self.max_retries
         worker_retries = max(1, int(worker_retries))
-        span_days = max(1, int(window_days if window_days is not None else self.window_days))
+        span_days = max(
+            1, int(window_days if window_days is not None else self.window_days)
+        )
 
         start_datetime, end_datetime = self._normalize_date_range(start_date, end_date)
         start_text = start_datetime.strftime("%Y-%m-%d")

@@ -158,7 +158,9 @@ def plot_comparison(
     )
     plt.gca().add_artist(legend)
 
-    get_step_size = lambda x: round(x / 10, -math.floor(math.log10(x)) + 1)
+    def get_step_size(x):
+        return round(x / 10, -math.floor(math.log10(x)) + 1)
+
     ymax = plt.gca().get_ylim()[1]
     step_size = np.clip(get_step_size(ymax), 5, 1000)
     y_steps = np.arange(0, ymax, step_size)
@@ -237,7 +239,6 @@ def plot_single(
 
     ind = np.arange(len(arxiv[0]))  # the x locations for the groups
     width = [0.75] * len(ind)  # the width of the bars: can also be len(x) sequence
-    fnc = np.log10 if logscale else np.copy
 
     plts = []
     legend_plts = []
@@ -324,7 +325,6 @@ def plot_single(
         ncol=1,
     )
 
-    get_step_size = lambda x: round(x / 10, -math.floor(math.log10(x)) + 1)
     ymax = plt.gca().get_ylim()[1]
 
     for y_step in plt.yticks()[0]:
@@ -337,7 +337,8 @@ def plot_single(
     plt.show()
 
 
-get_name = lambda n: " vs. ".join(list(map(lambda x: x.split(" ")[0], n)))
+def get_name(names):
+    return " vs. ".join(name.split(" ")[0] for name in names)
 
 
 def plot_venn_two(
@@ -363,7 +364,7 @@ def plot_venn_two(
     assert len(labels) == 2, "Incorrect type/length of labels"
 
     title = get_name(labels) if title == "" else title
-    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
+    figpath = f"{title.lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
     venn2(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn2_circles(
         subsets=sizes, linestyle="solid", linewidth=0.6, color="grey", **kwargs
@@ -374,18 +375,17 @@ def plot_venn_two(
         kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
         plt.title(title, fontdict={"fontweight": "bold"}, size=15)
-        plt.savefig(f"{figname}.pdf")
+        plt.savefig(figpath)
 
 
 def plot_venn_three(
     sizes: List[int], labels: List[str], figpath: str = "", title: str = "", **kwargs
 ) -> None:
-    """Plot a single Venn Diagram with two terms.
+    """Plot a single Venn Diagram with three terms.
 
     Args:
-        sizes (List[int]): List of ints of length 3. First two elements correspond to
-            the labels, third one to the intersection.
-        labels (List[str]): List of str of length 2, containing names of circles.
+        sizes (List[int]): List of ints of length 7 with the subset sizes.
+        labels (List[str]): List of str of length 3, containing names of circles.
         figpath (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         title (str): Title of the plot. Defaults to '', i.e. it is inferred from
@@ -396,7 +396,7 @@ def plot_venn_three(
     assert len(labels) == 3, "Incorrect type/length of labels"
 
     title = get_name(labels) if title == "" else title
-    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
+    figpath = f"{title.lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
 
     venn3(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn3_circles(
@@ -407,14 +407,14 @@ def plot_venn_three(
         kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
         plt.title(title, fontdict={"fontweight": "bold"}, size=15)
-        plt.savefig(f"{figname}.pdf")
+        plt.savefig(figpath)
 
 
 def plot_multiple_venn(
     sizes: List[List[int]],
     labels: List[List[str]],
-    figname: str,
     titles: List[str],
+    figpath: str = "",
     suptitle: str = "",
     gridspec_kw: dict = {},
     figsize: Iterable = (8, 4.5),
@@ -428,7 +428,7 @@ def plot_multiple_venn(
             (plot_venn_two).
         labels (List[List[str]]): List of Lists of str containing names of circles.
             Lengths of lists should be either 2 or 3.
-        figname (str): Name under which figure is saved. Defaults to '', i.e. it is
+        figpath (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         titles (List[str]): Titles of subplots. Should have same length like labels
             and sizes.
@@ -449,7 +449,9 @@ def plot_multiple_venn(
     fig, axes = plt.subplots(1, len(sizes), gridspec_kw=gridspec_kw, figsize=figsize)
     plt.suptitle(suptitle, size=18, fontweight="bold")
 
-    figname = titles[0].lower().replace(" vs. ", "_") if figname == "" else figname
+    figpath = (
+        f"{titles[0].lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
+    )
 
     for idx, (size, label, title) in enumerate(zip(sizes, labels, titles)):
         if len(label) == 2:
@@ -457,4 +459,4 @@ def plot_multiple_venn(
         elif len(label) == 3:
             plot_venn_three(size, label, title=title, ax=axes[idx])
 
-    plt.savefig(f"{figname}.pdf")
+    plt.savefig(figpath)

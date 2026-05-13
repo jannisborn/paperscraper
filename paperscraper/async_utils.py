@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 import sys
 import threading
 from functools import wraps
@@ -64,15 +65,19 @@ def retry_with_exponential_backoff(
     base_delay: float = 1.0,
     factor: float = 1.3,
     constant_delay: float = 0.2,
+    max_delay: float = 60.0,
+    jitter_ratio: float = 0.1,
 ) -> Callable[[F], F]:
     """
-    Decorator factory that retries an `async def` on HTTP 429, with exponential backoff.
+    Decorator factory that retries an `async def` on transient HTTP/network errors, with exponential backoff.
 
     Args:
         max_retries: how many times to retry before giving up.
         base_delay: initial delay in seconds; next delays will be multiplied by `factor`.
         factor: multiplier for delay after each retry.
         constant_delay: fixed delay before each attempt.
+        max_delay: maximum backoff delay between attempts.
+        jitter_ratio: add +/- jitter_ratio * delay seconds of jitter.
 
     Usage:
 
@@ -93,23 +98,30 @@ def retry_with_exponential_backoff(
                     return await func(*args, **kwargs)
                 except httpx.HTTPStatusError as e:
                     status = e.response.status_code if e.response is not None else None
-                    if status != 429:
+                    retryable = status == 429 or (
+                        status is not None and (status == 408 or 500 <= status <= 599)
+                    )
+                    if not retryable:
                         raise
                     last_exception = e
-                    sleep_for = delay
+                    sleep_for = min(delay, max_delay)
                     if e.response is not None:
                         ra = e.response.headers.get("Retry-After")
                         if ra is not None:
                             try:
-                                sleep_for = float(ra)
+                                sleep_for = min(float(ra), max_delay)
                             except ValueError:
                                 pass
-                    delay *= factor
+                    delay = min(delay * factor, max_delay)
 
-                except (httpx.ReadError, httpx.TimeoutException, httpx.TransportError) as e:
+                except (
+                    httpx.ReadError,
+                    httpx.TimeoutException,
+                    httpx.TransportError,
+                ) as e:
                     last_exception = e
-                    sleep_for = delay
-                    delay *= factor
+                    sleep_for = min(delay, max_delay)
+                    delay = min(delay * factor, max_delay)
 
                 if attempt == max_retries:
                     msg = (
@@ -117,6 +129,10 @@ def retry_with_exponential_backoff(
                         f"last delay {sleep_for:.2f}s"
                     )
                     raise RuntimeError(msg) from last_exception
+
+                if jitter_ratio > 0:
+                    jitter = sleep_for * jitter_ratio
+                    sleep_for = max(0.0, sleep_for + random.uniform(-jitter, jitter))
 
                 await asyncio.sleep(sleep_for)
 

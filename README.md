@@ -369,7 +369,7 @@ sizes_2019 = (55402, 11899, 2563)
 labels_2020 = ('Medical\nImaging', 'Artificial\nIntelligence', 'COVID-19')
 labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
 
-plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
+plot_venn_two(sizes_2019, labels_2019, title='2019', figpath='ai_imaging.png')
 ```
 
 ![2019](https://github.com/jannisborn/paperscraper/blob/main/assets/ai_imaging.png?raw=true "2019")
@@ -377,7 +377,7 @@ plot_venn_two(sizes_2019, labels_2019, title='2019', figname='ai_imaging')
 
 ```py
 plot_venn_three(
-    sizes_2020, labels_2020, title='2020', figname='ai_imaging_covid'
+    sizes_2020, labels_2020, title='2020', figpath='ai_imaging_covid.png'
 )
 ```
 
@@ -390,7 +390,7 @@ plot_multiple_venn(
     [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
     titles=['2019', '2020'], suptitle='Keyword search comparison', 
     gridspec_kw={'width_ratios': [1, 2]}, figsize=(10, 6),
-    figname='both'
+    figpath='both.png'
 )
 ```
 
