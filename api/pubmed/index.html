@@ -1172,13 +1172,7 @@ an 'author' field.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
-<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
-<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
-<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
-<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
-<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
-<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
 <span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
 <span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
 <span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
@@ -1218,53 +1212,59 @@ an 'author' field.</p>
 <span class="normal"><a href="#__codelineno-0-111">111</a></span>
 <span class="normal"><a href="#__codelineno-0-112">112</a></span>
 <span class="normal"><a href="#__codelineno-0-113">113</a></span>
-<span class="normal"><a href="#__codelineno-0-114">114</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">:</span> <span class="n">PubMedArticle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    Extracts author email addresses from PubMedArticle.</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        paper (PubMedArticle): An object of type PubMedArticle. Requires to have</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            an &#39;author&#39; field.</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">        List: A possibly empty list of emails associated to authors of the paper.</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="n">emails</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">authors</span><span class="p">:</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">author</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>                <span class="n">parts</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-85" name="__codelineno-0-85"></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-<a id="__codelineno-0-86" name="__codelineno-0-86"></a>                    <span class="c1"># Found one email address</span>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a>                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-88" name="__codelineno-0-88"></a>                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-89" name="__codelineno-0-89"></a>                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)):</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>                    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a>                <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>                    <span class="c1"># Found multiple addresses</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a>                            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>                                <span class="n">prefix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>                            <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>                                <span class="n">postfix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>                                <span class="k">if</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>                                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>                                <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>                                    <span class="n">current_postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">current_postfix</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a>                                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a>                                <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a>                        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a>                            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mail could not be inferred from </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">emails</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">:</span> <span class="n">PubMedArticle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Extracts author email addresses from PubMedArticle.</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">        paper (PubMedArticle): An object of type PubMedArticle. Requires to have</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">            an &#39;author&#39; field.</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        List: A possibly empty list of emails associated to authors of the paper.</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span class="n">emails</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">authors</span><span class="p">:</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">author</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>                <span class="n">parts</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>                    <span class="c1"># Found one email address</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)):</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>                    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>                    <span class="c1"># Found multiple addresses</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>                        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>                            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>                                <span class="n">prefix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>                            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>                                <span class="n">postfix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>                                <span class="k">if</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>                                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>                                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>                                    <span class="n">current_postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">current_postfix</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>                                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>                                <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>                        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>                            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mail could not be inferred from </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">emails</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1381,13 +1381,7 @@ dates are used.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-40">40</a></span>
 <span class="normal"><a href="#__codelineno-0-41">41</a></span>
 <span class="normal"><a href="#__codelineno-0-42">42</a></span>
 <span class="normal"><a href="#__codelineno-0-43">43</a></span>
@@ -1412,38 +1406,44 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-62">62</a></span>
 <span class="normal"><a href="#__codelineno-0-63">63</a></span>
 <span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords_and_date</span><span class="p">(</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]],</span> <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    Note: If start_date and end_date are left as default, the function is</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        identical to get_query_from_keywords.</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        str: query to enter to pubmed API.</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords_and_date</span><span class="p">(</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]],</span> <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    Note: If start_date and end_date are left as default, the function is</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        identical to get_query_from_keywords.</span>
 <a id="__codelineno-0-55" name="__codelineno-0-55"></a>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;1000&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>        <span class="k">return</span> <span class="n">query</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">date</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        str: query to enter to pubmed API.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;1000&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>        <span class="k">return</span> <span class="n">query</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">date</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2506,13 +2506,7 @@ are lists themselves, they will be OR separated.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
-<span class="normal"><a href="#__codelineno-0-12">12</a></span>
-<span class="normal"><a href="#__codelineno-0-13">13</a></span>
-<span class="normal"><a href="#__codelineno-0-14">14</a></span>
-<span class="normal"><a href="#__codelineno-0-15">15</a></span>
-<span class="normal"><a href="#__codelineno-0-16">16</a></span>
-<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-17">17</a></span>
 <span class="normal"><a href="#__codelineno-0-18">18</a></span>
 <span class="normal"><a href="#__codelineno-0-19">19</a></span>
 <span class="normal"><a href="#__codelineno-0-20">20</a></span>
@@ -2526,27 +2520,33 @@ are lists themselves, they will be OR separated.</p>
 <span class="normal"><a href="#__codelineno-0-28">28</a></span>
 <span class="normal"><a href="#__codelineno-0-29">29</a></span>
 <span class="normal"><a href="#__codelineno-0-30">30</a></span>
-<span class="normal"><a href="#__codelineno-0-31">31</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13"></a>
-<a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17"></a>
-<a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        str: query to enter to pubmed API.</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21"></a>
-<a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-0-25" name="__codelineno-0-25"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">) AND &quot;</span>
-<a id="__codelineno-0-26" name="__codelineno-0-26"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-<a id="__codelineno-0-27" name="__codelineno-0-27"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2">) OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
-<a id="__codelineno-0-29" name="__codelineno-0-29"></a>
-<a id="__codelineno-0-30" name="__codelineno-0-30"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="k">return</span> <span class="n">query</span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        str: query to enter to pubmed API.</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">) AND &quot;</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2">) OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="k">return</span> <span class="n">query</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2663,13 +2663,7 @@ dates are used.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-40">40</a></span>
 <span class="normal"><a href="#__codelineno-0-41">41</a></span>
 <span class="normal"><a href="#__codelineno-0-42">42</a></span>
 <span class="normal"><a href="#__codelineno-0-43">43</a></span>
@@ -2694,38 +2688,44 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-62">62</a></span>
 <span class="normal"><a href="#__codelineno-0-63">63</a></span>
 <span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords_and_date</span><span class="p">(</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]],</span> <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    Note: If start_date and end_date are left as default, the function is</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        identical to get_query_from_keywords.</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        str: query to enter to pubmed API.</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords_and_date</span><span class="p">(</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]],</span> <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the pubmed API.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            YYYY/MM/DD, e.g. &#39;2020/07/20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    Note: If start_date and end_date are left as default, the function is</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        identical to get_query_from_keywords.</span>
 <a id="__codelineno-0-55" name="__codelineno-0-55"></a>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;1000&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>        <span class="k">return</span> <span class="n">query</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">date</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        str: query to enter to pubmed API.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">get_query_from_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="n">date</span> <span class="o">=</span> <span class="n">date_root</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;1000&quot;</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>        <span class="k">return</span> <span class="n">query</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">date</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2803,13 +2803,7 @@ an 'author' field.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/pubmed/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
-<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
-<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
-<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
-<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
-<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
-<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
 <span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
 <span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
 <span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
@@ -2849,53 +2843,59 @@ an 'author' field.</p>
 <span class="normal"><a href="#__codelineno-0-111">111</a></span>
 <span class="normal"><a href="#__codelineno-0-112">112</a></span>
 <span class="normal"><a href="#__codelineno-0-113">113</a></span>
-<span class="normal"><a href="#__codelineno-0-114">114</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">:</span> <span class="n">PubMedArticle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    Extracts author email addresses from PubMedArticle.</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        paper (PubMedArticle): An object of type PubMedArticle. Requires to have</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            an &#39;author&#39; field.</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">        List: A possibly empty list of emails associated to authors of the paper.</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="n">emails</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">authors</span><span class="p">:</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">author</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>                <span class="n">parts</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-85" name="__codelineno-0-85"></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-<a id="__codelineno-0-86" name="__codelineno-0-86"></a>                    <span class="c1"># Found one email address</span>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a>                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-88" name="__codelineno-0-88"></a>                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-89" name="__codelineno-0-89"></a>                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)):</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>                    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a>                <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>                    <span class="c1"># Found multiple addresses</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a>                            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>                                <span class="n">prefix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>                            <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>                                <span class="n">postfix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>                                <span class="k">if</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>                                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>                                <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>                                    <span class="n">current_postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">current_postfix</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a>                                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a>                                <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a>                        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a>                            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mail could not be inferred from </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">emails</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_emails</span><span class="p">(</span><span class="n">paper</span><span class="p">:</span> <span class="n">PubMedArticle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Extracts author email addresses from PubMedArticle.</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">        paper (PubMedArticle): An object of type PubMedArticle. Requires to have</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">            an &#39;author&#39; field.</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        List: A possibly empty list of emails associated to authors of the paper.</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span class="n">emails</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span class="k">for</span> <span class="n">author</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">authors</span><span class="p">:</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">author</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>                <span class="n">parts</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>                    <span class="c1"># Found one email address</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)):</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>                    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>                        <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>                    <span class="c1"># Found multiple addresses</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>                        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>                            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>                                <span class="n">prefix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>                            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>                                <span class="n">postfix</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>                                <span class="k">if</span> <span class="n">postfix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>                                    <span class="n">postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">postfix</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>                                <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>                                    <span class="n">current_postfix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>                                    <span class="n">mail</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">current_postfix</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>                                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">postfix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>                                <span class="n">emails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>                        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>                            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mail could not be inferred from </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">emails</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

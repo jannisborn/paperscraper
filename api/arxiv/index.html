@@ -1803,12 +1803,7 @@ dates are used.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/arxiv/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-20">20</a></span>
-<span class="normal"><a href="#__codelineno-0-21">21</a></span>
-<span class="normal"><a href="#__codelineno-0-22">22</a></span>
-<span class="normal"><a href="#__codelineno-0-23">23</a></span>
-<span class="normal"><a href="#__codelineno-0-24">24</a></span>
-<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-25">25</a></span>
 <span class="normal"><a href="#__codelineno-0-26">26</a></span>
 <span class="normal"><a href="#__codelineno-0-27">27</a></span>
 <span class="normal"><a href="#__codelineno-0-28">28</a></span>
@@ -1841,45 +1836,50 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-55">55</a></span>
 <span class="normal"><a href="#__codelineno-0-56">56</a></span>
 <span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the arxiv API.</span>
-<a id="__codelineno-0-26" name="__codelineno-0-26"></a>
-<a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
-<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
-<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            YYYY-MM-DD, e.g. &#39;2020-07-20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        str: query to enter to arxiv API.</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> AND &quot;</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2"> OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="k">return</span> <span class="n">query</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="n">start_date</span> <span class="o">=</span> <span class="n">EARLIEST_START</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="k">elif</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a>        <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">start</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">end</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="n">date_filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; AND submittedDate:[</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> TO </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">]&quot;</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="n">date_filter</span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the arxiv API.</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">            YYYY-MM-DD, e.g. &#39;2020-07-20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        str: query to enter to arxiv API.</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> AND &quot;</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2"> OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>        <span class="k">return</span> <span class="n">query</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">start_date</span> <span class="o">=</span> <span class="n">EARLIEST_START</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">elif</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="n">start</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>    <span class="n">end</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="n">date_filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; AND submittedDate:[</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> TO </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">]&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="n">date_filter</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3233,13 +3233,13 @@ since it is faster.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/arxiv/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-14">14</a></span>
-<span class="normal"><a href="#__codelineno-0-15">15</a></span>
-<span class="normal"><a href="#__codelineno-0-16">16</a></span>
-<span class="normal"><a href="#__codelineno-0-17">17</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">format_date</span><span class="p">(</span><span class="n">date_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a date in YYYY-MM-DD format to arXiv&#39;s YYYYMMDDTTTT format.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16"></a>    <span class="n">date_obj</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17"></a>    <span class="k">return</span> <span class="n">date_obj</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">0000&quot;</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">format_date</span><span class="p">(</span><span class="n">date_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a date in YYYY-MM-DD format to arXiv&#39;s YYYYMMDDTTTT format.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a>    <span class="n">date_obj</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span class="k">return</span> <span class="n">date_obj</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">0000&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3351,12 +3351,7 @@ dates are used.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>paperscraper/arxiv/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-20">20</a></span>
-<span class="normal"><a href="#__codelineno-0-21">21</a></span>
-<span class="normal"><a href="#__codelineno-0-22">22</a></span>
-<span class="normal"><a href="#__codelineno-0-23">23</a></span>
-<span class="normal"><a href="#__codelineno-0-24">24</a></span>
-<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-25">25</a></span>
 <span class="normal"><a href="#__codelineno-0-26">26</a></span>
 <span class="normal"><a href="#__codelineno-0-27">27</a></span>
 <span class="normal"><a href="#__codelineno-0-28">28</a></span>
@@ -3389,45 +3384,50 @@ dates are used.</p>
 <span class="normal"><a href="#__codelineno-0-55">55</a></span>
 <span class="normal"><a href="#__codelineno-0-56">56</a></span>
 <span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the arxiv API.</span>
-<a id="__codelineno-0-26" name="__codelineno-0-26"></a>
-<a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
-<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
-<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            YYYY-MM-DD, e.g. &#39;2020-07-20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            dates are used.</span>
-<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        str: query to enter to arxiv API.</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> AND &quot;</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2"> OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="k">return</span> <span class="n">query</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="n">start_date</span> <span class="o">=</span> <span class="n">EARLIEST_START</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="k">elif</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a>        <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">start</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">end</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="n">date_filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; AND submittedDate:[</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> TO </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">]&quot;</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="n">date_filter</span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_query_from_keywords</span><span class="p">(</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Receives a list of keywords and returns the query for the arxiv API.</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        keywords (List[str, List[str]]): Items will be AND separated. If items</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            are lists themselves, they will be OR separated.</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        start_date (str): Start date for the search. Needs to be in format:</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">            YYYY-MM-DD, e.g. &#39;2020-07-20&#39;. Defaults to &#39;None&#39;, i.e. no specific</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            dates are used.</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        end_date (str): End date for the search. Same notation as start_date.</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        str: query to enter to arxiv API.</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> AND &quot;</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>            <span class="n">inter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;all:</span><span class="si">{</span><span class="n">syn</span><span class="si">}</span><span class="s2"> OR &quot;</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>            <span class="n">query</span> <span class="o">+=</span> <span class="n">finalize_disjunction</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">query</span> <span class="o">=</span> <span class="n">finalize_conjunction</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="k">if</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>        <span class="k">return</span> <span class="n">query</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">start_date</span> <span class="o">=</span> <span class="n">EARLIEST_START</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">elif</span> <span class="n">end_date</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="n">start</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>    <span class="n">end</span> <span class="o">=</span> <span class="n">format_date</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="n">date_filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; AND submittedDate:[</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> TO </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">]&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>    <span class="k">return</span> <span class="n">query</span> <span class="o">+</span> <span class="n">date_filter</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
