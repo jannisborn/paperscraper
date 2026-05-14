@@ -30,6 +30,11 @@ jobs:
         run: |
           uv sync --group dev
 
+      - name: Copy README assets for MkDocs
+        run: |
+          mkdir -p docs/assets
+          cp assets/ai_quantum_*.png docs/assets/
+
       - name: Build docs
         run: uv run mkdocs build
 

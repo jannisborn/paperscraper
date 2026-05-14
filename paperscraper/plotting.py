@@ -74,11 +74,13 @@ def plot_comparison(
         preprint.append(arxiv[-1] + biorxiv[-1] + medrxiv[-1] + chemrxiv[-1])
 
     ind = np.arange(len(arxiv[0]))  # the x locations for the groups
-    width = [0.2] * len(ind)  # the width of the bars: can also be len(x) sequence
-    if len(keys) == 2:
-        pos = [-0.2, 0.2]
-    elif len(keys) == 3:
-        pos = [-0.3, 0.0, 0.3]
+    bar_width = min(0.8 / len(keys), 0.2)
+    width = [bar_width] * len(ind)
+    pos = np.linspace(
+        -bar_width * (len(keys) - 1) / 2,
+        bar_width * (len(keys) - 1) / 2,
+        len(keys),
+    )
 
     plts = []
     legend_plts = []
@@ -88,7 +90,7 @@ def plot_comparison(
         legend_platform = ["PubMed", "Preprint"]
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
+        legend_platform = ["PubMed", "ArXiv", "bioRxiv", "ChemRxiv", "medRxiv"]
     for idx in range(len(keys)):
         bottom = 0
 
@@ -252,7 +254,7 @@ def plot_single(
 
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
+        legend_platform = ["PubMed", "ArXiv", "bioRxiv", "ChemRxiv", "medRxiv"]
         if logscale:
             sums = (
                 np.array(pubmed)
@@ -370,8 +372,6 @@ def plot_venn_two(
         subsets=sizes, linestyle="solid", linewidth=0.6, color="grey", **kwargs
     )
     if kwargs.get("ax", False):
-        print(kwargs, type(kwargs))
-        print(kwargs["ax"])
         kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
         plt.title(title, fontdict={"fontweight": "bold"}, size=15)
