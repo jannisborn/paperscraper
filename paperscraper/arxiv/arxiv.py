@@ -25,10 +25,14 @@ def search_local_arxiv():
     global ARXIV_QUERIER
     if ARXIV_QUERIER is not None:
         return
-    dump_paths = glob.glob(os.path.join(dump_root, "arxiv*"))
+    dump_paths = [
+        path
+        for path in glob.glob(os.path.join(dump_root, "arxiv*.jsonl"))
+        if os.path.isfile(path)
+    ]
 
     if len(dump_paths) > 0:
-        path = sorted(dump_paths, reverse=True)[0]
+        path = max(dump_paths, key=os.path.getmtime)
         querier = XRXivQuery(path)
         if not querier.errored:
             ARXIV_QUERIER = querier.search_keywords

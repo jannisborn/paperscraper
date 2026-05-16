@@ -528,11 +528,9 @@ class XRXivApi:
                 returned_count = len(collection)
                 cursor += returned_count
 
-                # API pages are capped at 100 items. If we got less than that, we
-                # reached the end of this interval without another request.
-                if returned_count < 100:
-                    break
-
+                # The x-rxiv API page size is controlled server-side and has
+                # changed over time. Keep paginating until the reported total is
+                # reached, or until the API returns an empty collection.
                 total = _to_int(message.get("total"), default=0)
                 if total and cursor >= total:
                     break
@@ -546,7 +544,7 @@ class BioRxivApi(XRXivApi):
         max_retries: int = 10,
         request_timeout: Tuple[float, float] = (5.0, 30.0),
         retry_backoff_seconds: float = 1.0,
-        window_days: int = 365,
+        window_days: int = 30,
     ):
         super().__init__(
             server="biorxiv",
@@ -566,7 +564,7 @@ class MedRxivApi(XRXivApi):
         max_retries: int = 10,
         request_timeout: Tuple[float, float] = (5.0, 30.0),
         retry_backoff_seconds: float = 1.0,
-        window_days: int = 365,
+        window_days: int = 30,
     ):
         super().__init__(
             server="medrxiv",

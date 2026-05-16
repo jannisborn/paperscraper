@@ -1,4 +1,5 @@
 import importlib
+import json
 import logging
 import multiprocessing
 import os
@@ -13,9 +14,10 @@ import pytest
 import paperscraper.load_dumps as load_dumps_module
 from paperscraper import dump_queries
 from paperscraper.arxiv import get_and_dump_arxiv_papers
+from paperscraper.arxiv.kaggle import arxiv_kaggle
 from paperscraper.get_dumps import arxiv, biorxiv, chemrxiv, medrxiv
 from paperscraper.load_dumps import QUERY_FN_DICT
-from paperscraper.utils import get_server_dumps_dir
+from paperscraper.utils import get_server_dumps_dir, load_jsonl
 
 logging.disable(logging.INFO)
 
@@ -77,7 +79,7 @@ class TestDumper:
 
     @pytest.fixture
     def setup_arxiv(self):
-        return arxiv
+        return partial(arxiv, backend="api")
 
     def run_function_with_timeout(self, func, timeout):
         queue = multiprocessing.Queue()
@@ -141,16 +143,63 @@ class TestDumper:
     def test_arxiv_date(self):
         # Result of this may be empty because arxiv updates not daily.
         # With days=4 it should never be empty.
-        arxiv(start_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+        arxiv(
+            start_date=(datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d"),
+            backend="api",
+        )
 
-        arxiv(end_date="1991-01-01")
-        arxiv(start_date="1993-04-03", end_date="1993-04-03")
+        arxiv(end_date="1991-01-01", backend="api")
+        arxiv(start_date="1993-04-03", end_date="1993-04-03", backend="api")
 
     def test_arxiv_wrong_date(self):
         with pytest.raises(
             ValueError, match=r"start_date .* cannot be later than end_date .*"
         ):
             arxiv(start_date="2024-06-02", end_date="2024-06-01")
+
+    def test_arxiv_kaggle_backend(self, tmp_path):
+        kaggle_filepath = tmp_path / "arxiv-metadata-oai-snapshot.json"
+        records = [
+            {
+                "id": "1901.00001",
+                "authors": "Ada Lovelace",
+                "title": " Quantum  circuits ",
+                "abstract": " A useful result. ",
+                "journal-ref": "Journal of Tests",
+                "doi": "",
+                "versions": [
+                    {"version": "v1", "created": "Tue, 01 Jan 2019 00:00:00 GMT"}
+                ],
+                "update_date": "2019-01-02",
+            },
+            {
+                "id": "2001.00001",
+                "authors": "Grace Hopper",
+                "title": "Outside range",
+                "abstract": "Ignore me.",
+                "versions": [
+                    {"version": "v1", "created": "Wed, 01 Jan 2020 00:00:00 GMT"}
+                ],
+                "update_date": "2020-01-02",
+            },
+        ]
+        with open(kaggle_filepath, "w", encoding="utf-8") as fp:
+            for record in records:
+                fp.write(json.dumps(record) + "\n")
+
+        output_filepath = tmp_path / "arxiv_2019.jsonl"
+        arxiv_kaggle(
+            start_date=datetime.strptime("2019-01-01", "%Y-%m-%d"),
+            end_date=datetime.strptime("2019-12-31", "%Y-%m-%d"),
+            save_path=str(output_filepath),
+            kaggle_filepath=str(kaggle_filepath),
+        )
+
+        papers = load_jsonl(str(output_filepath))
+        assert len(papers) == 1
+        assert papers[0]["title"] == "Quantum circuits"
+        assert papers[0]["date"] == "2019-01-01"
+        assert papers[0]["doi"] == "10.48550/arXiv.1901.00001"
 
     def test_dumping(self):
         queries = [["MPEGO"]]

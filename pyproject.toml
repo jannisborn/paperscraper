@@ -58,6 +58,7 @@ dependencies = [
   "unidecode",
   "dotenv",
   "boto3",
+  "kaggle>=1.7.4.5",
 ]
 
 [project.urls]
