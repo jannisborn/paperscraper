@@ -90,6 +90,7 @@ dev = [
   "mkdocstrings[python]>=0.24",
   "mkdocs-material-extensions",
   "pre-commit>=4.3.0",
+  "grip>=4.6.2",
 ]
 
 [tool.ruff]

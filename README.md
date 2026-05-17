@@ -103,18 +103,22 @@ get_and_dump_arxiv_papers(..., backend='local')
 ### Publication keyword search
 
 Consider you want to perform a publication keyword search with the query:
-`COVID-19` **AND** `Artificial Intelligence` **AND** `Medical Imaging`. 
+`Artificial Intelligence` **AND** `Quantum Computing` **AND** `Chemistry`.
 
 * Scrape papers from PubMed:
 
 ```py
 from paperscraper.pubmed import get_and_dump_pubmed_papers
-covid19 = ['COVID-19', 'SARS-CoV-2']
-ai = ['Artificial intelligence', 'Deep learning', 'Machine learning']
-mi = ['Medical imaging']
-query = [covid19, ai, mi]
+ai = ['Artificial intelligence', 'Machine learning']
+qc = [
+    'Quantum computing', 'Quantum computer', 'Quantum information',
+    'Quantum algorithm', 'Quantum circuit', 'Quantum simulation',
+    'Quantum machine learning', 'Qubit', 'Quantum annealing'
+]
+chemistry = ['Chemistry', 'Chemical', 'Molecule', 'Molecular', 'Materials science']
+query = [ai, qc, chemistry]
 
-get_and_dump_pubmed_papers(query, output_filepath='covid19_ai_imaging.jsonl')
+get_and_dump_pubmed_papers(query, output_filepath='ai_quantum_chemistry.jsonl')
 ```
 
 * Scrape papers from arXiv:
@@ -122,7 +126,7 @@ get_and_dump_pubmed_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 ```py
 from paperscraper.arxiv import get_and_dump_arxiv_papers
 
-get_and_dump_arxiv_papers(query, output_filepath='covid19_ai_imaging.jsonl')
+get_and_dump_arxiv_papers(query, output_filepath='ai_quantum_chemistry.jsonl')
 ```
 
 * Scrape papers from bioRiv, medRxiv or chemRxiv:
@@ -131,7 +135,7 @@ get_and_dump_arxiv_papers(query, output_filepath='covid19_ai_imaging.jsonl')
 from paperscraper.xrxiv.xrxiv_query import XRXivQuery
 
 querier = XRXivQuery('server_dumps/chemrxiv_2020-11-10.jsonl')
-querier.search_keywords(query, output_filepath='covid19_ai_imaging.jsonl')
+querier.search_keywords(query, output_filepath='ai_quantum_chemistry.jsonl')
 ```
 
 You can also use `dump_queries` to iterate over a bunch of queries for all available databases.
@@ -139,7 +143,12 @@ You can also use `dump_queries` to iterate over a bunch of queries for all avail
 ```py
 from paperscraper import dump_queries
 
-queries = [[covid19, ai, mi], [covid19, ai], [ai]]
+physics = [
+    'Physics', 'Physical', 'Particle', 'Condensed matter',
+    'Many-body', 'Fermion', 'Hamiltonian', 'Spin'
+]
+biology = ['Biology', 'Biological', 'Cellular', 'Genomics', 'Gene', 'Protein']
+queries = [[ai, qc, chemistry], [ai, qc, physics], [ai, qc, biology]]
 dump_queries(queries, '.')
 ```
 
@@ -148,8 +157,8 @@ Or use the harmonized interface of `QUERY_FN_DICT` to query multiple databases o
 from paperscraper.load_dumps import QUERY_FN_DICT
 print(QUERY_FN_DICT.keys())
 
-QUERY_FN_DICT['biorxiv'](query, output_filepath='biorxiv_covid_ai_imaging.jsonl')
-QUERY_FN_DICT['medrxiv'](query, output_filepath='medrxiv_covid_ai_imaging.jsonl')
+QUERY_FN_DICT['biorxiv'](query, output_filepath='biorxiv_ai_quantum_chemistry.jsonl')
+QUERY_FN_DICT['chemrxiv'](query, output_filepath='chemrxiv_ai_quantum_chemistry.jsonl')
 ```
 
 * Scrape papers from Google Scholar:
@@ -185,7 +194,7 @@ To batch download full texts from your metadata search results:
 from paperscraper.pdf import save_pdf_from_dump
 
 # Save PDFs/XMLs in current folder and name the files by their DOI
-save_pdf_from_dump('medrxiv_covid_ai_imaging.jsonl', pdf_path='.', key_to_save='doi')
+save_pdf_from_dump('ai_quantum_chemistry.jsonl', pdf_path='.', key_to_save='doi')
 ```
 
 #### Automatic Fallback Mechanisms
@@ -304,19 +313,34 @@ automatically: Venn diagrams and bar plots.
 Compare the temporal evolution of different queries across different servers.
 
 ```py
+import os
+
 from paperscraper import QUERY_FN_DICT
 from paperscraper.postprocessing import aggregate_paper
 from paperscraper.utils import get_filename_from_query, load_jsonl
 
 # Define search terms and their synonyms
-ml = ['Deep learning', 'Neural Network', 'Machine learning']
-mol = ['molecule', 'molecular', 'drug', 'ligand', 'compound']
-gnn = ['gcn', 'gnn', 'graph neural', 'graph convolutional', 'molecular graph']
-smiles = ['SMILES', 'Simplified molecular']
-fp = ['fingerprint', 'molecular fingerprint', 'fingerprints']
+ai = ['Artificial intelligence', 'Machine learning']
+qc = [
+    'Quantum computing', 'Quantum computer', 'Quantum information',
+    'Quantum algorithm', 'Quantum circuit', 'Quantum simulation',
+    'Quantum machine learning', 'Qubit', 'Quantum annealing'
+]
+chemistry = ['Chemistry', 'Chemical', 'Molecule', 'Molecular', 'Materials science']
+physics = [
+    'Physics', 'Physical', 'Particle', 'Condensed matter',
+    'Many-body', 'Fermion', 'Hamiltonian', 'Spin'
+]
+biology = ['Biology', 'Biological', 'Cellular', 'Genomics', 'Gene', 'Protein']
+medicine = ['Medicine', 'Medical', 'Clinical', 'Disease', 'Patient', 'Health']
 
 # Define queries
-queries = [[ml, mol, smiles], [ml, mol, fp], [ml, mol, gnn]]
+queries = [
+    [ai, qc, chemistry],
+    [ai, qc, physics],
+    [ai, qc, biology],
+    [ai, qc, medicine],
+]
 
 root = '../keyword_dumps'
 
@@ -328,73 +352,80 @@ for query in queries:
         # Assuming the keyword search has been performed already
         data = load_jsonl(os.path.join(root, db, filename))
 
-        # Unstructured matches are aggregated into 6 bins, 1 per year
-        # from 2015 to 2020. Sanity check is performed by having 
+        # Unstructured matches are aggregated into 8 bins, 1 per year
+        # from 2019 to 2026. Sanity check is performed by having
         # `filtering=True`, removing papers that don't contain all of
         # the keywords in query.
         data_dict[filename][db], filtered = aggregate_paper(
-            data, 2015, bins_per_year=1, filtering=True,
-            filter_keys=query, return_filtered=True
+            data, 2019, bins_per_year=1, filtering=True,
+            filter_keys=query, return_filtered=True, last_year=2026
         )
 
 # Plotting is now very simple
 from paperscraper.plotting import plot_comparison
 
 data_keys = [
-    'deeplearning_molecule_fingerprint.jsonl',
-    'deeplearning_molecule_smiles.jsonl', 
-    'deeplearning_molecule_gcn.jsonl'
+    'artificialintelligence_quantumcomputing_chemistry.jsonl',
+    'artificialintelligence_quantumcomputing_physics.jsonl',
+    'artificialintelligence_quantumcomputing_biology.jsonl',
+    'artificialintelligence_quantumcomputing_medicine.jsonl'
 ]
 plot_comparison(
     data_dict,
     data_keys,
-    title_text="'Deep Learning' AND 'Molecule' AND X",
-    keyword_text=['Fingerprint', 'SMILES', 'Graph'],
-    figpath='mol_representation'
+    x_ticks=[str(year) for year in range(2019, 2027)],
+    title_text="'Artificial intelligence' AND 'Quantum computing' AND X",
+    keyword_text=['Chemistry', 'Physics', 'Biology', 'Medicine'],
+    figpath='assets/ai_quantum_fields.png'
 )
 ```
 
-![molreps](https://github.com/jannisborn/paperscraper/blob/main/assets/molreps.png?raw=true "MolReps")
+![Artificial intelligence and quantum computing by field](assets/ai_quantum_fields.png)
 
 
 ### Venn Diagrams
+
+The Venn diagrams below use the local arXiv, bioRxiv, ChemRxiv and medRxiv dumps.
 
 ```py
 from paperscraper.plotting import (
     plot_venn_two, plot_venn_three, plot_multiple_venn
 )
 
-sizes_2020 = (30842, 14474, 2292, 35476, 1904, 1408, 376)
-sizes_2019 = (55402, 11899, 2563)
-labels_2020 = ('Medical\nImaging', 'Artificial\nIntelligence', 'COVID-19')
-labels_2019 = ['Medical Imaging', 'Artificial\nIntelligence']
+sizes_2024 = (18762, 6324, 624)
+sizes_2025 = (18774, 6966, 775, 28652, 1965, 597, 77)
+labels_2024 = ['Artificial\nIntelligence', 'Quantum\nComputing']
+labels_2025 = ('Artificial\nIntelligence', 'Quantum\nComputing', 'Chemistry')
 
-plot_venn_two(sizes_2019, labels_2019, title='2019', figpath='ai_imaging.png')
+plot_venn_two(
+    sizes_2024, labels_2024, title='2024', figpath='assets/ai_quantum_venn_2024.png'
+)
 ```
 
-![2019](https://github.com/jannisborn/paperscraper/blob/main/assets/ai_imaging.png?raw=true "2019")
+![2024 Venn diagram](assets/ai_quantum_venn_2024.png)
 
 
 ```py
 plot_venn_three(
-    sizes_2020, labels_2020, title='2020', figpath='ai_imaging_covid.png'
+    sizes_2025, labels_2025, title='2025',
+    figpath='assets/ai_quantum_chemistry_venn_2025.png'
 )
 ```
 
-![2020](https://github.com/jannisborn/paperscraper/blob/main/assets/ai_imaging_covid.png?raw=true "2020")
+![2025 Venn diagram](assets/ai_quantum_chemistry_venn_2025.png)
 
 Or plot both together:
 
 ```py
 plot_multiple_venn(
-    [sizes_2019, sizes_2020], [labels_2019, labels_2020], 
-    titles=['2019', '2020'], suptitle='Keyword search comparison', 
+    [sizes_2024, sizes_2025], [labels_2024, labels_2025],
+    titles=['2024', '2025'], suptitle='Keyword search comparison',
     gridspec_kw={'width_ratios': [1, 2]}, figsize=(10, 6),
-    figpath='both.png'
+    figpath='assets/ai_quantum_venn_both.png'
 )
 ```
 
-![both](https://github.com/jannisborn/paperscraper/blob/main/assets/both.png?raw=true "Both")
+![Venn diagram comparison](assets/ai_quantum_venn_both.png)
 
 
 
