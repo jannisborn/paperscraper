@@ -91,7 +91,7 @@ kaggle auth login
 from paperscraper.get_dumps import arxiv
 arxiv(start_date='2019-01-01', end_date='2026-12-31')
 ```
-NOTE: The disdvantage of `kaggle` backend is that it bulk-downloads **all** of arXiv. For small API-backed dumps, better use the `arxiv` PyPI package backend:
+NOTE: The disadvantage of `kaggle` backend is that it bulk-downloads **all** of arXiv. For small API-backed dumps, better use the `arxiv` PyPI package backend:
 
 ```py
 from paperscraper.get_dumps import arxiv
