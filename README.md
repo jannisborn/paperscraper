@@ -395,13 +395,15 @@ plot_comparison(
 
 ### Venn Diagrams
 
+The Venn diagrams below use the local arXiv, bioRxiv, ChemRxiv and medRxiv dumps.
+
 ```py
 from paperscraper.plotting import (
     plot_venn_two, plot_venn_three, plot_multiple_venn
 )
 
-sizes_2024 = (2008, 27, 0)
-sizes_2025 = (2332, 41, 9, 1222, 56, 5, 1)
+sizes_2024 = (18762, 6324, 624)
+sizes_2025 = (18774, 6966, 775, 28652, 1965, 597, 77)
 labels_2024 = ['Artificial\nIntelligence', 'Quantum\nComputing']
 labels_2025 = ('Artificial\nIntelligence', 'Quantum\nComputing', 'Chemistry')
 
