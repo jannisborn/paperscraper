@@ -72,5 +72,5 @@ def load_jsonl(filepath: str) -> List[Dict[str, str]]:
     """
 
     with open(filepath, "r") as f:
-        data = [json.loads(line) for line in f.readlines()]
+        data = [json.loads(line) for line in f if line.strip()]
     return data
