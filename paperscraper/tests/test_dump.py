@@ -67,11 +67,23 @@ class TestDumper:
 
     @pytest.fixture
     def setup_medrxiv(self):
-        return partial(medrxiv, max_retries=2)
+        return partial(
+            medrxiv,
+            start_date="2024-06-01",
+            end_date="2024-06-01",
+            max_retries=2,
+            max_workers=1,
+        )
 
     @pytest.fixture
     def setup_biorxiv(self):
-        return partial(biorxiv, max_retries=2)
+        return partial(
+            biorxiv,
+            start_date="2014-06-01",
+            end_date="2014-06-04",
+            max_retries=2,
+            max_workers=1,
+        )
 
     @pytest.fixture
     def setup_chemrxiv(self):
