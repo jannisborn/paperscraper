@@ -1553,9 +1553,7 @@
 <span class="normal"><a href="#__codelineno-0-533">533</a></span>
 <span class="normal"><a href="#__codelineno-0-534">534</a></span>
 <span class="normal"><a href="#__codelineno-0-535">535</a></span>
-<span class="normal"><a href="#__codelineno-0-536">536</a></span>
-<span class="normal"><a href="#__codelineno-0-537">537</a></span>
-<span class="normal"><a href="#__codelineno-0-538">538</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="k">class</span><span class="w"> </span><span class="nc">XRXivApi</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-536">536</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="k">class</span><span class="w"> </span><span class="nc">XRXivApi</span><span class="p">:</span>
 <a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;API class.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-31" name="__codelineno-0-31"></a>
 <a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2057,14 +2055,12 @@
 <a id="__codelineno-0-528" name="__codelineno-0-528"></a>                <span class="n">returned_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
 <a id="__codelineno-0-529" name="__codelineno-0-529"></a>                <span class="n">cursor</span> <span class="o">+=</span> <span class="n">returned_count</span>
 <a id="__codelineno-0-530" name="__codelineno-0-530"></a>
-<a id="__codelineno-0-531" name="__codelineno-0-531"></a>                <span class="c1"># API pages are capped at 100 items. If we got less than that, we</span>
-<a id="__codelineno-0-532" name="__codelineno-0-532"></a>                <span class="c1"># reached the end of this interval without another request.</span>
-<a id="__codelineno-0-533" name="__codelineno-0-533"></a>                <span class="k">if</span> <span class="n">returned_count</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-<a id="__codelineno-0-534" name="__codelineno-0-534"></a>                    <span class="k">break</span>
-<a id="__codelineno-0-535" name="__codelineno-0-535"></a>
-<a id="__codelineno-0-536" name="__codelineno-0-536"></a>                <span class="n">total</span> <span class="o">=</span> <span class="n">_to_int</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-0-537" name="__codelineno-0-537"></a>                <span class="k">if</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">cursor</span> <span class="o">&gt;=</span> <span class="n">total</span><span class="p">:</span>
-<a id="__codelineno-0-538" name="__codelineno-0-538"></a>                    <span class="k">break</span>
+<a id="__codelineno-0-531" name="__codelineno-0-531"></a>                <span class="c1"># The x-rxiv API page size is controlled server-side and has</span>
+<a id="__codelineno-0-532" name="__codelineno-0-532"></a>                <span class="c1"># changed over time. Keep paginating until the reported total is</span>
+<a id="__codelineno-0-533" name="__codelineno-0-533"></a>                <span class="c1"># reached, or until the API returns an empty collection.</span>
+<a id="__codelineno-0-534" name="__codelineno-0-534"></a>                <span class="n">total</span> <span class="o">=</span> <span class="n">_to_int</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-535" name="__codelineno-0-535"></a>                <span class="k">if</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">cursor</span> <span class="o">&gt;=</span> <span class="n">total</span><span class="p">:</span>
+<a id="__codelineno-0-536" name="__codelineno-0-536"></a>                    <span class="k">break</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3284,9 +3280,7 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 <span class="normal"><a href="#__codelineno-0-533">533</a></span>
 <span class="normal"><a href="#__codelineno-0-534">534</a></span>
 <span class="normal"><a href="#__codelineno-0-535">535</a></span>
-<span class="normal"><a href="#__codelineno-0-536">536</a></span>
-<span class="normal"><a href="#__codelineno-0-537">537</a></span>
-<span class="normal"><a href="#__codelineno-0-538">538</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-477" name="__codelineno-0-477"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_papers</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-536">536</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-477" name="__codelineno-0-477"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_papers</span><span class="p">(</span>
 <a id="__codelineno-0-478" name="__codelineno-0-478"></a>    <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-0-479" name="__codelineno-0-479"></a>    <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-480" name="__codelineno-0-480"></a>    <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3340,14 +3334,12 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 <a id="__codelineno-0-528" name="__codelineno-0-528"></a>            <span class="n">returned_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
 <a id="__codelineno-0-529" name="__codelineno-0-529"></a>            <span class="n">cursor</span> <span class="o">+=</span> <span class="n">returned_count</span>
 <a id="__codelineno-0-530" name="__codelineno-0-530"></a>
-<a id="__codelineno-0-531" name="__codelineno-0-531"></a>            <span class="c1"># API pages are capped at 100 items. If we got less than that, we</span>
-<a id="__codelineno-0-532" name="__codelineno-0-532"></a>            <span class="c1"># reached the end of this interval without another request.</span>
-<a id="__codelineno-0-533" name="__codelineno-0-533"></a>            <span class="k">if</span> <span class="n">returned_count</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-<a id="__codelineno-0-534" name="__codelineno-0-534"></a>                <span class="k">break</span>
-<a id="__codelineno-0-535" name="__codelineno-0-535"></a>
-<a id="__codelineno-0-536" name="__codelineno-0-536"></a>            <span class="n">total</span> <span class="o">=</span> <span class="n">_to_int</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-0-537" name="__codelineno-0-537"></a>            <span class="k">if</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">cursor</span> <span class="o">&gt;=</span> <span class="n">total</span><span class="p">:</span>
-<a id="__codelineno-0-538" name="__codelineno-0-538"></a>                <span class="k">break</span>
+<a id="__codelineno-0-531" name="__codelineno-0-531"></a>            <span class="c1"># The x-rxiv API page size is controlled server-side and has</span>
+<a id="__codelineno-0-532" name="__codelineno-0-532"></a>            <span class="c1"># changed over time. Keep paginating until the reported total is</span>
+<a id="__codelineno-0-533" name="__codelineno-0-533"></a>            <span class="c1"># reached, or until the API returns an empty collection.</span>
+<a id="__codelineno-0-534" name="__codelineno-0-534"></a>            <span class="n">total</span> <span class="o">=</span> <span class="n">_to_int</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-535" name="__codelineno-0-535"></a>            <span class="k">if</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">cursor</span> <span class="o">&gt;=</span> <span class="n">total</span><span class="p">:</span>
+<a id="__codelineno-0-536" name="__codelineno-0-536"></a>                <span class="k">break</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3390,7 +3382,9 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>paperscraper/xrxiv/xrxiv_api.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-541">541</a></span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-539">539</a></span>
+<span class="normal"><a href="#__codelineno-0-540">540</a></span>
+<span class="normal"><a href="#__codelineno-0-541">541</a></span>
 <span class="normal"><a href="#__codelineno-0-542">542</a></span>
 <span class="normal"><a href="#__codelineno-0-543">543</a></span>
 <span class="normal"><a href="#__codelineno-0-544">544</a></span>
@@ -3405,26 +3399,24 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 <span class="normal"><a href="#__codelineno-0-553">553</a></span>
 <span class="normal"><a href="#__codelineno-0-554">554</a></span>
 <span class="normal"><a href="#__codelineno-0-555">555</a></span>
-<span class="normal"><a href="#__codelineno-0-556">556</a></span>
-<span class="normal"><a href="#__codelineno-0-557">557</a></span>
-<span class="normal"><a href="#__codelineno-0-558">558</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-541" name="__codelineno-0-541"></a><span class="k">class</span><span class="w"> </span><span class="nc">BioRxivApi</span><span class="p">(</span><span class="n">XRXivApi</span><span class="p">):</span>
-<a id="__codelineno-0-542" name="__codelineno-0-542"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;bioRxiv API.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-543" name="__codelineno-0-543"></a>
-<a id="__codelineno-0-544" name="__codelineno-0-544"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-<a id="__codelineno-0-545" name="__codelineno-0-545"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-546" name="__codelineno-0-546"></a>        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<a id="__codelineno-0-547" name="__codelineno-0-547"></a>        <span class="n">request_timeout</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span>
-<a id="__codelineno-0-548" name="__codelineno-0-548"></a>        <span class="n">retry_backoff_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-<a id="__codelineno-0-549" name="__codelineno-0-549"></a>        <span class="n">window_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">365</span><span class="p">,</span>
-<a id="__codelineno-0-550" name="__codelineno-0-550"></a>    <span class="p">):</span>
-<a id="__codelineno-0-551" name="__codelineno-0-551"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-<a id="__codelineno-0-552" name="__codelineno-0-552"></a>            <span class="n">server</span><span class="o">=</span><span class="s2">&quot;biorxiv&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-553" name="__codelineno-0-553"></a>            <span class="n">launch_date</span><span class="o">=</span><span class="n">launch_dates</span><span class="p">[</span><span class="s2">&quot;biorxiv&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-554" name="__codelineno-0-554"></a>            <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">,</span>
-<a id="__codelineno-0-555" name="__codelineno-0-555"></a>            <span class="n">request_timeout</span><span class="o">=</span><span class="n">request_timeout</span><span class="p">,</span>
-<a id="__codelineno-0-556" name="__codelineno-0-556"></a>            <span class="n">retry_backoff_seconds</span><span class="o">=</span><span class="n">retry_backoff_seconds</span><span class="p">,</span>
-<a id="__codelineno-0-557" name="__codelineno-0-557"></a>            <span class="n">window_days</span><span class="o">=</span><span class="n">window_days</span><span class="p">,</span>
-<a id="__codelineno-0-558" name="__codelineno-0-558"></a>        <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-556">556</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-539" name="__codelineno-0-539"></a><span class="k">class</span><span class="w"> </span><span class="nc">BioRxivApi</span><span class="p">(</span><span class="n">XRXivApi</span><span class="p">):</span>
+<a id="__codelineno-0-540" name="__codelineno-0-540"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;bioRxiv API.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-541" name="__codelineno-0-541"></a>
+<a id="__codelineno-0-542" name="__codelineno-0-542"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<a id="__codelineno-0-543" name="__codelineno-0-543"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-544" name="__codelineno-0-544"></a>        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<a id="__codelineno-0-545" name="__codelineno-0-545"></a>        <span class="n">request_timeout</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span>
+<a id="__codelineno-0-546" name="__codelineno-0-546"></a>        <span class="n">retry_backoff_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-0-547" name="__codelineno-0-547"></a>        <span class="n">window_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+<a id="__codelineno-0-548" name="__codelineno-0-548"></a>    <span class="p">):</span>
+<a id="__codelineno-0-549" name="__codelineno-0-549"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+<a id="__codelineno-0-550" name="__codelineno-0-550"></a>            <span class="n">server</span><span class="o">=</span><span class="s2">&quot;biorxiv&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-551" name="__codelineno-0-551"></a>            <span class="n">launch_date</span><span class="o">=</span><span class="n">launch_dates</span><span class="p">[</span><span class="s2">&quot;biorxiv&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-552" name="__codelineno-0-552"></a>            <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">,</span>
+<a id="__codelineno-0-553" name="__codelineno-0-553"></a>            <span class="n">request_timeout</span><span class="o">=</span><span class="n">request_timeout</span><span class="p">,</span>
+<a id="__codelineno-0-554" name="__codelineno-0-554"></a>            <span class="n">retry_backoff_seconds</span><span class="o">=</span><span class="n">retry_backoff_seconds</span><span class="p">,</span>
+<a id="__codelineno-0-555" name="__codelineno-0-555"></a>            <span class="n">window_days</span><span class="o">=</span><span class="n">window_days</span><span class="p">,</span>
+<a id="__codelineno-0-556" name="__codelineno-0-556"></a>        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3477,7 +3469,9 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>paperscraper/xrxiv/xrxiv_api.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-561">561</a></span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-559">559</a></span>
+<span class="normal"><a href="#__codelineno-0-560">560</a></span>
+<span class="normal"><a href="#__codelineno-0-561">561</a></span>
 <span class="normal"><a href="#__codelineno-0-562">562</a></span>
 <span class="normal"><a href="#__codelineno-0-563">563</a></span>
 <span class="normal"><a href="#__codelineno-0-564">564</a></span>
@@ -3492,26 +3486,24 @@ cursor offsets small and reduce deep-pagination slowdowns.</p>
 <span class="normal"><a href="#__codelineno-0-573">573</a></span>
 <span class="normal"><a href="#__codelineno-0-574">574</a></span>
 <span class="normal"><a href="#__codelineno-0-575">575</a></span>
-<span class="normal"><a href="#__codelineno-0-576">576</a></span>
-<span class="normal"><a href="#__codelineno-0-577">577</a></span>
-<span class="normal"><a href="#__codelineno-0-578">578</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-561" name="__codelineno-0-561"></a><span class="k">class</span><span class="w"> </span><span class="nc">MedRxivApi</span><span class="p">(</span><span class="n">XRXivApi</span><span class="p">):</span>
-<a id="__codelineno-0-562" name="__codelineno-0-562"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;medRxiv API.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-563" name="__codelineno-0-563"></a>
-<a id="__codelineno-0-564" name="__codelineno-0-564"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-<a id="__codelineno-0-565" name="__codelineno-0-565"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-566" name="__codelineno-0-566"></a>        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<a id="__codelineno-0-567" name="__codelineno-0-567"></a>        <span class="n">request_timeout</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span>
-<a id="__codelineno-0-568" name="__codelineno-0-568"></a>        <span class="n">retry_backoff_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-<a id="__codelineno-0-569" name="__codelineno-0-569"></a>        <span class="n">window_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">365</span><span class="p">,</span>
-<a id="__codelineno-0-570" name="__codelineno-0-570"></a>    <span class="p">):</span>
-<a id="__codelineno-0-571" name="__codelineno-0-571"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-<a id="__codelineno-0-572" name="__codelineno-0-572"></a>            <span class="n">server</span><span class="o">=</span><span class="s2">&quot;medrxiv&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-573" name="__codelineno-0-573"></a>            <span class="n">launch_date</span><span class="o">=</span><span class="n">launch_dates</span><span class="p">[</span><span class="s2">&quot;medrxiv&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-574" name="__codelineno-0-574"></a>            <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">,</span>
-<a id="__codelineno-0-575" name="__codelineno-0-575"></a>            <span class="n">request_timeout</span><span class="o">=</span><span class="n">request_timeout</span><span class="p">,</span>
-<a id="__codelineno-0-576" name="__codelineno-0-576"></a>            <span class="n">retry_backoff_seconds</span><span class="o">=</span><span class="n">retry_backoff_seconds</span><span class="p">,</span>
-<a id="__codelineno-0-577" name="__codelineno-0-577"></a>            <span class="n">window_days</span><span class="o">=</span><span class="n">window_days</span><span class="p">,</span>
-<a id="__codelineno-0-578" name="__codelineno-0-578"></a>        <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-576">576</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-559" name="__codelineno-0-559"></a><span class="k">class</span><span class="w"> </span><span class="nc">MedRxivApi</span><span class="p">(</span><span class="n">XRXivApi</span><span class="p">):</span>
+<a id="__codelineno-0-560" name="__codelineno-0-560"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;medRxiv API.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-561" name="__codelineno-0-561"></a>
+<a id="__codelineno-0-562" name="__codelineno-0-562"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<a id="__codelineno-0-563" name="__codelineno-0-563"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-564" name="__codelineno-0-564"></a>        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<a id="__codelineno-0-565" name="__codelineno-0-565"></a>        <span class="n">request_timeout</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span>
+<a id="__codelineno-0-566" name="__codelineno-0-566"></a>        <span class="n">retry_backoff_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-0-567" name="__codelineno-0-567"></a>        <span class="n">window_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+<a id="__codelineno-0-568" name="__codelineno-0-568"></a>    <span class="p">):</span>
+<a id="__codelineno-0-569" name="__codelineno-0-569"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+<a id="__codelineno-0-570" name="__codelineno-0-570"></a>            <span class="n">server</span><span class="o">=</span><span class="s2">&quot;medrxiv&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-571" name="__codelineno-0-571"></a>            <span class="n">launch_date</span><span class="o">=</span><span class="n">launch_dates</span><span class="p">[</span><span class="s2">&quot;medrxiv&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-572" name="__codelineno-0-572"></a>            <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">,</span>
+<a id="__codelineno-0-573" name="__codelineno-0-573"></a>            <span class="n">request_timeout</span><span class="o">=</span><span class="n">request_timeout</span><span class="p">,</span>
+<a id="__codelineno-0-574" name="__codelineno-0-574"></a>            <span class="n">retry_backoff_seconds</span><span class="o">=</span><span class="n">retry_backoff_seconds</span><span class="p">,</span>
+<a id="__codelineno-0-575" name="__codelineno-0-575"></a>            <span class="n">window_days</span><span class="o">=</span><span class="n">window_days</span><span class="p">,</span>
+<a id="__codelineno-0-576" name="__codelineno-0-576"></a>        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
