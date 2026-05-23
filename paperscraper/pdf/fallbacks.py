@@ -26,6 +26,10 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class NCBIRateLimitError(RuntimeError):
+    """Raised when NCBI returns a rate-limit response."""
+
+
 def fallback_wiley_api(
     paper_metadata: Dict[str, Any],
     output_path: Path,
@@ -93,7 +97,12 @@ def fallback_wiley_api(
     return success
 
 
-def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
+def fallback_bioc_pmc(
+    doi: str,
+    output_path: Path,
+    max_attempts: int = 3,
+    retry_sleep: int = 10,
+) -> bool:
     """
     Attempt to download the XML via the BioC-PMC fallback.
 
@@ -107,6 +116,8 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
     Args:
         doi (str): The DOI of the paper to retrieve.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
+        max_attempts (int): Maximum number of attempts for rate-limited API calls.
+        retry_sleep (int): Base sleep duration between retry attempts.
 
     Returns:
         bool: True if the XML file was successfully downloaded, False otherwise.
@@ -122,42 +133,75 @@ def fallback_bioc_pmc(doi: str, output_path: Path) -> bool:
         "idtype": "doi",
         "format": "json",
     }
-    try:
-        conv_response = requests.get(converter_url, params=params, timeout=60)
-        conv_response.raise_for_status()
-        data = conv_response.json()
-        records = data.get("records", [])
-        if not records or "pmcid" not in records[0]:
-            logger.warning(
-                f"No PMCID available for DOI {doi}. Fallback via PMC therefore not possible."
+    for attempt in range(1, max_attempts + 1):
+        try:
+            conv_response = requests.get(converter_url, params=params, timeout=60)
+            if conv_response.status_code == 429:
+                raise NCBIRateLimitError(
+                    f"NCBI rate-limited DOI to PMCID conversion for {doi}"
+                )
+            conv_response.raise_for_status()
+            data = conv_response.json()
+            records = data.get("records", [])
+            if not records or "pmcid" not in records[0]:
+                logger.warning(
+                    f"No PMCID available for DOI {doi}. Fallback via PMC therefore not possible."
+                )
+                return False
+            pmcid = records[0]["pmcid"]
+            logger.info(f"Converted DOI {doi} to PMCID {pmcid}.")
+            break
+        except NCBIRateLimitError as conv_err:
+            if attempt == max_attempts:
+                logger.error(f"Error during DOI to PMCID conversion: {conv_err}")
+                return False
+            logger.info(
+                f"NCBI rate limit hit during DOI to PMCID conversion "
+                f"(attempt {attempt}/{max_attempts}); retrying"
             )
+            time.sleep(retry_sleep * attempt)
+        except Exception as conv_err:
+            logger.error(f"Error during DOI to PMCID conversion: {conv_err}")
             return False
-        pmcid = records[0]["pmcid"]
-        logger.info(f"Converted DOI {doi} to PMCID {pmcid}.")
-    except Exception as conv_err:
-        logger.error(f"Error during DOI to PMCID conversion: {conv_err}")
-        return False
 
     # Construct PMC XML URL
     xml_url = f"https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi/BioC_xml/{pmcid}/unicode"
     logger.info(f"Attempting to download XML from BioC-PMC URL: {xml_url}")
-    try:
-        xml_response = requests.get(xml_url, timeout=60)
-        xml_response.raise_for_status()
-        xml_path = output_path.with_suffix(".xml")
-        # check for xml error:
-        if xml_response.content.startswith(
-            b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"
-        ):
-            logger.warning(f"No XML found for DOI {doi} at BioC-PMC URL {xml_url}.")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            xml_response = requests.get(xml_url, timeout=60)
+            if xml_response.status_code == 429:
+                raise NCBIRateLimitError(
+                    f"NCBI rate-limited BioC-PMC XML download for {doi}"
+                )
+            xml_response.raise_for_status()
+            xml_path = output_path.with_suffix(".xml")
+            # check for xml error:
+            if xml_response.content.startswith(
+                b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"
+            ):
+                logger.warning(f"No XML found for DOI {doi} at BioC-PMC URL {xml_url}.")
+                return False
+            with open(xml_path, "wb+") as f:
+                f.write(xml_response.content)
+            logger.info(f"Successfully downloaded XML for DOI {doi} to {xml_path}.")
+            return True
+        except NCBIRateLimitError as xml_err:
+            if attempt == max_attempts:
+                logger.error(
+                    f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}"
+                )
+                return False
+            logger.info(
+                f"NCBI rate limit hit during BioC-PMC XML download "
+                f"(attempt {attempt}/{max_attempts}); retrying"
+            )
+            time.sleep(retry_sleep * attempt)
+        except Exception as xml_err:
+            logger.error(
+                f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}"
+            )
             return False
-        with open(xml_path, "wb+") as f:
-            f.write(xml_response.content)
-        logger.info(f"Successfully downloaded XML for DOI {doi} to {xml_path}.")
-        return True
-    except Exception as xml_err:
-        logger.error(f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}")
-        return False
 
 
 def fallback_elsevier_api(

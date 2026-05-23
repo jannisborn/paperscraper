@@ -3,11 +3,12 @@
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Literal, Optional
 
 from tqdm import tqdm
 
 from ..arxiv import get_arxiv_papers_api
+from ..arxiv.kaggle import arxiv_kaggle
 from ..utils import get_server_dumps_dir
 
 today = datetime.today().strftime("%Y-%m-%d")
@@ -19,6 +20,10 @@ def arxiv(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     save_path: str = save_path,
+    backend: Literal["api", "kaggle"] = "kaggle",
+    page_size: int = 2000,
+    delay_seconds: float = 3.0,
+    num_retries: int = 3,
 ):
     """
     Fetches papers from arXiv based on time range, i.e., start_date and end_date.
@@ -29,7 +34,17 @@ def arxiv(
         start_date (str, optional): Start date in format YYYY-MM-DD. Defaults to None.
         end_date (str, optional): End date in format YYYY-MM-DD. Defaults to None.
         save_path (str, optional): Path to save the JSONL dump. Defaults to save_path.
+        backend: Metadata source. If `api`, use the arxiv package/API. If `kaggle`,
+            use the Kaggle arXiv metadata snapshot. Defaults to `kaggle`.
+        page_size (int, optional): Number of records requested per API page.
+            arXiv allows at most 2000. Defaults to 2000.
+        delay_seconds (float, optional): Delay between API requests. arXiv asks for
+            at least 3 seconds. Defaults to 3.0.
+        num_retries (int, optional): Number of retries per API page. Defaults to 3.
     """
+    if backend not in {"api", "kaggle"}:
+        raise ValueError("backend must be one of ['api', 'kaggle']")
+
     # Set default dates
     EARLIEST_START = "1991-01-01"
     if start_date is None:
@@ -44,6 +59,13 @@ def arxiv(
     if start_date > end_date:
         raise ValueError(
             f"start_date {start_date} cannot be later than end_date {end_date}"
+        )
+
+    if backend == "kaggle":
+        return arxiv_kaggle(
+            start_date=start_date,
+            end_date=end_date,
+            save_path=save_path,
         )
 
     # Open file for writing results
@@ -63,6 +85,11 @@ def arxiv(
                 papers = get_arxiv_papers_api(
                     query=query,
                     fields=["title", "authors", "date", "abstract", "journal", "doi"],
+                    client_options={
+                        "page_size": page_size,
+                        "delay_seconds": delay_seconds,
+                        "num_retries": num_retries,
+                    },
                     verbose=False,
                 )
                 if not papers.empty:
