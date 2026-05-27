@@ -23,6 +23,32 @@ query = [ai, qc, chemistry]
 get_and_dump_pubmed_papers(query, output_filepath="ai_quantum_chemistry.jsonl")
 ```
 
+Use `get_pubmed_papers` when you want a DataFrame in memory instead of a JSONL
+file. PubMed can also return author emails when `"emails"` is included in
+`fields`.
+
+```py
+from paperscraper.pubmed import get_pubmed_papers
+
+papers = get_pubmed_papers(
+    "(machine learning) AND (zoology)",
+    fields=["title", "doi", "emails"],
+    max_results=50,
+)
+```
+
+Date bounds and custom fields are available on the dump helper:
+
+```py
+get_and_dump_pubmed_papers(
+    query,
+    output_filepath="pubmed_ai_quantum_chemistry_2024.jsonl",
+    fields=["title", "authors", "date", "doi", "emails"],
+    start_date="2024/01/01",
+    end_date="2024/12/31",
+)
+```
+
 ## arXiv
 
 ```py
@@ -31,20 +57,32 @@ from paperscraper.arxiv import get_and_dump_arxiv_papers
 get_and_dump_arxiv_papers(query, output_filepath="ai_quantum_chemistry.jsonl")
 ```
 
-## bioRxiv, medRxiv, and chemRxiv
-
-Download local xRxiv dumps once:
+Use date bounds and `backend="infer"` when you want `paperscraper` to use a local
+arXiv dump if one exists, otherwise fall back to the API:
 
 ```py
-from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
-
-chemrxiv()
-medrxiv()
-biorxiv()
+get_and_dump_arxiv_papers(
+    query,
+    output_filepath="arxiv_ai_quantum_chemistry_2024.jsonl",
+    start_date="2024-01-01",
+    end_date="2024-12-31",
+    backend="infer",
+)
 ```
 
-Restart Python after downloading dumps so `paperscraper.load_dumps` can discover
-the new files.
+Use `get_arxiv_papers_api` when you want arXiv API results as a DataFrame:
+
+```py
+from paperscraper.arxiv import get_arxiv_papers_api
+
+papers = get_arxiv_papers_api('all:"quantum machine learning"', max_results=25)
+```
+
+## bioRxiv, medRxiv, and chemRxiv
+
+Download local xRxiv dumps once using the
+[setup instructions](../README.md#download-xrxiv-dumps), then restart Python so
+`paperscraper.load_dumps` can discover the new files.
 
 For local xRxiv dumps, use `XRXivQuery` directly:
 
@@ -90,6 +128,14 @@ from paperscraper.scholar import get_and_dump_scholar_papers
 get_and_dump_scholar_papers("Machine Learning")
 ```
 
+Use `get_scholar_papers` when you want the search results as a DataFrame:
+
+```py
+from paperscraper.scholar import get_scholar_papers
+
+papers = get_scholar_papers("GT4SD")
+```
+
 Google Scholar does not use the nested Boolean query syntax. It follows the
 search behavior of the Google Scholar search box and may prompt captchas during
 large automated runs.
@@ -102,8 +148,9 @@ and overlaps.
 ### Bar Plots
 
 Use `aggregate_paper` to bin matched papers by year, then pass the aggregated
-counts to `plot_comparison`. This compact workflow loops over every available
-backend via `QUERY_FN_DICT`.
+counts to `plot_comparison`. `aggregate_paper` can also remove false positives
+with `unwanted_keys` or restrict filtering to titles with `filter_abstract=False`.
+This compact workflow loops over every available backend via `QUERY_FN_DICT`.
 
 ```py
 import os
@@ -157,6 +204,20 @@ plot_comparison(
     title_text="'Artificial intelligence' AND 'Quantum computing' AND X",
     keyword_text=["Chemistry", "Physics", "Biology", "Medicine"],
     figpath="assets/ai_quantum_fields.png",
+)
+```
+
+For one query at a time, use `plot_single`:
+
+```py
+from paperscraper.plotting import plot_single
+
+plot_single(
+    data_dict,
+    [data_keys[0]],
+    x_ticks=[str(year) for year in range(2019, 2027)],
+    title_text="'Artificial intelligence' AND 'Quantum computing' AND Chemistry",
+    figpath="assets/ai_quantum_chemistry_single.png",
 )
 ```
 

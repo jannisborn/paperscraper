@@ -30,6 +30,9 @@ throughput can be increased with `SS_API_KEY`:
 export SS_API_KEY=YOUR_API_KEY
 ```
 
+For larger author-level runs, `SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and
+`SS_RATE_LIMIT_DELAY` can be tuned through environment variables.
+
 ## Researcher Metrics
 
 Semantic Scholar author pages expose `paperCount`, `citationCount`, and `hIndex`.
@@ -71,6 +74,18 @@ Or resolve through ORCID first:
 >>> name = orcid_to_author_name("0000-0001-8307-5670")
 >>> author_name_to_ssaid(name)
 ("2062641025", "Jannis Born")
+```
+
+If you need the actual Semantic Scholar paper IDs for an author, use
+`get_papers_for_author`:
+
+```pycon
+>>> from paperscraper.citations.utils import get_papers_for_author
+>>> paper_ids = get_papers_for_author("2062641025")
+>>> len(paper_ids)
+63  # Number of papers linked to this Semantic Scholar author record.
+>>> paper_ids[0]
+'6c245545fcb88df49cf921ba0871b40818665b92'
 ```
 
 Citation and paper counts can change as Semantic Scholar updates author records.

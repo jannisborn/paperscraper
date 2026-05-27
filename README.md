@@ -85,10 +85,17 @@ biorxiv(
 ```
 
 `paperscraper` also allows scraping {med/bio/chem}rxiv for specific dates.
+
 ```py
 medrxiv(start_date="2023-04-01", end_date="2023-04-08")
 ```
-But watch out. The resulting `.jsonl` file will be labelled according to the current date and all your subsequent searches will be based on this file **only**. If you use this option you might want to keep an eye on the source files (`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata for all papers you're interested in.
+
+But watch out. The resulting `.jsonl` file will be labelled according to the
+current date and all your subsequent searches will be based on this file **only**.
+If you use this option you might want to keep an eye on the source files
+(`paperscraper/server_dumps/*jsonl`) to ensure they contain the paper metadata
+for all papers you're interested in.
+Use `paperscraper.utils.get_server_dumps_dir()` to inspect the active dump directory.
 
 #### arXiv local dump
 Local search can be faster than using the [arXiv API](https://info.arxiv.org/help/api/index.html),
@@ -155,18 +162,13 @@ This writes matching [PubMed](https://pubmed.ncbi.nlm.nih.gov/) records to
 `ai_quantum_chemistry.jsonl`.
 
 For local [bioRxiv](https://www.biorxiv.org/), [medRxiv](https://www.medrxiv.org/), or
-[chemRxiv](https://chemrxiv.org/) search, download the dumps once and use
-`dump_queries` to query all available backends:
+[chemRxiv](https://chemrxiv.org/) search, download the dumps once as described in
+[Download xRxiv Dumps](#download-xrxiv-dumps), restart Python, then use `dump_queries`
+to query all available backends:
 
 ```py
 from paperscraper import dump_queries
-from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
 
-biorxiv()
-medrxiv()
-chemrxiv()
-
-# Restart Python after downloading dumps, then rerun or import your query lists.
 dump_queries([[ai, qc, chemistry]], ".")
 ```
 

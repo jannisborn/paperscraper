@@ -15,6 +15,9 @@ Download a single paper by DOI:
 True
 ```
 
+`filepath` can be provided with or without `.pdf`. XML fallbacks write an `.xml`
+file next to the requested path when XML full text is the available format.
+
 Pass `save_metadata=True` to store paper metadata next to the downloaded file:
 
 ```pycon
@@ -69,6 +72,19 @@ save_pdf_from_dump(
     pdf_path="papers",
     key_to_save="doi",
     api_keys="api_keys.txt",
+)
+```
+
+Or load the keys once and reuse them across calls:
+
+```py
+from paperscraper.pdf import load_api_keys, save_pdf
+
+api_keys = load_api_keys("api_keys.txt")
+save_pdf(
+    {"doi": "10.1101/786871"},
+    filepath="taskload.pdf",
+    api_keys=api_keys,
 )
 ```
 

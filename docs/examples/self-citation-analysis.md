@@ -85,7 +85,8 @@ longer for large publication lists, so this example limits the run to one paper.
 ## Unified Paper Interface
 
 Use `SelfLinkClient` when you want self-citations and self-references through one
-paper-level object:
+paper-level object. Paper inputs can be DOIs, Semantic Scholar paper IDs, or
+titles; use `mode` when you want to disambiguate.
 
 ```pycon
 >>> from paperscraper.citations import SelfLinkClient
@@ -99,3 +100,7 @@ paper-level object:
 >>> result.reference_score
 5.05  # Mean self-reference percentage across paper authors.
 ```
+
+`SelfLinkClient(..., mode="author")` is also available for author-level runs.
+Use `Researcher` directly when you want to limit the paper list before running,
+as shown in the author-level example above.
