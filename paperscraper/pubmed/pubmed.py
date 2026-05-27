@@ -35,8 +35,8 @@ def get_pubmed_papers(
     query: str,
     fields: List = ["title", "authors", "date", "abstract", "journal", "doi"],
     max_results: int = 9998,
-    *args,
-    **kwargs,
+    *args: object,
+    **kwargs: object,
 ) -> pd.DataFrame:
     """
     Performs PubMed API request of a query and returns list of papers with

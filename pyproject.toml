@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "paperscraper: Package to scrape papers."
 readme = "README.md"
 requires-python = ">=3.9,<3.14"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
   {name = "Jannis Born", email = "jannis.born@gmx.de"},
   {name = "Matteo Manica", email = "drugilsberg@gmail.com"},
@@ -26,10 +26,9 @@ keywords = [
   "Google Scholar",
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -68,6 +67,7 @@ Repository = "https://github.com/jannisborn/paperscraper"
 
 [tool.setuptools]
 zip-safe = false
+include-package-data = false
 
 [tool.setuptools.dynamic]
 version = {attr = "paperscraper.__version__"}
@@ -75,9 +75,6 @@ version = {attr = "paperscraper.__version__"}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["paperscraper*"]
-
-[tool.setuptools.package-data]
-"paperscraper.server_dumps" = ["*"]
 
 [dependency-groups]
 dev = [

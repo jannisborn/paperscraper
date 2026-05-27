@@ -3,8 +3,8 @@ import os
 from paperscraper.get_dumps import medrxiv
 from paperscraper.xrxiv.xrxiv_query import XRXivQuery
 
-covid19 = ["COVID-19", "SARS-CoV-2"]
 ai = ["Artificial intelligence", "Deep learning", "Machine learning"]
+qc = ["Quantum computing", "Quantum information", "Quantum algorithm"]
 mi = ["Medical imaging"]
 
 
@@ -18,6 +18,6 @@ class TestXRXiv:
 
     def test_xriv_querier(self):
         querier = XRXivQuery("medriv_tmp_dump.jsonl")
-        query = [covid19, ai, mi]
-        querier.search_keywords(query, output_filepath="covid19_ai_imaging.jsonl")
-        assert os.path.exists("covid19_ai_imaging.jsonl")
+        query = [ai, qc, mi]
+        querier.search_keywords(query, output_filepath="ai_quantum_imaging.jsonl")
+        assert os.path.exists("ai_quantum_imaging.jsonl")

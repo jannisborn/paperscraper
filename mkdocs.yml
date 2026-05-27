@@ -16,6 +16,7 @@ theme:
   favicon: favicon.png
   features:
     - content.code.annotate
+    - content.code.copy
     # - content.tabs.link
     - content.tooltips
     # - header.autohide
@@ -60,6 +61,11 @@ nav:
       - paperscraper.pubmed: api/pubmed.md
       - paperscraper.scholar: api/scholar.md
       - paperscraper.xrxiv: api/xrxiv.md
+  - Examples:
+    - Paper Keyword Analysis: examples/paper-keyword-analysis.md
+    - PDF Retrieval: examples/pdf-retrieval.md
+    - Self-Citation Analysis: examples/self-citation-analysis.md
+    - Scholar Metrics Analysis: examples/scholar-metrics-analysis.md
 
 # Copyright
 copyright: MIT License

@@ -21,7 +21,6 @@ from paperscraper.utils import get_server_dumps_dir, load_jsonl
 
 logging.disable(logging.INFO)
 
-covid19 = ["COVID-19", "SARS-CoV-2"]
 ai = ["Artificial intelligence", "Deep learning", "Machine learning"]
 mi = ["Medical imaging"]
 
@@ -226,7 +225,7 @@ class TestDumper:
         self.run_with_arxiv_retries(
             lambda: get_and_dump_arxiv_papers(
                 ["MPEGO"],
-                output_filepath="covid19_ai_imaging.jsonl",
+                output_filepath="mpego_ai_imaging.jsonl",
                 backend="api",
                 max_results=5,
                 client_options={
@@ -238,7 +237,7 @@ class TestDumper:
             retries=5,
             sleep_seconds=10,
         )
-        assert os.path.exists("covid19_ai_imaging.jsonl")
+        assert os.path.exists("mpego_ai_imaging.jsonl")
 
     def test_get_arxiv_date(self):
         def run_once():
