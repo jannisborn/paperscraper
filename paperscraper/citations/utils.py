@@ -102,6 +102,7 @@ def _semantic_scholar_requests_get_with_backoff(
     factor: float = 1.3,
     max_delay: float = 60.0,
     jitter_ratio: float = 0.1,
+    raise_for_status: bool = True,
     **kwargs,
 ) -> requests.Response:
     """
@@ -132,7 +133,8 @@ def _semantic_scholar_requests_get_with_backoff(
                 or 500 <= resp.status_code <= 599
             )
             if not retryable:
-                resp.raise_for_status()
+                if raise_for_status:
+                    resp.raise_for_status()
                 return resp
 
             sleep_for = min(delay, max_delay)
