@@ -1,11 +1,10 @@
 import logging
 import sys
-from time import sleep
 
 from scholarly import scholarly
 from semanticscholar import SemanticScholarException
 
-from .utils import PAPER_URL, semantic_scholar_requests_get
+from .utils import PAPER_URL, _semantic_scholar_requests_get_with_backoff
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,10 +22,11 @@ def get_citations_by_doi(doi: str) -> int:
     """
 
     try:
-        response = semantic_scholar_requests_get(
+        response = _semantic_scholar_requests_get_with_backoff(
             f"{PAPER_URL}DOI:{doi}",
             params={"fields": "citationCount"},
-            timeout=20,
+            max_retries=14,
+            raise_for_status=False,
         )
         if response.status_code == 404:
             logger.warning(f"Could not find paper {doi}, assuming 0 citation.")
@@ -36,16 +36,6 @@ def get_citations_by_doi(doi: str) -> int:
     except SemanticScholarException.ObjectNotFoundException:
         logger.warning(f"Could not find paper {doi}, assuming 0 citation.")
         return 0
-    except ConnectionRefusedError as e:
-        logger.warning(f"Waiting for 10 sec since {doi} gave: {e}")
-        sleep(10)
-        response = semantic_scholar_requests_get(
-            f"{PAPER_URL}DOI:{doi}",
-            params={"fields": "citationCount"},
-            timeout=20,
-        )
-        response.raise_for_status()
-        return response.json()["citationCount"]
 
 
 def get_citations_from_title(title: str) -> int:

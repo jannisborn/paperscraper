@@ -137,8 +137,8 @@ def get_and_dump_arxiv_papers(
     start_date: str = "None",
     end_date: str = "None",
     backend: Literal["api", "local", "infer"] = "api",
-    *args,
-    **kwargs,
+    *args: object,
+    **kwargs: object,
 ):
     """
     Combines get_arxiv_papers and dump_papers.
@@ -159,7 +159,8 @@ def get_and_dump_arxiv_papers(
             is queried (has to be downloaded before). If `infer` the local dump will
             be used if exists, otherwise API will be queried. Defaults to `api`
             since it is faster.
-        *args, **kwargs are additional arguments for `get_arxiv_papers`.
+        *args: Additional positional arguments for `get_arxiv_papers`.
+        **kwargs: Additional keyword arguments for `get_arxiv_papers`.
     """
     # Translate keywords into query.
     query = get_query_from_keywords(keywords, start_date=start_date, end_date=end_date)

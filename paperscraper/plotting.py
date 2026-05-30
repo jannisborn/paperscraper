@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,7 +15,16 @@ mpl_logger.setLevel(logging.WARNING)
 def plot_comparison(
     data_dict: dict,
     keys: List[str],
-    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
+    x_ticks: List[str] = [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+    ],
     show_preprint: bool = False,
     title_text: str = "",
     keyword_text: Optional[List[str]] = None,
@@ -27,20 +36,21 @@ def plot_comparison(
         data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
-                'covid_19.jsonl': {
-                    'pubmed': [0, 0, 0, 12345],
-                    'arxiv': [0, 0, 0, 1234],
+                'artificialintelligence_quantumcomputing_chemistry.jsonl': {
+                    'pubmed': [0, 0, 1, 3, 7, 15, 31, 42],
+                    'arxiv': [2, 5, 12, 24, 40, 63, 91, 120],
                     ...
                 }
-                'coronavirus.jsonl':
-                    'pubmed': [234, 345, 456, 12345],
-                    'arxiv': [123, 234, 345, 1234],
+                'artificialintelligence_quantumcomputing_physics.jsonl': {
+                    'pubmed': [1, 1, 2, 4, 9, 16, 27, 38],
+                    'arxiv': [12, 25, 44, 72, 110, 155, 210, 260],
                     ...
                 }
             }
         keys: List of keys which should be plotted. This has to be a subset of data_dict.keys().
         x_ticks: List of strings to be used for the x-ticks. Should have same length as
-            data_dict[key][database]. Defaults to ['2015', '2016', '2017', '2018', '2019', '2020'],
+            each data series. Defaults to ['2019', '2020', '2021', '2022', '2023',
+            '2024', '2025', '2026'],
             meaning that papers are aggregated per year.
         show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
@@ -180,7 +190,16 @@ def plot_comparison(
 def plot_single(
     data_dict: dict,
     keys: str,
-    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
+    x_ticks: List[str] = [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+    ],
     show_preprint: bool = False,
     title_text: str = "",
     figpath: str = "comparison_plot.pdf",
@@ -192,22 +211,22 @@ def plot_single(
         data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
-                'covid_19.jsonl': {
-                    'pubmed': [0, 0, 0, 12345],
-                    'arxiv': [0, 0, 0, 1234],
+                'artificialintelligence_quantumcomputing_chemistry.jsonl': {
+                    'pubmed': [0, 0, 1, 3, 7, 15, 31, 42],
+                    'arxiv': [2, 5, 12, 24, 40, 63, 91, 120],
                     ...
                 }
-                'coronavirus.jsonl':
-                    'pubmed': [234, 345, 456, 12345],
-                    'arxiv': [123, 234, 345, 1234],
+                'artificialintelligence_quantumcomputing_physics.jsonl': {
+                    'pubmed': [1, 1, 2, 4, 9, 16, 27, 38],
+                    'arxiv': [12, 25, 44, 72, 110, 155, 210, 260],
                     ...
                 }
             }
         keys: A key which should be plotted. This has to be a subset of data_dict.keys().
         x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
-            same length as data_dict[key][database]. Defaults to ['2015', '2016',
-            '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
-            year.
+            the same length as each data series. Defaults to ['2019', '2020',
+            '2021', '2022', '2023', '2024', '2025', '2026'], meaning that papers
+            are aggregated per year.
         show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
         title_text: Title for the produced figure. Defaults to ''.
@@ -348,7 +367,7 @@ def plot_venn_two(
     labels: List[str],
     figpath: str = "venn_two.pdf",
     title: str = "",
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Plot a single Venn Diagram with two terms.
 
@@ -379,7 +398,11 @@ def plot_venn_two(
 
 
 def plot_venn_three(
-    sizes: List[int], labels: List[str], figpath: str = "", title: str = "", **kwargs
+    sizes: List[int],
+    labels: List[str],
+    figpath: str = "",
+    title: str = "",
+    **kwargs: Any,
 ) -> None:
     """Plot a single Venn Diagram with three terms.
 
@@ -418,7 +441,7 @@ def plot_multiple_venn(
     suptitle: str = "",
     gridspec_kw: dict = {},
     figsize: Iterable = (8, 4.5),
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Plots multiple Venn Diagrams next to each other
 
