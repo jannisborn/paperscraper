@@ -17,6 +17,9 @@ It provides a streamlined interface to scrape metadata, retrieve citation counts
 from [Google Scholar](https://scholar.google.com/), query journal impact factors,
 and run simple postprocessing and plotting routines for meta-analysis.
 
+<p align="center">
+  <img src="assets/preprints_per_year.png" alt="Preprints per year" width="340">
+</p>
 
 ## Table of Contents
 
@@ -26,8 +29,8 @@ and run simple postprocessing and plotting routines for meta-analysis.
 2. [Examples](#examples)
    - [Paper Keyword Analysis](#paper-keyword-analysis)
    - [PDF Retrieval](#pdf-retrieval)
-   - [Self-Citation Analysis](#self-citation-analysis)
    - [Scholar Metrics Analysis](#scholar-metrics-analysis)
+   - [Self-Citation Analysis](#self-citation-analysis)
 3. [Citation](#citation)
 4. [Contributors](#contributors)
 
@@ -63,7 +66,7 @@ uv run python -c "import paperscraper"
 However, to scrape publication data from the preprint servers [bioRxiv](https://www.biorxiv.org),
 [medRxiv](https://www.medrxiv.org/) and [chemRxiv](https://chemrxiv.org/), the setup is
 different. The entire history of papers is downloaded and stored in the `server_dumps`
-folder in JSONL format (one paper per line). This takes a while, as of November 2025:
+folder in JSONL format (one paper per line).
 
 ```py
 from paperscraper.get_dumps import biorxiv, medrxiv, chemrxiv
@@ -140,8 +143,8 @@ The README keeps examples short. The
 
 - [Paper Keyword Analysis](https://jannisborn.github.io/paperscraper/examples/paper-keyword-analysis/)
 - [PDF Retrieval](https://jannisborn.github.io/paperscraper/examples/pdf-retrieval/)
-- [Self-Citation Analysis](https://jannisborn.github.io/paperscraper/examples/self-citation-analysis/)
 - [Scholar Metrics Analysis](https://jannisborn.github.io/paperscraper/examples/scholar-metrics-analysis/)
+- [Self-Citation Analysis](https://jannisborn.github.io/paperscraper/examples/self-citation-analysis/)
 
 ### Paper keyword analysis
 
@@ -191,24 +194,6 @@ Output: `True` when the file was saved.
 See the [PDF retrieval example](https://jannisborn.github.io/paperscraper/examples/pdf-retrieval/)
 for batch downloads, fallbacks, publisher API keys, and downstream PDF analysis.
 
-### Self-citation analysis
-
-Estimate paper-level self-citations and self-references:
-
-```py
-from paperscraper.citations import self_citations_paper, self_references_paper
-
-doi = "10.1038/s41586-023-06600-9"
-self_citations_paper(doi).citation_score
-self_references_paper(doi).reference_score
-```
-
-Output: `3.192` and `5.05`, the mean self-citation and self-reference percentages
-across paper authors.
-
-See the [self-citation analysis example](https://jannisborn.github.io/paperscraper/examples/self-citation-analysis/)
-for paper- and author-level workflows using [Semantic Scholar](https://www.semanticscholar.org/).
-
 ### Scholar metrics analysis
 
 Get paper citation counts and journal metrics:
@@ -245,8 +230,38 @@ See the [scholar metrics analysis example](https://jannisborn.github.io/paperscr
 for [Google Scholar](https://scholar.google.com/), [Semantic Scholar](https://www.semanticscholar.org/),
 researcher metrics, and journal impact factors.
 
+### Self-citation analysis
+
+Estimate paper-level self-citations and self-references:
+
+```py
+from paperscraper.citations import self_citations_paper, self_references_paper
+
+doi = "10.1038/s41586-023-06600-9"
+self_citations_paper(doi).citation_score
+self_references_paper(doi).reference_score
+```
+
+Output: `3.192` and `5.05`, the mean self-citation and self-reference percentages
+across paper authors.
+
+The documentation example also includes a small researcher-level benchmark with
+self-citation and self-reference trends by discipline, career-stage group, and
+an overall average across disciplines:
+
+<p align="center">
+  <img src="assets/self_citation_grouped_by_discipline.png" alt="Self-citation ratios grouped by discipline" width="620">
+</p>
+
+<p align="center">
+  <img src="assets/self_reference_grouped_by_discipline.png" alt="Self-reference ratios grouped by discipline" width="620">
+</p>
+
+See the [self-citation analysis example](https://jannisborn.github.io/paperscraper/examples/self-citation-analysis/)
+for paper- and author-level workflows using [Semantic Scholar](https://www.semanticscholar.org/).
+
 ## Citation
-If you use `paperscraper`, please cite a paper that motivated our development of this tool.
+If you scrape papers with paperscraper, please cite the paperscraper paper :)
 
 ```bibtex
 @article{born2021trends,
@@ -260,6 +275,13 @@ If you use `paperscraper`, please cite a paper that motivated our development of
   publisher={Bentham Science Publishers}
 }
 ```
+
+## Contributing and support
+
+Contribution guidelines are in [CONTRIBUTING.md](CONTRIBUTING.md), support
+expectations are in [SUPPORT.md](SUPPORT.md), and project decision-making is
+summarized in [GOVERNANCE.md](GOVERNANCE.md). Release notes are maintained with
+GitHub releases and PyPI release history rather than in a separate changelog.
 
 ## Contributors
 Thanks to the following contributors:

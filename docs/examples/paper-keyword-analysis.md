@@ -81,7 +81,7 @@ papers = get_arxiv_papers_api('all:"quantum machine learning"', max_results=25)
 ## bioRxiv, medRxiv, and chemRxiv
 
 Download local xRxiv dumps once using the
-[setup instructions](../README.md#download-xrxiv-dumps), then restart Python so
+[setup instructions](getting-started.md#download-xrxiv-dumps), then restart Python so
 `paperscraper.load_dumps` can discover the new files.
 
 For local xRxiv dumps, use `XRXivQuery` directly:
