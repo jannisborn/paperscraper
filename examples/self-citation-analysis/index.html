@@ -11,10 +11,8 @@
       
       
       
-        <link rel="prev" href="../pdf-retrieval/">
+        <link rel="prev" href="../scholar-metrics-analysis/">
       
-      
-        <link rel="next" href="../scholar-metrics-analysis/">
       
       
         
@@ -274,7 +272,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../paper-keyword-analysis/" class="md-tabs__link">
+        <a href="../getting-started/" class="md-tabs__link">
           
   
   
@@ -747,6 +745,8 @@
       
         
       
+        
+      
     
     
     
@@ -802,6 +802,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../paper-keyword-analysis/" class="md-nav__link">
         
   
@@ -838,6 +866,34 @@
     
   
     PDF Retrieval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scholar-metrics-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scholar Metrics Analysis
   
 
     
@@ -918,10 +974,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#paper-level-self-links" class="md-nav__link">
+  <a href="#self-references-of-a-paper" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Paper-Level Self-Links
+        Self-References of a Paper
       
     </span>
   </a>
@@ -929,10 +985,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#author-breakdown" class="md-nav__link">
+  <a href="#self-citations-of-a-paper" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Author Breakdown
+        Self-Citations of a Paper
       
     </span>
   </a>
@@ -940,10 +996,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#author-level-summary" class="md-nav__link">
+  <a href="#researcher-level-tendencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Author-Level Summary
+        Researcher-Level Tendencies
       
     </span>
   </a>
@@ -951,10 +1007,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#unified-paper-interface" class="md-nav__link">
+  <a href="#researcher-per-discipline-self-link-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unified Paper Interface
+        Researcher-per-Discipline Self-Link Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unified-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified Interface
       
     </span>
   </a>
@@ -965,34 +1032,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../scholar-metrics-analysis/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Scholar Metrics Analysis
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1026,89 +1065,206 @@
 
 
 <h1 id="self-citation-analysis">Self-Citation Analysis<a class="headerlink" href="#self-citation-analysis" title="Permanent link">&para;</a></h1>
-<p>The citations submodule uses Semantic Scholar paper, citation, and reference
-metadata to estimate how often authors cite or reference their own work. Set
-<code>SS_API_KEY</code> to increase throughput:</p>
+<p>Citation counts and h-index values are useful summary statistics, but they can
+be blurred by excessive self-citation. <code>paperscraper</code> helps inspect this effect
+with paper-level and author-level self-citation and self-reference analyses.</p>
+<p>The citation workflow uses <a href="https://www.semanticscholar.org/">Semantic Scholar</a>
+paper, citation, and reference metadata. It can run without authentication, but
+larger analyses should use a <a href="https://www.semanticscholar.org/product/api">Semantic Scholar API key</a>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SS_API_KEY</span><span class="o">=</span>YOUR_API_KEY
 </code></pre></div>
-<p>Citation and reference counts can change as Semantic Scholar updates its records.</p>
-<h2 id="paper-level-self-links">Paper-Level Self-Links<a class="headerlink" href="#paper-level-self-links" title="Permanent link">&para;</a></h2>
-<p>Estimate self-citations and self-references for a paper:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">self_citations_paper</span><span class="p">,</span> <span class="n">self_references_paper</span>
+<h2 id="self-references-of-a-paper">Self-References of a Paper<a class="headerlink" href="#self-references-of-a-paper" title="Permanent link">&para;</a></h2>
+<p>Start from a paper DOI or Semantic Scholar paper ID. Self-references ask: among
+the papers referenced by this paper, how many include one of the paper's own
+authors?</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">self_references_paper</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span> <span class="o">=</span> <span class="s2">&quot;10.1038/s41586-023-06600-9&quot;</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span> <span class="o">=</span> <span class="n">self_citations_paper</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">num_citations</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="go">141  # Total citations.</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">citation_score</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="go">3.192  # Mean self-citation percentage across paper authors.</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span> <span class="o">=</span> <span class="n">self_references_paper</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">num_references</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="go">33  # Total references.</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">reference_score</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="go">5.05  # Mean self-reference percentage across paper authors.</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span> <span class="o">=</span> <span class="n">self_references_paper</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">num_references</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="go">33</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">reference_score</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="go">5.05</span>
 </code></pre></div>
-<p>Both functions accept either one DOI/Semantic Scholar paper ID or a list. A
-single input returns one result object; a list returns a list of result objects.</p>
-<h2 id="author-breakdown">Author Breakdown<a class="headerlink" href="#author-breakdown" title="Permanent link">&para;</a></h2>
-<p>Print the per-author self-link percentages:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">self_citations</span>
+<p>The score is the mean self-reference percentage across the authors of the paper.
+The per-author values are available directly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">self_references</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="go">{</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="go">    &quot;Abhishek Sharma&quot;: 3.55,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="go">    &quot;Dániel Czégel&quot;: 0.71,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="go">    &quot;Michael Lachmann&quot;: 1.42,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="go">    &quot;C. Kempes&quot;: 3.55,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="go">    &quot;S. I. Walker&quot;: 4.96,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="go">    &quot;Leroy Cronin&quot;: 4.96,</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="go">}  # Percentage of citations that include each paper author.</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_references</span><span class="o">.</span><span class="n">self_references</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="go">{</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="go">    &quot;Abhishek Sharma&quot;: 3.03,</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="go">    &quot;Dániel Czégel&quot;: 0.0,</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="go">    &quot;Michael Lachmann&quot;: 0.0,</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="go">    &quot;C. Kempes&quot;: 0.0,</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="go">    &quot;S. I. Walker&quot;: 6.06,</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="go">    &quot;Leroy Cronin&quot;: 21.21,</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="go">}  # Percentage of references that include each paper author.</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="go">    &quot;Abhishek Sharma&quot;: 3.03,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="go">    &quot;Dániel Czégel&quot;: 0.0,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="go">    &quot;Michael Lachmann&quot;: 0.0,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="go">    &quot;C. Kempes&quot;: 0.0,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="go">    &quot;S. I. Walker&quot;: 6.06,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="go">    &quot;Leroy Cronin&quot;: 21.21,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="go">}</span>
 </code></pre></div>
-<h2 id="author-level-summary">Author-Level Summary<a class="headerlink" href="#author-level-summary" title="Permanent link">&para;</a></h2>
-<p>For an author-level summary, use <code>Researcher</code>. Full author analyses can take
+<p>Here, <code>21.21</code> means that 21.21% of the paper's references include Leroy Cronin
+as an author.</p>
+<h2 id="self-citations-of-a-paper">Self-Citations of a Paper<a class="headerlink" href="#self-citations-of-a-paper" title="Permanent link">&para;</a></h2>
+<p>The same idea can be turned around. Instead of looking at the references made by
+the paper, self-citations look at later papers that cite it and ask how often
+those citing papers include one of the original paper's authors.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">self_citations_paper</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span> <span class="o">=</span> <span class="n">self_citations_paper</span><span class="p">(</span><span class="n">doi</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">num_citations</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="go">141</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">citation_score</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="go">3.192</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">self_citations</span><span class="o">.</span><span class="n">self_citations</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="go">{</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="go">    &quot;Abhishek Sharma&quot;: 3.55,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="go">    &quot;Dániel Czégel&quot;: 0.71,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="go">    &quot;Michael Lachmann&quot;: 1.42,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="go">    &quot;C. Kempes&quot;: 3.55,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="go">    &quot;S. I. Walker&quot;: 4.96,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="go">    &quot;Leroy Cronin&quot;: 4.96,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="go">}</span>
+</code></pre></div>
+<p>Here, <code>4.96</code> means that 4.96% of the papers citing the focal paper include
+Leroy Cronin as an author.</p>
+<p>Both <code>self_references_paper</code> and <code>self_citations_paper</code> accept either one
+DOI/Semantic Scholar paper ID or a list. A single input returns one result
+object; a list returns a list of result objects.</p>
+<h2 id="researcher-level-tendencies">Researcher-Level Tendencies<a class="headerlink" href="#researcher-level-tendencies" title="Permanent link">&para;</a></h2>
+<p>Now imagine doing this for every paper of an author. This gives a researcher-
+level tendency for self-references and self-citations, aggregated over that
+author's publication record.</p>
+<p>For author-level workflows, use <code>Researcher</code>. Full author analyses can take
 longer for large publication lists, so this example limits the run to one paper.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.entity</span><span class="w"> </span><span class="kn">import</span> <span class="n">Researcher</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">researcher</span> <span class="o">=</span> <span class="n">Researcher</span><span class="p">(</span><span class="s2">&quot;2289839817&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">researcher</span><span class="o">.</span><span class="n">ssids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2c1edb95c07643a834c9d4f8f2acedfecfe894de&quot;</span><span class="p">]</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">researcher</span><span class="o">.</span><span class="n">self_citations</span><span class="p">()</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">researcher</span><span class="o">.</span><span class="n">self_references</span><span class="p">()</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">name</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="go">&quot;K. Wijk&quot;</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_citation_ratio</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="go">0.0  # Mean self-citation percentage across the selected papers.</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_reference_ratio</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="go">4.65  # Mean self-reference percentage across the selected papers.</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">num_citations</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="go">10</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">num_references</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="go">43</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_references</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="go">{&quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 4.65}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.entity</span><span class="w"> </span><span class="kn">import</span> <span class="n">Researcher</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">researcher</span> <span class="o">=</span> <span class="n">Researcher</span><span class="p">(</span><span class="s2">&quot;2289839817&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">researcher</span><span class="o">.</span><span class="n">ssids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2c1edb95c07643a834c9d4f8f2acedfecfe894de&quot;</span><span class="p">]</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">researcher</span><span class="o">.</span><span class="n">self_citations</span><span class="p">()</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">researcher</span><span class="o">.</span><span class="n">self_references</span><span class="p">()</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">name</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="go">&quot;K. Wijk&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_citation_ratio</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="go">0.0</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_reference_ratio</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="go">4.65</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">num_citations</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="go">10</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">num_references</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="go">43</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">self_references</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="go">{&quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 4.65}</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="go">ResearcherResult(</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="go">    name=&quot;K. Wijk&quot;,</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="go">    self_reference_ratio=4.65,</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="go">    self_citation_ratio=0.0,</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="go">    num_references=43,</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="go">    num_citations=10,</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="go">    self_references={</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="go">        &quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 4.65,</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="go">    },</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="go">    self_citations={</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="go">        &quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 0.0,</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="go">    },</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="go">    ssaid=2289839817,</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="go">    orcid=None,</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="go">)</span>
 </code></pre></div>
-<h2 id="unified-paper-interface">Unified Paper Interface<a class="headerlink" href="#unified-paper-interface" title="Permanent link">&para;</a></h2>
-<p>Use <code>SelfLinkClient</code> when you want self-citations and self-references through one
-paper-level object. Paper inputs can be DOIs, Semantic Scholar paper IDs, or
-titles; use <code>mode</code> when you want to disambiguate.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">SelfLinkClient</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">SelfLinkClient</span><span class="p">(</span><span class="s2">&quot;10.1038/s41586-023-06600-9&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span><span class="o">.</span><span class="n">extract</span><span class="p">()</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">title</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="go">&quot;Assembly theory explains and quantifies selection and evolution&quot;</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">citation_score</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="go">3.192  # Mean self-citation percentage across paper authors.</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">reference_score</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="go">5.05  # Mean self-reference percentage across paper authors.</span>
+<p>The example above uses Klaas Wijk's Semantic Scholar author profile and pins the
+analysis to one paper to keep the runtime short.</p>
+<h2 id="researcher-per-discipline-self-link-analysis">Researcher-per-Discipline Self-Link Analysis<a class="headerlink" href="#researcher-per-discipline-self-link-analysis" title="Permanent link">&para;</a></h2>
+<p>The plots below summarize a small benchmark analysis of self-links grouped by
+discipline and researcher category. The processed table uses three categories:
+historic awardees (<code>PastSenior</code>) for Nobel Prize, Fields Medal, and Turing
+Award winners before 2000, represented here by 1993-1998 laureates; recent
+awardees (<code>TodaySenior</code>) for comparable senior prize winners since 2018; and
+rising researchers (<code>TodayJunior</code>) for 2025 rising-star researchers selected as
+plausible future candidates for such prizes.</p>
+<p>The plots show mean ± standard deviation by discipline and category. Individual
+researchers are overlaid as points, and the separated <code>Overall</code> block averages
+the five discipline-level means for each researcher cohort.</p>
+<p><img alt="Self-citation ratios grouped by discipline" src="https://raw.githubusercontent.com/jannisborn/paperscraper/main/assets/self_citation_grouped_by_discipline.png" width="760" /></p>
+<p><img alt="Self-reference ratios grouped by discipline" src="https://raw.githubusercontent.com/jannisborn/paperscraper/main/assets/self_reference_grouped_by_discipline.png" width="760" /></p>
+<p>The strongest statistically supported signal is in self-citations rather than
+self-references. A discipline-stratified permutation test finds that
+rising researchers have higher self-citation ratios than the other two groups by
+5.79 percentage points (<code>p &lt; 0.0001</code>, Benjamini-Hochberg <code>q = 0.0010</code>).
+Pairwise Mann-Whitney checks show the same pattern against both historic
+awardees (<code>p = 0.0007</code>) and recent awardees (<code>p = 0.0044</code>).</p>
+<p>Here, "percentage points" means an absolute difference in percentages: a change
+from 5% to 10% is +5 percentage points. The <code>q</code> value is the p-value after
+Benjamini-Hochberg correction across the tested career-stage and discipline
+contrasts. "Discipline-stratified" means that the class labels are shuffled only
+within each discipline, so the junior effect is not merely a consequence of one
+discipline having both more junior researchers and a different baseline
+self-citation rate.</p>
+<p>Across disciplines, mathematics has the clearest effect: after stratifying by
+career-stage group, mathematicians have higher self-citation ratios than the
+other disciplines by 4.91 percentage points (<code>p = 0.0020</code>, <code>q = 0.0245</code>).
+The visually plausible self-reference trends are weaker. Rising researchers
+have lower, not higher, self-reference ratios by 4.36
+percentage points, but this is only nominal after correction (<code>p = 0.0121</code>,
+<code>q = 0.0724</code>). Pooling self-citations and self-references into a combined
+standardized score over the two rates does not produce a robust class or
+discipline result.</p>
+<p>These results should be read as associations, not causal claims. The higher
+rising-researcher self-citation ratio may partly reflect shorter citation windows:
+younger papers have had less time to accumulate independent citations, so early
+citations may contain a larger fraction of follow-up work from the same authors.
+The aggregate benchmark controls for discipline composition in the tests above,
+but it does not model paper age, citation-window length, or field-specific
+citation velocity.</p>
+<h2 id="unified-interface">Unified Interface<a class="headerlink" href="#unified-interface" title="Permanent link">&para;</a></h2>
+<p>Use <code>SelfLinkClient</code> when you want self-citations and self-references through
+one object. Paper inputs can be DOIs, Semantic Scholar paper IDs, or titles; use
+<code>mode</code> when you want to disambiguate.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">SelfLinkClient</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_client</span> <span class="o">=</span> <span class="n">SelfLinkClient</span><span class="p">(</span><span class="s2">&quot;10.1038/s41586-023-06600-9&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_client</span><span class="o">.</span><span class="n">extract</span><span class="p">()</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_client</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="go">PaperResult(</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="go">    ssid=&quot;10.1038/s41586-023-06600-9&quot;,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="go">    title=&quot;Assembly theory explains and quantifies selection and evolution&quot;,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="go">    num_citations=141,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="go">    self_citations={</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="go">        &quot;Abhishek Sharma&quot;: 3.55,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="go">        &quot;Dániel Czégel&quot;: 0.71,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="go">        &quot;Michael Lachmann&quot;: 1.42,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="go">        &quot;C. Kempes&quot;: 3.55,</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="go">        &quot;S. I. Walker&quot;: 4.96,</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="go">        &quot;Leroy Cronin&quot;: 4.96,</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="go">    },</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="go">    citation_score=3.192,</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="go">    num_references=33,</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="go">    self_references={</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="go">        &quot;Abhishek Sharma&quot;: 3.03,</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="go">        &quot;Dániel Czégel&quot;: 0.0,</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="go">        &quot;Michael Lachmann&quot;: 0.0,</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="go">        &quot;C. Kempes&quot;: 0.0,</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="go">        &quot;S. I. Walker&quot;: 6.06,</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="go">        &quot;Leroy Cronin&quot;: 21.21,</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="go">    },</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="go">    reference_score=5.05,</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="go">)</span>
 </code></pre></div>
-<p><code>SelfLinkClient(..., mode="author")</code> is also available for author-level runs.
-Use <code>Researcher</code> directly when you want to limit the paper list before running,
-as shown in the author-level example above.</p>
+<p><code>SelfLinkClient(..., mode="author")</code> wraps the same <code>Researcher</code> object used
+above and returns a <code>ResearcherResult</code>. Use <code>Researcher</code> directly when you want
+to limit or inspect the paper list before running the analysis; the example below
+does the same pinning through the client for compact output.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_client</span> <span class="o">=</span> <span class="n">SelfLinkClient</span><span class="p">(</span><span class="s2">&quot;2289839817&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;author&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_client</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">ssids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2c1edb95c07643a834c9d4f8f2acedfecfe894de&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_client</span><span class="o">.</span><span class="n">extract</span><span class="p">()</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_client</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="go">ResearcherResult(</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="go">    name=&quot;K. Wijk&quot;,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="go">    self_reference_ratio=4.65,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="go">    self_citation_ratio=0.0,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="go">    num_references=43,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="go">    num_citations=10,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="go">    self_references={</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="go">        &quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 4.65,</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="go">    },</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="go">    self_citations={</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="go">        &quot;Diff-SPORT: Diffusion-based Sensor Placement Optimization and Reconstruction of Turbulent flows in urban environments&quot;: 0.0,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="go">    },</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="go">    ssaid=2289839817,</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="go">    orcid=None,</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="go">)</span>
+</code></pre></div>
 
 
 

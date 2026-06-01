@@ -11,7 +11,7 @@
       
       
       
-        <link rel="prev" href="../../api/xrxiv/">
+        <link rel="prev" href="../getting-started/">
       
       
         <link rel="next" href="../pdf-retrieval/">
@@ -274,7 +274,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../getting-started/" class="md-tabs__link">
           
   
   
@@ -747,6 +747,8 @@
       
         
       
+        
+      
     
     
     
@@ -794,6 +796,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -988,14 +1018,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../self-citation-analysis/" class="md-nav__link">
+      <a href="../scholar-metrics-analysis/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Self-Citation Analysis
+    Scholar Metrics Analysis
   
 
     
@@ -1016,14 +1046,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../scholar-metrics-analysis/" class="md-nav__link">
+      <a href="../self-citation-analysis/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Scholar Metrics Analysis
+    Self-Citation Analysis
   
 
     
@@ -1125,7 +1155,7 @@ arXiv dump if one exists, otherwise fall back to the API:</p>
 </code></pre></div>
 <h2 id="biorxiv-medrxiv-and-chemrxiv">bioRxiv, medRxiv, and chemRxiv<a class="headerlink" href="#biorxiv-medrxiv-and-chemrxiv" title="Permanent link">&para;</a></h2>
 <p>Download local xRxiv dumps once using the
-<a href="../../#download-xrxiv-dumps">setup instructions</a>, then restart Python so
+<a href="../getting-started/#download-xrxiv-dumps">setup instructions</a>, then restart Python so
 <code>paperscraper.load_dumps</code> can discover the new files.</p>
 <p>For local xRxiv dumps, use <code>XRXivQuery</code> directly:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.xrxiv.xrxiv_query</span><span class="w"> </span><span class="kn">import</span> <span class="n">XRXivQuery</span>
