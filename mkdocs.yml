@@ -49,7 +49,7 @@ theme:
   language: en
 
 nav:
-  - Overview: README.md
+  - Overview: index.md
   - API Documentation:
     - Overview: api/index.md
     - paperscraper: 
@@ -62,10 +62,11 @@ nav:
       - paperscraper.scholar: api/scholar.md
       - paperscraper.xrxiv: api/xrxiv.md
   - Examples:
+    - Getting Started: examples/getting-started.md
     - Paper Keyword Analysis: examples/paper-keyword-analysis.md
     - PDF Retrieval: examples/pdf-retrieval.md
-    - Self-Citation Analysis: examples/self-citation-analysis.md
     - Scholar Metrics Analysis: examples/scholar-metrics-analysis.md
+    - Self-Citation Analysis: examples/self-citation-analysis.md
 
 # Copyright
 copyright: MIT License
