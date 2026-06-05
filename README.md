@@ -17,10 +17,6 @@ It provides a streamlined interface to scrape metadata, retrieve citation counts
 from [Google Scholar](https://scholar.google.com/), query journal impact factors,
 and run simple postprocessing and plotting routines for meta-analysis.
 
-<p align="center">
-  <img src="assets/preprints_per_year.png" alt="Preprints per year" width="340">
-</p>
-
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
