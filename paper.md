@@ -1,5 +1,5 @@
 ---
-title: 'paperscraper: A Python toolkit for scholarly metadata, full-text retrieval, and citation analysis'
+title: 'paperscraper: a python package for bibliometrics from publication metadata to citation analysis'
 tags:
   - Python
   - literature search
@@ -19,8 +19,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-
-[`paperscraper`](https://github.com/jannisborn/paperscraper) is a Python package for reproducible, source-spanning literature searches. Version `1.0.0` provides homogenized access to [PubMed](https://pubmed.ncbi.nlm.nih.gov/) and the major preprint servers [arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [medRxiv](https://www.medrxiv.org/), and [ChemRxiv](https://chemrxiv.org/). It queries PubMed and arXiv through their APIs, creates local JSONL snapshots for preprint servers, searches all configured sources with a common keyword interface, and writes normalized records for downstream analysis. The package also retrieves accessible PDFs or XML full text from DOI metadata, queries citation counts, estimates paper- and author-level self-citations and self-references, searches journal impact factors, and provides small postprocessing and plotting utilities.
+[`paperscraper`](https://github.com/jannisborn/paperscraper) is a Python package for reproducible literature search, publication metadata retrieval, and citation analysis. It provides homogenized access to [PubMed](https://pubmed.ncbi.nlm.nih.gov/) and the major preprint servers [arXiv](https://arxiv.org/), [bioRxiv](https://www.biorxiv.org/), [medRxiv](https://www.medrxiv.org/), and [ChemRxiv](https://chemrxiv.org/). `paperscraper` follows a local-first paradigm that minimizes dependencies on external APIs by storing local snapshots of publication metadata. It facilitates research trend analyses through a common keyword interface and also supports retrieval of accessible PDF or XML full texts. Beyond scholarly metadata analysis, `paperscraper` provides tools to retrieve citation and publication counts of researchers, search journal impact factors, and analyze tendencies for self-citations or self-references by specific researchers or papers. Finally, it provides lightweight postprocessing and plotting utilities that can be useful for meta-reviews.
 
 We originally developed the package for two literature analyses [@born2021trends; @born2021on] and have since generalized it into a reusable tool for literature trend analysis, bibliometrics, and text-mining data collection.
 
