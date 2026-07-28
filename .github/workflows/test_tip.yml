@@ -2,6 +2,9 @@
 name: Source
 on: [push, release]
 
+env:
+  PAPERSCRAPER_EMAIL: jannis.born@gmx.de
+
 jobs:
   test-source-install:
     runs-on: ubuntu-latest

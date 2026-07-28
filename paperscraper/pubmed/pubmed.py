@@ -12,7 +12,10 @@ from .utils import get_emails, get_query_from_keywords_and_date
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-PUBMED = PubMed(tool=os.getenv("NCBI_TOOL", "paperscraper"), email="abc@def.gh")
+PUBMED = PubMed(
+    tool="paperscraper",
+    email=os.getenv("PAPERSCRAPER_EMAIL", "your_email@example.com"),
+)
 
 pubmed_field_mapper = {"publication_date": "date"}
 

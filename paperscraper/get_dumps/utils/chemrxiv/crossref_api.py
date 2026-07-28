@@ -10,6 +10,7 @@ NOTE:
 """
 
 import logging
+import os
 import sys
 from time import sleep
 from typing import Dict, Generator, List, Optional
@@ -58,7 +59,9 @@ class CrossrefChemrxivAPI:
         self.end_date = end_date
         self.page_size = min(max(1, page_size), 1000)
         self.max_retries = max_retries
-        self.mailto = mailto
+        self.mailto = mailto or os.getenv(
+            "PAPERSCRAPER_EMAIL", "your_email@example.com"
+        )
         self.request_delay_seconds = max(0.0, request_delay_seconds)
 
     def iter_items(self) -> Generator[Dict, None, None]:
@@ -140,7 +143,7 @@ class CrossrefChemrxivAPI:
 
         headers = {
             "Accept": "application/json",
-            "User-Agent": "paperscraper (Crossref fallback)",
+            "User-Agent": "paperscraper",
         }
 
         for attempt in range(self.max_retries):
