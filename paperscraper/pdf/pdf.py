@@ -151,7 +151,7 @@ def save_pdf(
         api_keys = load_api_keys(api_keys)
     doi = paper_metadata["doi"]
     url = f"https://doi.org/{doi}"
-    user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
+    user_agent = {"User-Agent": "paperscraper"}
     success = False
     metadata_written = False
 

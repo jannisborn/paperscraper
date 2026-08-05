@@ -4,6 +4,7 @@ import calendar
 import datetime
 import io
 import logging
+import os
 import re
 import sys
 import threading
@@ -123,7 +124,7 @@ def fallback_bioc_pmc(
         bool: True if the XML file was successfully downloaded, False otherwise.
     """
     ncbi_tool = "paperscraper"
-    ncbi_email = "your_email@example.com"
+    ncbi_email = os.getenv("PAPERSCRAPER_EMAIL", "your_email@example.com")
 
     converter_url = "https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/"
     params = {
