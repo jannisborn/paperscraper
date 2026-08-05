@@ -7,9 +7,18 @@ from typing import Any, Dict, List, Union
 import httpx
 import numpy as np
 from pydantic import BaseModel
+from tqdm import tqdm
 
 from ..async_utils import optional_async, retry_with_exponential_backoff
-from .utils import DOI_PATTERN, find_matching
+from .utils import (
+    DOI_PATTERN,
+    HTTPX_LIMITS,
+    REQUEST_SEMAPHORE,
+    REQUEST_TIMEOUT_SECONDS,
+    find_matching,
+    semantic_scholar_get,
+    wait_for_request_slot,
+)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,16 +27,19 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 class CitationResult(BaseModel):
     ssid: str  # semantic scholar paper id
+    title: str
     num_citations: int
     self_citations: Dict[str, float] = {}
     citation_score: float
 
 
+@retry_with_exponential_backoff(max_retries=14, base_delay=1.0)
 async def _fetch_citation_data(
     client: httpx.AsyncClient, suffix: str
 ) -> Dict[str, Any]:
     """
     Fetch raw paper data from Semantic Scholar by DOI or SSID suffix.
+    Respects rate limiting to avoid exceeding API limits.
 
     Args:
         client: An active httpx.AsyncClient.
@@ -36,7 +48,10 @@ async def _fetch_citation_data(
     Returns:
         The JSON-decoded response as a dictionary.
     """
-    response = await client.get(
+    await wait_for_request_slot()
+
+    response = await semantic_scholar_get(
+        client,
         f"https://api.semanticscholar.org/graph/v1/paper/{suffix}",
         params={"fields": "title,authors,citations.authors"},
     )
@@ -55,46 +70,48 @@ async def _process_single(client: httpx.AsyncClient, identifier: str) -> Citatio
     Returns:
         A CitationResult containing counts and percentages of self-citations.
     """
-    # Determine prefix for Semantic Scholar API
-    if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
-        prefix = ""
-    elif len(re.findall(DOI_PATTERN, identifier, re.IGNORECASE)) == 1:
-        prefix = "DOI:"
-    else:
-        prefix = ""
+    async with REQUEST_SEMAPHORE:
+        # Determine prefix for Semantic Scholar API
+        if len(identifier) > 15 and identifier.isalnum() and identifier.islower():
+            prefix = ""
+        elif len(re.findall(DOI_PATTERN, identifier, re.IGNORECASE)) == 1:
+            prefix = "DOI:"
+        else:
+            prefix = ""
 
-    suffix = f"{prefix}{identifier}"
-    paper = await _fetch_citation_data(client, suffix)
+        suffix = f"{prefix}{identifier}"
+        paper = await _fetch_citation_data(client, suffix)
 
-    # Initialize counters
-    author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
-    citations = paper.get("citations", [])
-    total_cites = len(citations)
+        # Initialize counters
+        author_counts: Dict[str, int] = {a["name"]: 0 for a in paper.get("authors", [])}
+        citations = paper.get("citations", [])
+        total_cites = len(citations)
 
-    # Tally self-citations
-    for cite in citations:
-        matched = find_matching(paper.get("authors", []), cite.get("authors", []))
-        for name in matched:
-            author_counts[name] += 1
+        # Tally self-citations
+        for cite in citations:
+            matched = find_matching(paper.get("authors", []), cite.get("authors", []))
+            for name in matched:
+                author_counts[name] += 1
 
-    # Compute percentages
-    ratios: Dict[str, float] = {
-        name: round((count / total_cites * 100), 2) if total_cites > 0 else 0.0
-        for name, count in author_counts.items()
-    }
+        # Compute percentages
+        ratios: Dict[str, float] = {
+            name: round((count / total_cites * 100), 2) if total_cites > 0 else 0.0
+            for name, count in author_counts.items()
+        }
 
-    avg_score = round(float(np.mean(list(ratios.values()))) if ratios else 0.0, 3)
+        avg_score = round(float(np.mean(list(ratios.values()))) if ratios else 0.0, 3)
 
-    return CitationResult(
-        ssid=identifier,
-        num_citations=total_cites,
-        self_citations=ratios,
-        citation_score=avg_score,
-    )
+        return CitationResult(
+            ssid=identifier,
+            title=paper.get("title", ""),
+            num_citations=total_cites,
+            self_citations=ratios,
+            citation_score=avg_score,
+        )
 
 
 @optional_async
-@retry_with_exponential_backoff(max_retries=4, base_delay=1.0)
+@retry_with_exponential_backoff(max_retries=10, base_delay=1.0)
 async def self_citations_paper(
     inputs: Union[str, List[str]], verbose: bool = False
 ) -> Union[CitationResult, List[CitationResult]]:
@@ -111,16 +128,37 @@ async def self_citations_paper(
     single_input = isinstance(inputs, str)
     identifiers = [inputs] if single_input else list(inputs)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(20)) as client:
+    results: List[CitationResult] = []
+
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS), limits=HTTPX_LIMITS
+    ) as client:
         tasks = [_process_single(client, ident) for ident in identifiers]
-        results = await asyncio.gather(*tasks)
+
+        iterator = tqdm(
+            asyncio.as_completed(tasks),
+            total=len(tasks),
+            desc="Collecting self-citations",
+        )
+
+        for coro in iterator:
+            try:
+                res = await coro
+            except Exception as exc:
+                logger.warning(f"Self-citation fetch failed: {exc}")
+                continue
+            results.append(res)
 
     if verbose:
         for res in results:
             logger.info(
-                f'Self-citations in "{res.ssid}": N={res.num_citations}, Score={res.citation_score}%'
+                f'Self-citations in "{res.title}": N={res.num_citations}, Score={res.citation_score}%'
             )
             for author, pct in res.self_citations.items():
                 logger.info(f"  {author}: {pct}%")
 
-    return results[0] if single_input else results
+    if single_input:
+        if not results:
+            raise RuntimeError("Failed to fetch self-citations for input.")
+        return results[0]
+    return results

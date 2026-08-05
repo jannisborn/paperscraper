@@ -6,17 +6,16 @@ from typing import Dict, List, Literal, Union
 
 import arxiv
 import pandas as pd
-import pkg_resources
 from tqdm import tqdm
 
-from ..utils import dump_papers
+from ..utils import dump_papers, get_server_dumps_dir
 from ..xrxiv.xrxiv_query import XRXivQuery
 from .utils import get_query_from_keywords, infer_backend
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+dump_root = get_server_dumps_dir()
 
 global ARXIV_QUERIER
 ARXIV_QUERIER = None
@@ -26,10 +25,14 @@ def search_local_arxiv():
     global ARXIV_QUERIER
     if ARXIV_QUERIER is not None:
         return
-    dump_paths = glob.glob(os.path.join(dump_root, "arxiv*"))
+    dump_paths = [
+        path
+        for path in glob.glob(os.path.join(dump_root, "arxiv*.jsonl"))
+        if os.path.isfile(path)
+    ]
 
     if len(dump_paths) > 0:
-        path = sorted(dump_paths, reverse=True)[0]
+        path = max(dump_paths, key=os.path.getmtime)
         querier = XRXivQuery(path)
         if not querier.errored:
             ARXIV_QUERIER = querier.search_keywords
@@ -94,7 +97,7 @@ def get_arxiv_papers_api(
     fields as desired.
 
     Args:
-        query Query to arxiv API. Needs to match the arxiv API notation.
+        query: Query to arxiv API. Needs to match the arxiv API notation.
         fields: List of strings with fields to keep in output.
         max_results: Maximal number of results, defaults to 99999.
         client_options: Optional arguments for `arxiv.Client`. E.g.:
@@ -134,8 +137,8 @@ def get_and_dump_arxiv_papers(
     start_date: str = "None",
     end_date: str = "None",
     backend: Literal["api", "local", "infer"] = "api",
-    *args,
-    **kwargs,
+    *args: object,
+    **kwargs: object,
 ):
     """
     Combines get_arxiv_papers and dump_papers.
@@ -144,7 +147,7 @@ def get_and_dump_arxiv_papers(
         keywords: List of keywords for arxiv search.
             The outer list level will be considered as AND separated keys, the
             inner level as OR separated.
-        filepath: Path where the dump will be saved.
+        output_filepath: Path where the dump will be saved.
         fields: List of strings with fields to keep in output.
             Defaults to ['title', 'authors', 'date', 'abstract',
             'journal', 'doi'].
@@ -156,7 +159,8 @@ def get_and_dump_arxiv_papers(
             is queried (has to be downloaded before). If `infer` the local dump will
             be used if exists, otherwise API will be queried. Defaults to `api`
             since it is faster.
-        *args, **kwargs are additional arguments for `get_arxiv_papers`.
+        *args: Additional positional arguments for `get_arxiv_papers`.
+        **kwargs: Additional keyword arguments for `get_arxiv_papers`.
     """
     # Translate keywords into query.
     query = get_query_from_keywords(keywords, start_date=start_date, end_date=end_date)

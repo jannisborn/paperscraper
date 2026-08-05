@@ -3,12 +3,17 @@ import os
 from datetime import datetime
 from typing import List, Union
 
-import pkg_resources
-
-finalize_disjunction = lambda x: "(" + x[:-4] + ") AND "
-finalize_conjunction = lambda x: x[:-5]
+from ..utils import get_server_dumps_dir
 
 EARLIEST_START = "1970-01-01"
+
+
+def finalize_disjunction(query: str) -> str:
+    return "(" + query[:-4] + ") AND "
+
+
+def finalize_conjunction(query: str) -> str:
+    return query[:-5]
 
 
 def format_date(date_str: str) -> str:
@@ -59,6 +64,6 @@ def get_query_from_keywords(
 
 
 def infer_backend():
-    dump_root = pkg_resources.resource_filename("paperscraper", "server_dumps")
+    dump_root = get_server_dumps_dir()
     dump_paths = glob.glob(os.path.join(dump_root, "arxiv" + "*"))
     return "api" if not dump_paths else "local"

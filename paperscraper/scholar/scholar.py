@@ -28,12 +28,12 @@ def get_scholar_papers(
     **kwargs,
 ) -> pd.DataFrame:
     """
-    Performs Google Scholar API request of a given query and returns list of papers with
+    Performs Google Scholar API request of a given title and returns list of papers with
     fields as desired.
 
     Args:
-        query (str): Query to arxiv API. Needs to match the arxiv API notation.
-        fields (list[str]): List of strings with fields to keep in output.
+        title: Query to arxiv API. Needs to match the arxiv API notation.
+        fields: List of strings with fields to keep in output.
 
     Returns:
         pd.DataFrame. One paper per row.
@@ -74,13 +74,9 @@ def get_and_dump_scholar_papers(
     Combines get_scholar_papers and dump_papers.
 
     Args:
-        keywords (List[str, List[str]]): List of keywords to request arxiv API.
-            The outer list level will be considered as AND separated keys, the
-            inner level as OR separated.
-        filepath (str): Path where the dump will be saved.
-        fields (List, optional): List of strings with fields to keep in output.
-            Defaults to ['title', 'authors', 'date', 'abstract',
-            'journal', 'doi'].
+        title: Paper to search for on Google Scholar.
+        output_filepath: Path where the dump will be saved.
+        fields: List of strings with fields to keep in output.
     """
     papers = get_scholar_papers(title, fields)
     dump_papers(papers, output_filepath)

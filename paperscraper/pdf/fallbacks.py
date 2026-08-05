@@ -6,9 +6,10 @@ import io
 import logging
 import re
 import sys
+import threading
 import time
 import zipfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 from typing import Any, Callable, Dict, Union
 import threading
@@ -16,8 +17,9 @@ from collections import deque
 
 import boto3
 import requests
+from botocore.client import BaseClient
+from botocore.config import Config
 from lxml import etree
-from tqdm import tqdm
 
 ELIFE_XML_INDEX = None  # global variable to cache the eLife XML index from GitHub
 
@@ -189,6 +191,8 @@ def fallback_bioc_pmc(doi: str, output_path: Path, ncbi_email="your_email@exampl
     Args:
         doi (str): The DOI of the paper to retrieve.
         output_path (Path): A pathlib.Path object representing the path where the XML file will be saved.
+        max_attempts (int): Maximum number of attempts for rate-limited API calls.
+        retry_sleep (int): Base sleep duration between retry attempts.
 
     Returns:
         bool: True if the XML file was successfully downloaded, False otherwise.
@@ -214,33 +218,49 @@ def fallback_bioc_pmc(doi: str, output_path: Path, ncbi_email="your_email@exampl
             logger.warning(
                 f"No PMCID available for DOI {doi}. Fallback via PMC therefore not possible."
             )
+            time.sleep(retry_sleep * attempt)
+        except Exception as conv_err:
+            logger.error(f"Error during DOI to PMCID conversion: {conv_err}")
             return False
-        pmcid = records[0]["pmcid"]
-        logger.info(f"Converted DOI {doi} to PMCID {pmcid}.")
-    except Exception as conv_err:
-        logger.error(f"Error during DOI to PMCID conversion: {conv_err}")
-        return False
 
     # Construct PMC XML URL
     xml_url = f"https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi/BioC_xml/{pmcid}/unicode"
     logger.info(f"Attempting to download XML from BioC-PMC URL: {xml_url}")
-    try:
-        xml_response = requests.get(xml_url, timeout=60)
-        xml_response.raise_for_status()
-        xml_path = output_path.with_suffix(".xml")
-        # check for xml error:
-        if xml_response.content.startswith(
-            b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"
-        ):
-            logger.warning(f"No XML found for DOI {doi} at BioC-PMC URL {xml_url}.")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            xml_response = requests.get(xml_url, timeout=60)
+            if xml_response.status_code == 429:
+                raise NCBIRateLimitError(
+                    f"NCBI rate-limited BioC-PMC XML download for {doi}"
+                )
+            xml_response.raise_for_status()
+            xml_path = output_path.with_suffix(".xml")
+            # check for xml error:
+            if xml_response.content.startswith(
+                b"[Error] : No result can be found. <BR><HR><B> - https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/"
+            ):
+                logger.warning(f"No XML found for DOI {doi} at BioC-PMC URL {xml_url}.")
+                return False
+            with open(xml_path, "wb+") as f:
+                f.write(xml_response.content)
+            logger.info(f"Successfully downloaded XML for DOI {doi} to {xml_path}.")
+            return True
+        except NCBIRateLimitError as xml_err:
+            if attempt == max_attempts:
+                logger.error(
+                    f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}"
+                )
+                return False
+            logger.info(
+                f"NCBI rate limit hit during BioC-PMC XML download "
+                f"(attempt {attempt}/{max_attempts}); retrying"
+            )
+            time.sleep(retry_sleep * attempt)
+        except Exception as xml_err:
+            logger.error(
+                f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}"
+            )
             return False
-        with open(xml_path, "wb+") as f:
-            f.write(xml_response.content)
-        logger.info(f"Successfully downloaded XML for DOI {doi} to {xml_path}.")
-        return True
-    except Exception as xml_err:
-        logger.error(f"Failed to download XML from BioC-PMC URL {xml_url}: {xml_err}")
-        return False
 
 
 def fallback_elsevier_api(
@@ -353,11 +373,16 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
     article_num = parts[1].strip()
 
     index = get_elife_xml_index()
-    if article_num not in index:
-        logger.warning(f"No eLife XML found for DOI {doi}.")
-        return False
-    candidate_files = index[article_num]
-    latest_version, latest_download_url = max(candidate_files, key=lambda x: x[0])
+    if article_num in index:
+        candidate_files = index[article_num]
+        latest_version, latest_download_url = max(candidate_files, key=lambda x: x[0])
+    else:
+        candidate_files = _direct_elife_xml_candidates(article_num)
+        if not candidate_files:
+            logger.warning(f"No eLife XML found for DOI {doi}.")
+            return False
+        latest_version, latest_download_url = candidate_files[0]
+
     try:
         r = requests.get(latest_download_url, timeout=60)
         r.raise_for_status()
@@ -373,6 +398,25 @@ def fallback_elife_xml(doi: str, output_path: Path) -> bool:
         f"Successfully downloaded XML via eLife API ({latest_version}) for DOI {doi} to {xml_path}."
     )
     return True
+
+
+def _direct_elife_xml_candidates(article_num: str) -> list:
+    """
+    Find versioned eLife XML files directly when the GitHub tree API is unavailable.
+    """
+    base_url = (
+        "https://raw.githubusercontent.com/elifesciences/elife-article-xml/master"
+    )
+    candidates = []
+    for version in range(1, 8):
+        download_url = f"{base_url}/articles/elife-{article_num}-v{version}.xml"
+        try:
+            response = requests.head(download_url, allow_redirects=True, timeout=20)
+            if response.status_code == 200:
+                candidates.append((version, download_url))
+        except requests.RequestException as e:
+            logger.debug(f"Could not check eLife XML candidate {download_url}: {e}")
+    return sorted(candidates, key=lambda x: x[0], reverse=True)
 
 
 def get_elife_xml_index() -> dict:
@@ -394,8 +438,17 @@ def get_elife_xml_index() -> dict:
         ELIFE_XML_INDEX = {}
         # Use the git tree API to get the full repository tree.
         base_tree_url = "https://api.github.com/repos/elifesciences/elife-article-xml/git/trees/master?recursive=1"
-        r = requests.get(base_tree_url, timeout=60)
-        r.raise_for_status()
+        for attempt in range(1, 4):
+            try:
+                r = requests.get(base_tree_url, timeout=60)
+                r.raise_for_status()
+                break
+            except requests.RequestException as e:
+                if attempt == 3:
+                    logger.error(f"Could not fetch eLife XML index from GitHub: {e}")
+                    return ELIFE_XML_INDEX
+                logger.info("Retrying eLife XML index fetch from GitHub...")
+                time.sleep(2 * attempt)
         tree_data = r.json()
         items = tree_data.get("tree", [])
         # Look for files in the 'articles' directory matching the pattern.
@@ -442,7 +495,7 @@ def month_folder(doi: str) -> str:
     return date.strftime("%B_%Y")
 
 
-def list_meca_keys(s3_client, bucket: str, prefix: str) -> list:
+def list_meca_keys(s3_client: BaseClient, bucket: str, prefix: str) -> list:
     """
     List all .meca object keys under a given prefix in a requester-pays bucket.
 
@@ -465,7 +518,51 @@ def list_meca_keys(s3_client, bucket: str, prefix: str) -> list:
     return keys
 
 
-def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
+def _try_download_pdf_from_meca(
+    s3_client: BaseClient, bucket: str, key: str, out_pdf: Path, stop: threading.Event
+) -> bool:
+    """
+    Download a MECA object and extract the first PDF found into out_pdf.
+
+    Args:
+        s3_client: S3 client to get the data from.
+        bucket: bucket to get data from.
+        key: prefix to get data from.
+        out_pdf: Where the PDF should be saved to.
+
+    Returns:
+        True on success, False otherwise.
+    """
+    if stop.is_set():
+        return False
+    try:
+        obj = s3_client.get_object(Bucket=bucket, Key=key, RequestPayer="requester")
+        data = obj["Body"].read()
+    except Exception as e:
+        logger.debug(f"Failed to GET {key}: {e}")
+        return False
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            for name in z.namelist():
+                if name.lower().endswith(".pdf"):
+                    out_pdf.parent.mkdir(parents=True, exist_ok=True)
+                    z.extract(name, path=out_pdf.parent)
+                    (out_pdf.parent / name).rename(out_pdf)
+                    return True
+    except Exception as e:
+        logger.debug(f"Failed to read MECA zip {key}: {e}")
+        return False
+    return False
+
+
+def find_meca_for_doi(
+    s3_client: BaseClient,
+    bucket: str,
+    key: str,
+    doi_token: str,
+    stop_event: threading.Event,
+    tail_bytes: int = 131072,
+) -> bool:
     """
     Efficiently inspect manifest.xml within a .meca zip by fetching only necessary bytes.
     Parse via ZipFile to read manifest.xml and match DOI token.
@@ -479,23 +576,46 @@ def find_meca_for_doi(s3_client, bucket: str, key: str, doi_token: str) -> bool:
     Returns:
         Whether or not the DOI could be matched
     """
+
+    if stop_event.is_set():
+        return False
+
     try:
-        head = s3_client.get_object(
-            Bucket=bucket, Key=key, Range="bytes=0-4095", RequestPayer="requester"
-        )["Body"].read()
+        # Try tail-only first (central directory is at end)
         tail = s3_client.get_object(
-            Bucket=bucket, Key=key, Range="bytes=-4096", RequestPayer="requester"
+            Bucket=bucket,
+            Key=key,
+            Range=f"bytes=-{tail_bytes}",
+            RequestPayer="requester",
         )["Body"].read()
     except Exception:
         return False
 
-    data = head + tail
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        manifest = z.read("manifest.xml")
+    if stop_event.is_set():
+        return False
 
-    # Extract the last part of the DOI (newer DOIs that contain date fail otherwise)
-    doi_token = doi_token.split('.')[-1]
-    return doi_token.encode("utf-8") in manifest.lower()
+    data = tail
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            # avoid reading file contents; inspect namelist/central directory
+            for name in z.namelist():
+                if name.endswith("manifest.xml"):
+                    manifest = z.read(name)  # small file in practice
+                    token = doi_token.split(".")[-1].encode("utf-8")
+                    return token in manifest.lower()
+    except zipfile.BadZipFile:
+        # Fallback: fetch small head slice & retry zip
+        try:
+            head = s3_client.get_object(
+                Bucket=bucket, Key=key, Range="bytes=0-65535", RequestPayer="requester"
+            )["Body"].read()
+            with zipfile.ZipFile(io.BytesIO(head + tail)) as z:
+                manifest = z.read("manifest.xml")
+                token = doi_token.split(".")[-1].encode("utf-8")
+                return token in manifest.lower()
+        except Exception:
+            return False
+    return False
 
 
 def fallback_s3(
@@ -518,6 +638,7 @@ def fallback_s3(
         aws_access_key_id=api_keys.get("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=api_keys.get("AWS_SECRET_ACCESS_KEY"),
         region_name="us-east-1",
+        config=Config(connect_timeout=5, read_timeout=10, retries={"max_attempts": 3}),
     )
     bucket = "biorxiv-src-monthly"
 
@@ -530,50 +651,62 @@ def fallback_s3(
         return False
 
     token = doi.split("/")[-1].lower()
-    target = None
-    executor = ThreadPoolExecutor(max_workers=32)
-    futures = {
-        executor.submit(find_meca_for_doi, s3, bucket, key, token): key
-        for key in meca_keys
-    }
-    target = None
-    pbar = tqdm(
-        total=len(futures),
-        desc=f"Scanning in biorxiv with {workers} workers for {doi}…",
-    )
-    for future in as_completed(futures):
-        key = futures[future]
-        try:
-            if future.result():
-                target = key
-                pbar.set_description(f"Success! Found target {doi} in {key}")
-                # cancel pending futures to speed shutdown
-                for fut in futures:
-                    fut.cancel()
-                break
-        except Exception:
-            pass
-        finally:
-            pbar.update(1)
-    # shutdown without waiting for remaining threads
-    executor.shutdown(wait=False)
-    if target is None:
+
+    # Prefer keys that already contain the token
+    candidate_keys = [k for k in meca_keys if token in k.lower()]
+    # If none contain the token (older DOIs, etc.), fall back to a small prefix scan
+    if not candidate_keys:
+        candidate_keys = meca_keys[: min(500, len(meca_keys))]
+    out_pdf = Path(output_path).with_suffix(".pdf")
+
+    # Try candidates concurrently but keep at most `workers` in flight.
+    stop = threading.Event()
+
+    def job(k):
+        ok = _try_download_pdf_from_meca(s3, bucket, k, out_pdf, stop)
+        if ok:
+            stop.set()
+        return ok
+
+    executor = ThreadPoolExecutor(max_workers=workers)
+    found = False
+    try:
+        it = iter(candidate_keys)
+        # prime the queue with at most `workers` tasks
+        futures = set()
+        for _ in range(min(workers, len(candidate_keys))):
+            k = next(it, None)
+            if k is not None:
+                futures.add(executor.submit(job, k))
+
+        while futures and not found:
+            done, futures = wait(futures, return_when=FIRST_COMPLETED)
+            # check completed ones
+            for fut in done:
+                try:
+                    if fut.result():
+                        found = True
+                        stop.set()
+                        # cancel not-yet-started tasks
+                        for f in list(futures):
+                            f.cancel()
+                        break
+                except Exception:
+                    pass
+            # top up queue if still searching
+            while not found and len(futures) < workers:
+                k = next(it, None)
+                if k is None:
+                    break
+                futures.add(executor.submit(job, k))
+    finally:
+        # don't wait for running tasks; best-effort cancel
+        executor.shutdown(wait=False, cancel_futures=True)
+
+    if not found:
         logger.error(f"Could not find {doi} on biorxiv")
         return False
-
-    # Download full MECA and extract PDF
-    data = s3.get_object(Bucket=bucket, Key=target, RequestPayer="requester")[
-        "Body"
-    ].read()
-    output_path = Path(output_path)
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        for name in z.namelist():
-            if name.lower().endswith(".pdf"):
-                z.extract(name, path=output_path.parent)
-                # Move file to desired location
-                (output_path.parent / name).rename(output_path.with_suffix(".pdf"))
-                return True
-    return False
+    return True
 
 
 def fallback_unpaywall(doi: str, output_path: Union[str,Path], mail: str, final_url: str) -> bool:

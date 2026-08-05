@@ -1,12 +1,18 @@
 import json
 import logging
 import sys
+from importlib import resources
 from typing import Dict, List
 
 import pandas as pd
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def get_server_dumps_dir() -> str:
+    """Return the filesystem path to the bundled server_dumps directory."""
+    return str(resources.files("paperscraper").joinpath("server_dumps"))
 
 
 def dump_papers(papers: pd.DataFrame, filepath: str) -> None:
@@ -66,5 +72,5 @@ def load_jsonl(filepath: str) -> List[Dict[str, str]]:
     """
 
     with open(filepath, "r") as f:
-        data = [json.loads(line) for line in f.readlines()]
+        data = [json.loads(line) for line in f if line.strip()]
     return data

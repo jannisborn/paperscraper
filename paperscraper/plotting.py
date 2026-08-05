@@ -1,7 +1,6 @@
 import logging
 import math
-import os
-from typing import Iterable, List
+from typing import Any, Iterable, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,41 +15,48 @@ mpl_logger.setLevel(logging.WARNING)
 def plot_comparison(
     data_dict: dict,
     keys: List[str],
-    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
+    x_ticks: List[str] = [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+    ],
     show_preprint: bool = False,
     title_text: str = "",
-    keyword_text=None,
+    keyword_text: Optional[List[str]] = None,
     figpath: str = "comparison_plot.pdf",
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
     Args:
-        data_dict (dict): A dictionary with keywords as keys. Each value should be a
+        data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
-                'covid_19.jsonl': {
-                    'pubmed': [0, 0, 0, 12345],
-                    'arxiv': [0, 0, 0, 1234],
+                'artificialintelligence_quantumcomputing_chemistry.jsonl': {
+                    'pubmed': [0, 0, 1, 3, 7, 15, 31, 42],
+                    'arxiv': [2, 5, 12, 24, 40, 63, 91, 120],
                     ...
                 }
-                'coronavirus.jsonl':
-                    'pubmed': [234, 345, 456, 12345],
-                    'arxiv': [123, 234, 345, 1234],
+                'artificialintelligence_quantumcomputing_physics.jsonl': {
+                    'pubmed': [1, 1, 2, 4, 9, 16, 27, 38],
+                    'arxiv': [12, 25, 44, 72, 110, 155, 210, 260],
                     ...
                 }
             }
-        keys (List[str]): List of keys which should be plotted. This has to be a
-           subset of data_dict.keys().
-        x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
-            same length as data_dict[key][database]. Defaults to ['2015', '2016',
-            '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
-            year.
-        show_preprint (bool, optional): Whether preprint servers are aggregated or not.
+        keys: List of keys which should be plotted. This has to be a subset of data_dict.keys().
+        x_ticks: List of strings to be used for the x-ticks. Should have same length as
+            each data series. Defaults to ['2019', '2020', '2021', '2022', '2023',
+            '2024', '2025', '2026'],
+            meaning that papers are aggregated per year.
+        show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
-        title_text (str, optional): Title for the produced figure. Defaults to ''.
-        keyword_text ([type], optional): Figure caption per keyword. Defaults to None,
-            i.e. empty strings will be used.
-        figpath (str, optional): Name under which figure is saved. Relative or absolute
+        title_text: Title for the produced figure. Defaults to ''.
+        keyword_text: Figure caption per keyword. Defaults to None, i.e. empty strings will be used.
+        figpath: Name under which figure is saved. Relative or absolute
             paths can be given. Defaults to 'comparison_plot.pdf'.
 
     Raises:
@@ -78,11 +84,13 @@ def plot_comparison(
         preprint.append(arxiv[-1] + biorxiv[-1] + medrxiv[-1] + chemrxiv[-1])
 
     ind = np.arange(len(arxiv[0]))  # the x locations for the groups
-    width = [0.2] * len(ind)  # the width of the bars: can also be len(x) sequence
-    if len(keys) == 2:
-        pos = [-0.2, 0.2]
-    elif len(keys) == 3:
-        pos = [-0.3, 0.0, 0.3]
+    bar_width = min(0.8 / len(keys), 0.2)
+    width = [bar_width] * len(ind)
+    pos = np.linspace(
+        -bar_width * (len(keys) - 1) / 2,
+        bar_width * (len(keys) - 1) / 2,
+        len(keys),
+    )
 
     plts = []
     legend_plts = []
@@ -92,7 +100,7 @@ def plot_comparison(
         legend_platform = ["PubMed", "Preprint"]
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
+        legend_platform = ["PubMed", "ArXiv", "bioRxiv", "ChemRxiv", "medRxiv"]
     for idx in range(len(keys)):
         bottom = 0
 
@@ -162,7 +170,9 @@ def plot_comparison(
     )
     plt.gca().add_artist(legend)
 
-    get_step_size = lambda x: round(x / 10, -math.floor(math.log10(x)) + 1)
+    def get_step_size(x):
+        return round(x / 10, -math.floor(math.log10(x)) + 1)
+
     ymax = plt.gca().get_ylim()[1]
     step_size = np.clip(get_step_size(ymax), 5, 1000)
     y_steps = np.arange(0, ymax, step_size)
@@ -180,42 +190,49 @@ def plot_comparison(
 def plot_single(
     data_dict: dict,
     keys: str,
-    x_ticks: List[str] = ["2015", "2016", "2017", "2018", "2019", "2020"],
+    x_ticks: List[str] = [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+    ],
     show_preprint: bool = False,
     title_text: str = "",
     figpath: str = "comparison_plot.pdf",
-    logscale=False,
+    logscale: bool = False,
 ) -> None:
     """Plot temporal evolution of number of papers per keyword
 
     Args:
-        data_dict (dict): A dictionary with keywords as keys. Each value should be a
+        data_dict: A dictionary with keywords as keys. Each value should be a
             dictionary itself, with keys for the different APIs. For example
             data_dict = {
-                'covid_19.jsonl': {
-                    'pubmed': [0, 0, 0, 12345],
-                    'arxiv': [0, 0, 0, 1234],
+                'artificialintelligence_quantumcomputing_chemistry.jsonl': {
+                    'pubmed': [0, 0, 1, 3, 7, 15, 31, 42],
+                    'arxiv': [2, 5, 12, 24, 40, 63, 91, 120],
                     ...
                 }
-                'coronavirus.jsonl':
-                    'pubmed': [234, 345, 456, 12345],
-                    'arxiv': [123, 234, 345, 1234],
+                'artificialintelligence_quantumcomputing_physics.jsonl': {
+                    'pubmed': [1, 1, 2, 4, 9, 16, 27, 38],
+                    'arxiv': [12, 25, 44, 72, 110, 155, 210, 260],
                     ...
                 }
             }
-        keys (str): A key which should be plotted. This has to be a
-           subset of data_dict.keys().
+        keys: A key which should be plotted. This has to be a subset of data_dict.keys().
         x_ticks (List[str]): List of strings to be used for the x-ticks. Should have
-            same length as data_dict[key][database]. Defaults to ['2015', '2016',
-            '2017', '2018', '2019', '2020'], meaning that papers are aggregated per
-            year.
-        show_preprint (bool, optional): Whether preprint servers are aggregated or not.
+            the same length as each data series. Defaults to ['2019', '2020',
+            '2021', '2022', '2023', '2024', '2025', '2026'], meaning that papers
+            are aggregated per year.
+        show_preprint: Whether preprint servers are aggregated or not.
             Defaults to False.
-        title_text (str, optional): Title for the produced figure. Defaults to ''.
+        title_text: Title for the produced figure. Defaults to ''.
         figpath (str, optional): Name under which figure is saved. Relative or absolute
             paths can be given. Defaults to 'comparison_plot.pdf'.
-        logscale (bool, optional): Whether y-axis is plotted on logscale. Defaults
-            to False.
+        logscale: Whether y-axis is plotted on logscale. Defaults to False.
 
     Raises:
         KeyError: If a database is missing in data_dict.
@@ -243,7 +260,6 @@ def plot_single(
 
     ind = np.arange(len(arxiv[0]))  # the x locations for the groups
     width = [0.75] * len(ind)  # the width of the bars: can also be len(x) sequence
-    fnc = np.log10 if logscale else np.copy
 
     plts = []
     legend_plts = []
@@ -257,7 +273,7 @@ def plot_single(
 
     else:
         bars = [pubmed, arxiv, biorxiv, chemrxiv, medrxiv]
-        legend_platform = ["PubMed", "ArXiv", "BiorXiv", "ChemRxiv", "MedRxiv"]
+        legend_platform = ["PubMed", "ArXiv", "bioRxiv", "ChemRxiv", "medRxiv"]
         if logscale:
             sums = (
                 np.array(pubmed)
@@ -330,7 +346,6 @@ def plot_single(
         ncol=1,
     )
 
-    get_step_size = lambda x: round(x / 10, -math.floor(math.log10(x)) + 1)
     ymax = plt.gca().get_ylim()[1]
 
     for y_step in plt.yticks()[0]:
@@ -343,7 +358,8 @@ def plot_single(
     plt.show()
 
 
-get_name = lambda n: " vs. ".join(list(map(lambda x: x.split(" ")[0], n)))
+def get_name(names):
+    return " vs. ".join(name.split(" ")[0] for name in names)
 
 
 def plot_venn_two(
@@ -351,7 +367,7 @@ def plot_venn_two(
     labels: List[str],
     figpath: str = "venn_two.pdf",
     title: str = "",
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Plot a single Venn Diagram with two terms.
 
@@ -369,29 +385,30 @@ def plot_venn_two(
     assert len(labels) == 2, "Incorrect type/length of labels"
 
     title = get_name(labels) if title == "" else title
-    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
+    figpath = f"{title.lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
     venn2(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn2_circles(
         subsets=sizes, linestyle="solid", linewidth=0.6, color="grey", **kwargs
     )
     if kwargs.get("ax", False):
-        print(kwargs, type(kwargs))
-        print(kwargs["ax"])
         kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
         plt.title(title, fontdict={"fontweight": "bold"}, size=15)
-        plt.savefig(f"{figname}.pdf")
+        plt.savefig(figpath)
 
 
 def plot_venn_three(
-    sizes: List[int], labels: List[str], figpath: str = "", title: str = "", **kwargs
+    sizes: List[int],
+    labels: List[str],
+    figpath: str = "",
+    title: str = "",
+    **kwargs: Any,
 ) -> None:
-    """Plot a single Venn Diagram with two terms.
+    """Plot a single Venn Diagram with three terms.
 
     Args:
-        sizes (List[int]): List of ints of length 3. First two elements correspond to
-            the labels, third one to the intersection.
-        labels (List[str]): List of str of length 2, containing names of circles.
+        sizes (List[int]): List of ints of length 7 with the subset sizes.
+        labels (List[str]): List of str of length 3, containing names of circles.
         figpath (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         title (str): Title of the plot. Defaults to '', i.e. it is inferred from
@@ -402,7 +419,7 @@ def plot_venn_three(
     assert len(labels) == 3, "Incorrect type/length of labels"
 
     title = get_name(labels) if title == "" else title
-    figname = title.lower().replace(" vs. ", "_") if figpath == "" else figpath
+    figpath = f"{title.lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
 
     venn3(subsets=sizes, set_labels=labels, alpha=0.6, **kwargs)
     venn3_circles(
@@ -413,18 +430,18 @@ def plot_venn_three(
         kwargs["ax"].set_title(title, fontdict={"fontweight": "bold"}, size=15)
     else:
         plt.title(title, fontdict={"fontweight": "bold"}, size=15)
-        plt.savefig(f"{figname}.pdf")
+        plt.savefig(figpath)
 
 
 def plot_multiple_venn(
     sizes: List[List[int]],
     labels: List[List[str]],
-    figname: str,
     titles: List[str],
+    figpath: str = "",
     suptitle: str = "",
     gridspec_kw: dict = {},
     figsize: Iterable = (8, 4.5),
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Plots multiple Venn Diagrams next to each other
 
@@ -434,7 +451,7 @@ def plot_multiple_venn(
             (plot_venn_two).
         labels (List[List[str]]): List of Lists of str containing names of circles.
             Lengths of lists should be either 2 or 3.
-        figname (str): Name under which figure is saved. Defaults to '', i.e. it is
+        figpath (str): Name under which figure is saved. Defaults to '', i.e. it is
             inferred from labels.
         titles (List[str]): Titles of subplots. Should have same length like labels
             and sizes.
@@ -455,7 +472,9 @@ def plot_multiple_venn(
     fig, axes = plt.subplots(1, len(sizes), gridspec_kw=gridspec_kw, figsize=figsize)
     plt.suptitle(suptitle, size=18, fontweight="bold")
 
-    figname = titles[0].lower().replace(" vs. ", "_") if figname == "" else figname
+    figpath = (
+        f"{titles[0].lower().replace(' vs. ', '_')}.pdf" if figpath == "" else figpath
+    )
 
     for idx, (size, label, title) in enumerate(zip(sizes, labels, titles)):
         if len(label) == 2:
@@ -463,4 +482,4 @@ def plot_multiple_venn(
         elif len(label) == 3:
             plot_venn_three(size, label, title=title, ax=axes[idx])
 
-    plt.savefig(f"{figname}.pdf")
+    plt.savefig(figpath)

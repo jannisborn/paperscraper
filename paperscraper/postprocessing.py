@@ -37,7 +37,7 @@ def aggregate_paper(
             title or abstract. Only applies if filtering is True.
         return_filtered (bool, optional): Whether the filtered matches are also
             returned. Only applies if filtering is True. Defaults to False.
-        filer_abstract (bool, optional): Whether the keyword is searched in the abstract
+        filter_abstract (bool, optional): Whether the keyword is searched in the abstract
             or not. Defaults to True.
         last_year (int, optional): Most recent year for the aggregation. Defaults
             to current year. All newer entries are discarded.
@@ -71,6 +71,8 @@ def aggregate_paper(
         year = int(date.split("-")[0])
         if year < start_year or year > last_year:
             continue
+        title = str(paper.get("title") or "").lower()
+        abstract = str(paper.get("abstract") or "").lower()
 
         # At least one synonym per keyword needs to be in either title or
         # abstract.
@@ -78,13 +80,9 @@ def aggregate_paper(
             # Filter out papers which undesired terms
             unwanted = False
             for unwanted_key in unwanted_keys:
-                if unwanted_key.lower() in paper["title"].lower():
+                if unwanted_key.lower() in title:
                     unwanted = True
-                if (
-                    filter_abstract
-                    and paper["abstract"] is not None
-                    and unwanted_key.lower() in paper["abstract"].lower()
-                ):
+                if filter_abstract and unwanted_key.lower() in abstract:
                     unwanted = True
             if unwanted:
                 continue
@@ -95,13 +93,9 @@ def aggregate_paper(
                 if not isinstance(key_term, list):
                     key_term = [key_term]
                 for key in key_term:
-                    if key.lower() in paper["title"].lower():
+                    if key.lower() in title:
                         got_key = True
-                    if (
-                        filter_abstract
-                        and paper["abstract"] is not None
-                        and key.lower() in paper["abstract"].lower()
-                    ):
+                    if filter_abstract and key.lower() in abstract:
                         got_key = True
                 got_keys.append(got_key)
 
@@ -112,8 +106,7 @@ def aggregate_paper(
 
         if len(date.split("-")) < 2:
             logger.warning(
-                f"Paper without month {date}, randomly assigned month."
-                f"{paper['title']}"
+                f"Paper without month {date}, randomly assigned month.{paper['title']}"
             )
             month = np.random.choice(12)
         else:

@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -14,7 +15,7 @@ from tqdm import tqdm
 
 from ..utils import load_jsonl
 from .fallbacks import FALLBACKS
-from .utils import load_api_keys
+from .utils import download_pdf_to_path, load_api_keys
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,6 +26,93 @@ ABSTRACT_ATTRIBUTE = {
     "chemrxiv": ["citation_abstract"],
 }
 DEFAULT_ATTRIBUTES = ["citation_abstract", "description"]
+CHEMRXIV_API_BASE = "https://www.cambridge.org/engage/coe/public-api/v1/items/doi/"
+
+
+def _get_chemrxiv_item(
+    doi: str, user_agent: Dict[str, str]
+) -> Optional[Dict[str, Any]]:
+    """Fetch ChemRxiv metadata from the Cambridge Open Engage API.
+
+    Args:
+        doi: The DOI to look up.
+        user_agent: Headers to use for the request.
+
+    Returns:
+        Item metadata if available, otherwise None.
+    """
+    api_url = f"{CHEMRXIV_API_BASE}{doi}"
+    try:
+        response = requests.get(api_url, timeout=60, headers=user_agent)
+        response.raise_for_status()
+        data = response.json()
+    except Exception as exc:
+        logger.warning(f"ChemRxiv API lookup failed for {doi}: {exc}")
+        return None
+
+    if isinstance(data, dict) and isinstance(data.get("item"), dict):
+        return data["item"]
+    return data if isinstance(data, dict) else None
+
+
+def _chemrxiv_metadata_from_item(item: Dict[str, Any], doi: str) -> Dict[str, Any]:
+    """Build metadata from a ChemRxiv API item payload.
+
+    Args:
+        item: API response payload for the item.
+        doi: DOI for logging context.
+
+    Returns:
+        A metadata dict with title, authors, and abstract.
+    """
+    metadata: Dict[str, Any] = {
+        "title": item.get("title") or "Title not found",
+        "authors": [],
+    }
+
+    authors = []
+    for author in item.get("authors", []) or []:
+        first = (author or {}).get("firstName") or ""
+        last = (author or {}).get("lastName") or ""
+        name = " ".join(part for part in [first, last] if part).strip()
+        if name:
+            authors.append(name)
+    metadata["authors"] = authors if authors else ["Author information not found"]
+
+    abstract = item.get("abstract")
+    if abstract:
+        abstract_text = BeautifulSoup(abstract, "html.parser").get_text(separator="\n")
+        abstract_text = abstract_text.strip()
+        if abstract_text.startswith("Abstract"):
+            abstract_text = abstract_text[8:].strip()
+        metadata["abstract"] = abstract_text
+    else:
+        metadata["abstract"] = "Abstract not found"
+        logger.warning(f"Could not find abstract for {doi}")
+
+    return metadata
+
+
+def _chemrxiv_pdf_url(item: Dict[str, Any]) -> Optional[str]:
+    """Extract the PDF URL from a ChemRxiv API item payload."""
+    asset = item.get("asset")
+    if not isinstance(asset, dict):
+        return None
+    original = asset.get("original")
+    if isinstance(original, dict) and original.get("url"):
+        return original.get("url")
+    return asset.get("url")
+
+
+def _write_metadata(metadata: Dict[str, Any], output_path: Path) -> bool:
+    """Write metadata to a JSON file next to the PDF."""
+    try:
+        with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as exc:
+        logger.error(f"Failed to save metadata to {str(output_path)}: {exc}")
+        return False
 
 # python
 def _get_abstract_pubmed(pmid: str, timeout: int = 20) -> Optional[str]:
@@ -137,9 +225,9 @@ def save_pdf(
     # load API keys from file if not already loaded via in save_pdf_from_dump (dict)
     if not isinstance(api_keys, dict):
         api_keys = load_api_keys(api_keys)
-
     doi = paper_metadata["doi"]
     url = f"https://doi.org/{doi}"
+    user_agent = {"User-Agent": "paperscraper/1.0 (+https)"}
     success = False
     used_method: Optional[str] = None
     used_filetype: Optional[str] = None
@@ -148,6 +236,7 @@ def save_pdf(
 
     try:
         response = requests.get(url, timeout=60)
+        soup = BeautifulSoup(response.text, features="lxml")
         response.raise_for_status()
         final_url = response.url
         soup = BeautifulSoup(response.text, features="lxml")

@@ -1,0 +1,113 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paperscraper"
+dynamic = ["version"]
+description = "paperscraper: Package to scrape papers."
+readme = "README.md"
+requires-python = ">=3.9,<3.14"
+license = "MIT"
+authors = [
+  {name = "Jannis Born", email = "jannis.born@gmx.de"},
+  {name = "Matteo Manica", email = "drugilsberg@gmail.com"},
+]
+keywords = [
+  "Academics",
+  "Science",
+  "Publication",
+  "Search",
+  "PubMed",
+  "Arxiv",
+  "Medrxiv",
+  "Biorxiv",
+  "Chemrxiv",
+  "Google Scholar",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "arxiv>=2.4.0",
+  "pymed-paperscraper>=1.0.6",
+  "pandas>=1.0.4",
+  "requests>=2.32.2",
+  "tqdm>=4.51.0",
+  "scholarly>=1.0.0",
+  "seaborn>=0.11.0",
+  "matplotlib>=3.3.2",
+  "matplotlib-venn>=0.11.5",
+  "bs4>=0.0.1",
+  "impact-factor>=1.1.3",
+  "thefuzz>=0.20.0",
+  "pytest",
+  "tldextract",
+  "semanticscholar>=0.8.4",
+  "pydantic",
+  "unidecode",
+  "dotenv",
+  "boto3",
+  "kaggle>=1.7.4.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/jannisborn/paperscraper"
+Documentation = "https://jannisborn.github.io/paperscraper/"
+Repository = "https://github.com/jannisborn/paperscraper"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {attr = "paperscraper.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["paperscraper*"]
+
+[dependency-groups]
+dev = [
+  "coverage",
+  "pytest-cov",
+  "build",
+  "twine",
+  "ruff>=0.15",
+  "isort>=6",
+  "mkdocs-material>=9.6",
+  "mkdocstrings[python]>=0.24",
+  "mkdocs-material-extensions",
+  "pre-commit>=4.3.0",
+  "grip>=4.6.2",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+known_first_party = ["paperscraper"]
+
+[tool.pytest.ini_options]
+markers = [
+  "timeout(seconds): mark tests that enforce a wall-clock timeout",
+]

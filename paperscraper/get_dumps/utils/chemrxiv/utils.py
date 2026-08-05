@@ -7,11 +7,11 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from requests.exceptions import SSLError
-from requests.models import HTTPError
+from requests.exceptions import JSONDecodeError
 from tqdm import tqdm
 
 from .chemrxiv_api import ChemrxivAPI
+from .crossref_api import CrossrefChemrxivAPI, crossref_item_to_paper
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def get_date(datestring: str) -> str:
     """Get the date of a chemrxiv dump enry.
 
     Args:
-        date (str): String in the format: 2021-10-15T05:12:32.356Z
+        datestring: String in the format: 2021-10-15T05:12:32.356Z
 
     Returns:
         str: Date in the format: YYYY-MM-DD.
@@ -73,6 +73,7 @@ def get_metrics(metrics_list: List[Dict]) -> Dict:
     # This assumes that the .jsonl is constructed at roughly the same date
     # where this entry was obtained from the API
     metric_dict.update({"timestamp": today})
+    return metric_dict
 
 
 def parse_dump(source_path: str, target_path: str) -> None:
@@ -84,7 +85,7 @@ def parse_dump(source_path: str, target_path: str) -> None:
     NOTE: This is a lazy parser trying to store all data in memory.
 
     Args:
-        path (str): Path to the source dump
+        source_path: Path to the source dump
     """
 
     dump = []
@@ -93,8 +94,17 @@ def parse_dump(source_path: str, target_path: str) -> None:
         if not file_name.endswith(".json"):
             continue
         filepath = os.path.join(source_path, file_name)
-        with open(filepath, "r") as f:
-            source_paper = json.load(f)
+        if os.path.getsize(filepath) == 0:
+            logger.warning(f"Empty chemRxiv dump file {filepath}; skipping.")
+            os.remove(filepath)
+            continue
+        try:
+            with open(filepath, "r") as f:
+                source_paper = json.load(f)
+        except JSONDecodeError as exc:
+            logger.warning(f"Invalid JSON in chemRxiv dump file {filepath}: {exc}")
+            os.remove(filepath)
+            continue
 
         target_paper = {
             "title": source_paper["title"],
@@ -127,20 +137,99 @@ def parse_dump(source_path: str, target_path: str) -> None:
 def download_full(save_dir: str, api: Optional[ChemrxivAPI] = None) -> None:
     if api is None:
         api = ChemrxivAPI()
-
     os.makedirs(save_dir, exist_ok=True)
+
     for preprint in tqdm(api.all_preprints()):
-        path = os.path.join(save_dir, f"{preprint['item']['id']}.json")
+        item = preprint["item"]
+        path = os.path.join(save_dir, f"{item['id']}.json")
         if os.path.exists(path):
             continue
-        preprint = preprint["item"]
-        preprint_id = preprint["id"]
-        try:
-            preprint = api.preprint(preprint_id)
-        except HTTPError:
-            logger.warning(f"HTTP API Client error for ID: {preprint_id}")
-        except SSLError:
-            logger.warning(f"SSLError for ID: {preprint_id}")
 
-        with open(path, "w") as file:
-            json.dump(preprint, file, indent=2)
+        if not item.get("title") or "authors" not in item:
+            try:
+                item = api.preprint(item["id"])
+            except Exception as e:
+                logger.warning(
+                    f"Enrich failed for {item['id']}: {e}; writing listing payload"
+                )
+
+        tmp_path = f"{path}.tmp"
+        try:
+            with open(tmp_path, "w") as file:
+                json.dump(item, file, indent=2)
+            os.replace(tmp_path, path)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+
+def download_full_crossref(
+    save_dir: str, api: Optional[CrossrefChemrxivAPI] = None
+) -> None:
+    """Download ChemRxiv records via Crossref into per-item JSON payloads.
+
+    This mirrors the behavior of the OpenEngage backend by
+    storing one JSON payload per record in ``save_dir``. The payloads are raw
+    Crossref work items.
+
+    Args:
+        save_dir: Directory where per-item payloads are stored.
+        api: Crossref API client. If None, uses the widest possible date range.
+    """
+    if api is None:
+        api = CrossrefChemrxivAPI(start_date="2017-01-01", end_date=today)
+    os.makedirs(save_dir, exist_ok=True)
+
+    for item in tqdm(api.iter_items()):
+        doi = (item.get("DOI") or "").strip().lower()
+        if not doi:
+            continue
+        safe_name = doi.replace("/", "_")
+        path = os.path.join(save_dir, f"{safe_name}.json")
+        if os.path.exists(path):
+            continue
+
+        tmp_path = f"{path}.tmp"
+        try:
+            with open(tmp_path, "w") as file:
+                json.dump(item, file, indent=2)
+            os.replace(tmp_path, path)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+
+def parse_dump_crossref(source_path: str, target_path: str) -> None:
+    """Parse Crossref payloads into the ChemRxiv JSONL dump format.
+
+    Args:
+        source_path: Directory containing per-item Crossref JSON payloads.
+        target_path: JSONL output path.
+    """
+    dump: List[Dict] = []
+
+    for file_name in tqdm(os.listdir(source_path)):
+        if not file_name.endswith(".json"):
+            continue
+        filepath = os.path.join(source_path, file_name)
+        if os.path.getsize(filepath) == 0:
+            logger.warning(f"Empty Crossref payload file {filepath}; skipping.")
+            os.remove(filepath)
+            continue
+        try:
+            with open(filepath, "r") as f:
+                source_item = json.load(f)
+        except JSONDecodeError as exc:
+            logger.warning(f"Invalid JSON in Crossref payload file {filepath}: {exc}")
+            os.remove(filepath)
+            continue
+
+        dump.append(crossref_item_to_paper(source_item))
+        os.remove(filepath)
+
+    with open(target_path, "w") as f:
+        for idx, paper in enumerate(dump):
+            if idx > 0:
+                f.write(os.linesep)
+            f.write(json.dumps(paper))
+    logger.info("Done, shutting down")
