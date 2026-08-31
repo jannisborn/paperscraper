@@ -13,24 +13,25 @@ Fetch citation counts by DOI using Semantic Scholar:
 12  # Semantic Scholar citation count.
 ```
 
-You can also query Google Scholar by title:
+Fetch citation counts by title from Google Scholar (SearchAPI or scholarly backend) or Semantic Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_citations_from_title
 >>> title = "GT4SD: Generative Toolkit for Scientific Discovery"
->>> get_citations_from_title(title)
+>>> get_citations_from_title(title, backend="scholarly")
 9  # Google Scholar citation count.
 ```
 
-Citation counts can differ between Semantic Scholar and Google Scholar. Google
-Scholar queries may trigger captchas during automated use. Semantic Scholar
-throughput can be increased with `SS_API_KEY`:
+The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI (through the env var `SEARCH_API_KEY`) then Semantic Scholar (through `SS_API_KEY`) and otherwise uses Google Scholar via `scholarly` (which has very limited throughput).
+An explicit `api_key` can be passed with a specific backend. 
+NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.
 
 ```sh
+export SEARCH_API_KEY=YOUR_API_KEY
 export SS_API_KEY=YOUR_API_KEY
 ```
 
-For larger author-level runs, `SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and
+For larger runs, `SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and
 `SS_RATE_LIMIT_DELAY` can be tuned through environment variables.
 
 ## Researcher Metrics
