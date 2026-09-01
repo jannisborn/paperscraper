@@ -32,6 +32,8 @@ def load_api_keys(filepath: Optional[str] = None) -> Dict[str, str]:
         "ELSEVIER_TDM_API_KEY": os.getenv("ELSEVIER_TDM_API_KEY"),
         "AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID"),
         "AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY"),
+        "SEARCH_API_KEY": os.getenv("SEARCH_API_KEY"),
+        "SS_API_KEY": os.getenv("SS_API_KEY"),
     }
 
 

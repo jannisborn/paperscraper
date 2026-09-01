@@ -9,6 +9,7 @@ jobs:
   test-source-install:
     runs-on: ubuntu-latest
     env:
+      SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
       SS_API_KEY: ${{ secrets.SS_API_KEY }}
     strategy:
       max-parallel: 3
@@ -61,6 +62,7 @@ jobs:
   test-potential-wheel-install:
     runs-on: ubuntu-latest
     env:
+      SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
       SS_API_KEY: ${{ secrets.SS_API_KEY }}
     steps:
     - name: Checkout code
