@@ -13,9 +13,11 @@ from paperscraper.citations.utils import (
     author_name_to_ssaid,
     check_overlap,
 )
+from paperscraper.pdf import load_api_keys
 
 logging.disable(logging.INFO)
 
+API_KEYS = load_api_keys("api_keys.txt")
 PAPER_TITLE = "GT4SD: Generative Toolkit for Scientific Discovery"
 
 
@@ -40,19 +42,19 @@ class TestCitations:
             pytest.skip(f"Google Scholar unavailable: {exc}")
         assert isinstance(num, int) and num > 0
 
-    def test_citations_from_title_semantic_scholar(self, api_keys):
+    def test_citations_from_title_semantic_scholar(self):
         num = get_citations_from_title(
             PAPER_TITLE,
             backend="semantic_scholar",
-            api_key=api_keys["SS_API_KEY"],
+            api_key=API_KEYS["SS_API_KEY"],
         )
         assert isinstance(num, int) and num > 0
 
-    def test_citations_from_title_searchapi(self, api_keys):
+    def test_citations_from_title_searchapi(self):
         num = get_citations_from_title(
             PAPER_TITLE,
             backend="searchapi",
-            api_key=api_keys["SEARCH_API_KEY"],
+            api_key=API_KEYS["SEARCH_API_KEY"],
         )
         assert isinstance(num, int) and num > 0
         assert SEARCH_API_CACHE["citations"][PAPER_TITLE] == num
@@ -75,18 +77,18 @@ class TestCitations:
             "other": {},
         }
 
-    def test_citation_backend_resolution(self, api_keys):
+    def test_citation_backend_resolution(self):
         assert _resolve_citation_backend("auto", None) == "searchapi"
 
         with pytest.raises(ValueError, match="cannot be used"):
-            get_citations_from_title(PAPER_TITLE, api_key=api_keys["SEARCH_API_KEY"])
+            get_citations_from_title(PAPER_TITLE, api_key=API_KEYS["SEARCH_API_KEY"])
         with pytest.raises(ValueError, match="Unknown backend"):
             get_citations_from_title(PAPER_TITLE, backend="invalid")
         with pytest.raises(ValueError, match="not supported"):
             get_citations_from_title(
                 PAPER_TITLE,
                 backend="scholarly",
-                api_key=api_keys["SEARCH_API_KEY"],
+                api_key=API_KEYS["SEARCH_API_KEY"],
             )
 
     def test_name_overlap(self):
