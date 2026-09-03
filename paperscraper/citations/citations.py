@@ -12,6 +12,7 @@ from .utils import (
     SEARCH_API_CACHE,
     SEARCH_API_KEY,
     SS_API_KEY,
+    _resolve_backend,
     _semantic_scholar_requests_get_with_backoff,
     save_search_api_cache,
     search_api_requests_get,
@@ -20,7 +21,7 @@ from .utils import (
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Identical SearchApi queries can return different Google Scholar result sets.
+# SearchApi queries are stochastic
 _SEARCH_API_ATTEMPTS = 3
 
 
@@ -376,12 +377,9 @@ def _resolve_citation_backend(backend: str, api_key: Optional[str]) -> str:
     Returns:
         Resolved backend.
     """
-    if backend != "auto":
-        return backend
-    if api_key is not None:
-        raise ValueError("api_key cannot be used with backend='auto'")
-    if SEARCH_API_KEY:
-        return "searchapi"
-    if SS_API_KEY:
-        return "semantic_scholar"
-    return "scholarly"
+    return _resolve_backend(
+        backend,
+        api_key,
+        (("searchapi", SEARCH_API_KEY), ("semantic_scholar", SS_API_KEY)),
+        "scholarly",
+    )

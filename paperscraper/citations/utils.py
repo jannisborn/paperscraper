@@ -7,7 +7,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
 import httpx
 import requests
@@ -55,6 +55,20 @@ def save_search_api_cache() -> None:
         Path(SEARCH_API_CACHE_PATH).write_text(
             json.dumps(SEARCH_API_CACHE, indent=2, sort_keys=True) + "\n"
         )
+
+
+def _resolve_backend(
+    backend: str,
+    api_key: Optional[str],
+    api_backends: Sequence[Tuple[str, Optional[str]]],
+    default: str,
+) -> str:
+    """Resolve an automatic backend from configured API keys."""
+    if backend != "auto":
+        return backend
+    if api_key is not None:
+        raise ValueError("api_key cannot be used with backend='auto'")
+    return next((name for name, key in api_backends if key), default)
 
 
 HEADERS: Dict[str, str] = {}
