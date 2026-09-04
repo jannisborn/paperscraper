@@ -125,7 +125,7 @@ Google Scholar uses a plain text query:
 ```py
 from paperscraper.scholar import get_and_dump_scholar_papers
 
-get_and_dump_scholar_papers("Machine Learning")
+get_and_dump_scholar_papers("Machine Learning", "scholar_machine_learning.jsonl")
 ```
 
 Use `get_scholar_papers` when you want the search results as a DataFrame:
@@ -133,12 +133,21 @@ Use `get_scholar_papers` when you want the search results as a DataFrame:
 ```py
 from paperscraper.scholar import get_scholar_papers
 
-papers = get_scholar_papers("GT4SD")
+papers = get_scholar_papers(
+    "GT4SD",
+    backend="searchapi",
+    search_api_kwargs={"top_k": 5, "num_enrich": 1},
+)
 ```
 
-Google Scholar does not use the nested Boolean query syntax. It follows the
-search behavior of the Google Scholar search box and may prompt captchas during
-large automated runs.
+Set `SEARCH_API_KEY` to use the SearchAPI backend. `top_k` controls the number
+of matches to return and `num_enrich` controls how many of those receive extra
+author-profile lookups for full abstracts, author lists, journals, and citation counts.
+Set it to `0` for a single SearchAPI request but then your result will merely reflect
+the content Google Scholar shows you [here](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=gt4sd&btnG=), i.e., all information is truncated.
+
+NOTE: Google Scholar does not use the nested Boolean query syntax. It follows the
+search behavior of the Google Scholar search box.
 
 ## Plotting
 

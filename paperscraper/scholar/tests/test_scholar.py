@@ -1,29 +1,15 @@
-import functools
 import logging
 
 import pandas as pd
-import pytest
-from scholarly._proxy_generator import MaxTriesExceededException
 
 from paperscraper.pdf import load_api_keys
 from paperscraper.scholar import get_and_dump_scholar_papers, get_scholar_papers
+from paperscraper.tests.scholar import handle_scholar_exception
 
 logging.disable(logging.INFO)
 
 API_KEYS = load_api_keys("api_keys.txt")
 FIELDS = ["title", "abstract", "citations", "year", "authors", "journal"]
-
-
-def handle_scholar_exception(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except MaxTriesExceededException as e:
-            logging.info(f"MaxTriesExceededException caught: {e}")
-            pytest.skip("Skipping test due to MaxTriesExceededException")
-
-    return wrapper
 
 
 class TestScholar:

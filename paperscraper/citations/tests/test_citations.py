@@ -2,18 +2,20 @@ import json
 import logging
 
 import pytest
-from scholarly._proxy_generator import MaxTriesExceededException
 
 from paperscraper.citations import get_citations_by_doi, get_citations_from_title
 from paperscraper.citations.citations import _resolve_citation_backend
 from paperscraper.citations.utils import (
     SEARCH_API_CACHE,
     SEARCH_API_CACHE_PATH,
+    SEARCH_API_KEY,
+    SS_API_KEY,
     _load_search_api_cache,
     author_name_to_ssaid,
     check_overlap,
 )
 from paperscraper.pdf import load_api_keys
+from paperscraper.tests.scholar import handle_scholar_exception
 
 logging.disable(logging.INFO)
 
@@ -35,11 +37,9 @@ class TestCitations:
         assert ssaid == "50095217"
         assert name == "Fabian H Sinz"
 
+    @handle_scholar_exception
     def test_citations_from_title_scholarly(self):
-        try:
-            num = get_citations_from_title(PAPER_TITLE, backend="scholarly")
-        except MaxTriesExceededException as exc:
-            pytest.skip(f"Google Scholar unavailable: {exc}")
+        num = get_citations_from_title(PAPER_TITLE, backend="scholarly")
         assert isinstance(num, int) and num > 0
 
     def test_citations_from_title_semantic_scholar(self):
@@ -61,7 +61,8 @@ class TestCitations:
 
         # Repeated and auto calls use the validated citation cache.
         assert get_citations_from_title(PAPER_TITLE, backend="searchapi") == num
-        assert get_citations_from_title(PAPER_TITLE) == num
+        if SEARCH_API_KEY:
+            assert get_citations_from_title(PAPER_TITLE) == num
 
         if SEARCH_API_CACHE_PATH:
             with open(SEARCH_API_CACHE_PATH) as cache_file:
@@ -78,7 +79,12 @@ class TestCitations:
         }
 
     def test_citation_backend_resolution(self):
-        assert _resolve_citation_backend("auto", None) == "searchapi"
+        expected_backend = "scholarly"
+        if SS_API_KEY:
+            expected_backend = "semantic_scholar"
+        if SEARCH_API_KEY:
+            expected_backend = "searchapi"
+        assert _resolve_citation_backend("auto", None) == expected_backend
 
         with pytest.raises(ValueError, match="cannot be used"):
             get_citations_from_title(PAPER_TITLE, api_key=API_KEYS["SEARCH_API_KEY"])

@@ -18,8 +18,10 @@ Fetch citation counts by title from Google Scholar (SearchAPI or scholarly backe
 ```pycon
 >>> from paperscraper.citations import get_citations_from_title
 >>> title = "GT4SD: Generative Toolkit for Scientific Discovery"
->>> get_citations_from_title(title, backend="scholarly")
-9  # Google Scholar citation count.
+>>> get_citations_from_title(title, backend="searchapi")
+57  # Google Scholar citation count.
+>>> get_citations_from_title(title, backend="semantic_scholar")
+18  # Semantic Scholar citation count.
 ```
 
 The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI (through the env var `SEARCH_API_KEY`) then Semantic Scholar (through `SS_API_KEY`) and otherwise uses Google Scholar via `scholarly` (which has very limited throughput).
