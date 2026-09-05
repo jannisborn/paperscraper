@@ -1186,16 +1186,24 @@ one specific preprint server after local dumps have been downloaded:</p>
 <p>Google Scholar uses a plain text query:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.scholar</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_and_dump_scholar_papers</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">get_and_dump_scholar_papers</span><span class="p">(</span><span class="s2">&quot;Machine Learning&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">get_and_dump_scholar_papers</span><span class="p">(</span><span class="s2">&quot;Machine Learning&quot;</span><span class="p">,</span> <span class="s2">&quot;scholar_machine_learning.jsonl&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Use <code>get_scholar_papers</code> when you want the search results as a DataFrame:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.scholar</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_scholar_papers</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">papers</span> <span class="o">=</span> <span class="n">get_scholar_papers</span><span class="p">(</span><span class="s2">&quot;GT4SD&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">papers</span> <span class="o">=</span> <span class="n">get_scholar_papers</span><span class="p">(</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="s2">&quot;GT4SD&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;searchapi&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">search_api_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;num_enrich&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">)</span>
 </code></pre></div>
-<p>Google Scholar does not use the nested Boolean query syntax. It follows the
-search behavior of the Google Scholar search box and may prompt captchas during
-large automated runs.</p>
+<p>Set <code>SEARCH_API_KEY</code> to use the SearchAPI backend. <code>top_k</code> controls the number
+of matches to return and <code>num_enrich</code> controls how many of those receive extra
+author-profile lookups for full abstracts, author lists, journals, and citation counts.
+Set it to <code>0</code> for a single SearchAPI request but then your result will merely reflect
+the content Google Scholar shows you <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=gt4sd&amp;btnG=">here</a>, i.e., all information is truncated.</p>
+<p>NOTE: Google Scholar does not use the nested Boolean query syntax. It follows the
+search behavior of the Google Scholar search box.</p>
 <h2 id="plotting">Plotting<a class="headerlink" href="#plotting" title="Permanent link">&para;</a></h2>
 <p>After aggregating keyword-analysis results, you can visualize temporal trends
 and overlaps.</p>
