@@ -1,11 +1,13 @@
 import asyncio
+import json
 import logging
 import os
 import random
 import re
 import sys
 import time
-from typing import Dict, List, Literal, Optional, Tuple
+from pathlib import Path
+from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
 import httpx
 import requests
@@ -26,9 +28,49 @@ RATE_LIMIT_DELAY = max(0.0, float(os.getenv("SS_RATE_LIMIT_DELAY", "1.1")))
 DOI_PATTERN = r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b"
 PAPER_URL: str = "https://api.semanticscholar.org/graph/v1/paper/"
 AUTHOR_URL: str = "https://api.semanticscholar.org/graph/v1/author/search"
+SEARCH_API_URL: str = "https://www.searchapi.io/api/v1/search"
 
 
 SS_API_KEY = os.getenv("SS_API_KEY")
+SEARCH_API_KEY = os.getenv("SEARCH_API_KEY")
+SEARCH_API_CACHE_PATH = os.getenv("SEARCH_API_CACHE_PATH")
+
+
+def _load_search_api_cache(cache_path: Optional[str]) -> dict:
+    """Load the SearchApi cache from disk."""
+    if cache_path and Path(cache_path).is_file():
+        cache = json.loads(Path(cache_path).read_text())
+    else:
+        cache = {}
+    cache.setdefault("citations", {})
+    return cache
+
+
+SEARCH_API_CACHE = _load_search_api_cache(SEARCH_API_CACHE_PATH)
+
+
+def save_search_api_cache() -> None:
+    """Save the SearchApi cache when a path is configured."""
+    if SEARCH_API_CACHE_PATH:
+        Path(SEARCH_API_CACHE_PATH).write_text(
+            json.dumps(SEARCH_API_CACHE, indent=2, sort_keys=True) + "\n"
+        )
+
+
+def _resolve_backend(
+    backend: str,
+    api_key: Optional[str],
+    api_backends: Sequence[Tuple[str, Optional[str]]],
+    default: str,
+) -> str:
+    """Resolve an automatic backend from configured API keys."""
+    if backend != "auto":
+        return backend
+    if api_key is not None:
+        raise ValueError("api_key cannot be used with backend='auto'")
+    return next((name for name, key in api_backends if key), default)
+
+
 HEADERS: Dict[str, str] = {}
 if SS_API_KEY:
     HEADERS["x-api-key"] = SS_API_KEY
@@ -84,13 +126,52 @@ async def semantic_scholar_get(
     return response
 
 
-def semantic_scholar_requests_get(url: str, **kwargs) -> requests.Response:
+def semantic_scholar_requests_get(
+    url: str, *, api_key: Optional[str] = None, **kwargs
+) -> requests.Response:
     """
     Perform a synchronous Semantic Scholar GET request and retry without a rejected API key.
+
+    Args:
+        url: Semantic Scholar endpoint.
+        api_key: Explicit API key.
+
+    Returns:
+        API response.
     """
-    response = requests.get(url, headers=HEADERS, **kwargs)
-    if _should_retry_without_key(response.status_code):
+    headers = {"x-api-key": api_key} if api_key is not None else HEADERS
+    response = requests.get(url, headers=headers, **kwargs)
+    if api_key is None and _should_retry_without_key(response.status_code):
         response = requests.get(url, headers=HEADERS, **kwargs)
+    return response
+
+
+def search_api_requests_get(
+    *, api_key: Optional[str] = None, url: str = SEARCH_API_URL, **kwargs
+) -> requests.Response:
+    """
+    Perform an authenticated SearchApi request.
+
+    Args:
+        api_key: Explicit API key.
+        url: SearchApi URL.
+
+    Returns:
+        requests.Response: API response.
+    """
+    resolved_api_key = api_key if api_key is not None else SEARCH_API_KEY
+    if not resolved_api_key:
+        raise ValueError(
+            "SearchApi requires api_key or the SEARCH_API_KEY environment variable."
+        )
+
+    response = requests.get(
+        url,
+        headers={"Authorization": f"Bearer {resolved_api_key}"},
+        timeout=90,
+        **kwargs,
+    )
+    response.raise_for_status()
     return response
 
 

@@ -14,8 +14,9 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [arXiv](https://arxiv.org/), [medRxiv](https://www.medrxiv.org/),
 [bioRxiv](https://www.biorxiv.org/), and [chemRxiv](https://chemrxiv.org/).
 It provides a streamlined interface to scrape metadata, retrieve citation counts
-from [Google Scholar](https://scholar.google.com/), query journal impact factors,
-and run simple postprocessing and plotting routines for meta-analysis.
+from [Google Scholar](https://scholar.google.com/) or Semantic Scholar, query
+journal impact factors, and run simple postprocessing and plotting routines for
+meta-analysis.
 
 ## Table of Contents
 
@@ -192,18 +193,28 @@ for batch downloads, fallbacks, publisher API keys, and downstream PDF analysis.
 
 ### Scholar metrics analysis
 
-Get paper citation counts and journal metrics:
+Get paper citation counts, Google Scholar search results, and journal metrics:
 
 ```py
-from paperscraper.citations import get_citations_by_doi
+from paperscraper.citations import get_citations_by_doi, get_citations_from_title
 from paperscraper.impact import Impactor
+from paperscraper.scholar import get_scholar_papers
 
 get_citations_by_doi("10.1021/acs.jcim.3c00132")
+get_citations_from_title(
+    "GT4SD: Generative Toolkit for Scientific Discovery",
+    backend="searchapi",
+)
+get_scholar_papers(
+    "GT4SD",
+    backend="searchapi",
+    search_api_kwargs={"top_k": 5, "num_enrich": 1},
+)
 Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 ```
 
-Outputs: `12` citations, then matching journal records such as
-`Nature Communications` with impact factor `15.7`.
+Set `SEARCH_API_KEY` to use the SearchAPI Google Scholar backend. Outputs include
+citation counts and Scholar search metadata (author list, title, abstract, journal).
 
 Author-level [Semantic Scholar](https://www.semanticscholar.org/) metrics can be retrieved by
 Semantic Scholar ID, name, or [ORCID](https://orcid.org/):
