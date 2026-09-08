@@ -3,7 +3,13 @@ import logging
 
 import pytest
 
-from paperscraper.citations import get_citations_by_doi, get_citations_from_title
+from paperscraper.citations import (
+    get_bibtex_entry,
+    get_citation_entry,
+    get_citations_by_doi,
+    get_citations_from_title,
+    get_endnote_entry,
+)
 from paperscraper.citations.citations import _resolve_citation_backend
 from paperscraper.citations.utils import (
     SEARCH_API_CACHE,
@@ -21,6 +27,8 @@ logging.disable(logging.INFO)
 
 API_KEYS = load_api_keys("api_keys.txt")
 PAPER_TITLE = "GT4SD: Generative Toolkit for Scientific Discovery"
+PAPER_DOI = "10.1038/s42256-023-00639-z"
+CITATION_TITLE = "Quantum doubly stochastic transformers"
 
 
 class TestCitations:
@@ -68,6 +76,45 @@ class TestCitations:
             with open(SEARCH_API_CACHE_PATH) as cache_file:
                 persisted_cache = json.load(cache_file)
             assert persisted_cache["citations"][PAPER_TITLE] == num
+
+    def test_citation_exports_searchapi(self):
+        bibtex = get_bibtex_entry(
+            CITATION_TITLE,
+            api_key=API_KEYS["SEARCH_API_KEY"],
+        )
+        assert "@article{born2026quantum" in bibtex
+        assert "title={Quantum doubly stochastic transformers}" in bibtex
+        assert (
+            "author={Born, Jannis and Skogh, Filip and Rhrissorrakrai, Kahn and "
+            "Utro, Filippo and Wagner, Nico and Sobczyk, Aleksandros}" in bibtex
+        )
+        assert "journal={Advances in Neural Information Processing Systems}" in bibtex
+        assert "volume={38}" in bibtex
+        assert "pages={70224--70254}" in bibtex
+        assert "year={2026}" in bibtex
+
+        endnote = get_endnote_entry(PAPER_DOI, api_key=API_KEYS["SEARCH_API_KEY"])
+        assert "%0 Journal Article" in endnote
+        assert (
+            "%T Regression transformer enables concurrent sequence regression and "
+            "generation for molecular language modelling" in endnote
+        )
+        assert "%A Born, Jannis" in endnote
+        assert "%A Manica, Matteo" in endnote
+        assert "%J Nature Machine Intelligence" in endnote
+        assert "%V 5" in endnote
+        assert "%N 4" in endnote
+        assert "%P 432-444" in endnote
+        assert "%@ 2522-5839" in endnote
+        assert "%D 2023" in endnote
+        assert "%I Nature Publishing Group UK London" in endnote
+
+        dispatched = get_citation_entry(
+            CITATION_TITLE,
+            format="bibtex",
+            api_key=API_KEYS["SEARCH_API_KEY"],
+        )
+        assert "@article{born2026quantum" in dispatched
 
     def test_searchapi_loads_cache(self, tmp_path):
         cache_path = tmp_path / "searchapi-cache.json"

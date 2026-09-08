@@ -196,7 +196,12 @@ for batch downloads, fallbacks, publisher API keys, and downstream PDF analysis.
 Get paper citation counts, Google Scholar search results, and journal metrics:
 
 ```py
-from paperscraper.citations import get_citations_by_doi, get_citations_from_title
+from paperscraper.citations import (
+    get_bibtex_entry,
+    get_citations_by_doi,
+    get_citations_from_title,
+    get_endnote_entry,
+)
 from paperscraper.impact import Impactor
 from paperscraper.scholar import get_scholar_papers
 
@@ -210,6 +215,9 @@ get_scholar_papers(
     backend="searchapi",
     search_api_kwargs={"top_k": 5, "num_enrich": 1},
 )
+
+get_bibtex_entry("Quantum doubly stochastic transformers")
+get_endnote_entry("10.1038/s42256-023-00639-z")
 Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 ```
 

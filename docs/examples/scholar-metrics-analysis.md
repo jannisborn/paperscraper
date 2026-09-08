@@ -28,6 +28,16 @@ The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI 
 An explicit `api_key` can be passed with a specific backend. 
 NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.
 
+Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
+
+```pycon
+>>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
+>>> get_bibtex_entry("Quantum doubly stochastic transformers")
+'@article{born2026quantum, ...}'
+>>> get_endnote_entry("10.1038/s42256-023-00639-z")
+'%0 Journal Article...'
+```
+
 ```sh
 export SEARCH_API_KEY=YOUR_API_KEY
 export SS_API_KEY=YOUR_API_KEY

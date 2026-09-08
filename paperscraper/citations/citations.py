@@ -1,13 +1,16 @@
 import logging
 import re
 import sys
+import time
 from typing import Iterable, Literal, Optional
 
+import requests
 from bs4 import BeautifulSoup
 from scholarly import scholarly
 from semanticscholar import SemanticScholarException
 
 from .utils import (
+    DOI_PATTERN,
     PAPER_URL,
     SEARCH_API_CACHE,
     SEARCH_API_KEY,
@@ -51,6 +54,155 @@ def get_citations_by_doi(doi: str) -> int:
     except SemanticScholarException.ObjectNotFoundException:
         logger.warning(f"Could not find paper {doi}, assuming 0 citation.")
         return 0
+
+
+def get_citation_entry(
+    title_or_doi: str,
+    format: Literal["endnote", "bibtex"] = "bibtex",
+    *,
+    api_key: Optional[str] = None,
+) -> str:
+    """Return a BibTeX or EndNote entry for a paper found on Google Scholar.
+
+    ``title_or_doi`` may be a paper title or DOI. DOI inputs require an
+    additional Semantic Scholar request to resolve the DOI to a title before
+    searching Google Scholar. The SearchAPI key is read from ``SEARCH_API_KEY``
+    unless ``api_key`` is provided.
+    """
+    if not isinstance(title_or_doi, str):
+        raise TypeError(f"Pass str not {type(title_or_doi)}")
+    if format not in {"endnote", "bibtex"}:
+        raise ValueError("format must be 'endnote' or 'bibtex'")
+
+    data_cid = _get_searchapi_data_cid(title_or_doi.strip(), api_key)
+    for attempt in range(_SEARCH_API_ATTEMPTS):
+        response = search_api_requests_get(
+            api_key=api_key,
+            params={
+                "engine": "google_scholar_cite",
+                "data_cid": data_cid,
+                "hl": "en",
+            },
+        )
+        link = next(
+            (
+                entry.get("link")
+                for entry in response.json().get("links", [])
+                if entry.get("title", "").casefold() == format
+            ),
+            None,
+        )
+        if link:
+            return _get_searchapi_export(link, format)
+        if attempt < _SEARCH_API_ATTEMPTS - 1:
+            # SearchAPI may intermittently return no cite results for a valid CID.
+            time.sleep(1)
+
+    raise RuntimeError(
+        f"SearchApi returned no {format} export for data_cid {data_cid!r}."
+    )
+
+
+def get_bibtex_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> str:
+    """Return a BibTeX entry for a paper title or DOI.
+
+    DOI inputs consume an additional Semantic Scholar request to resolve the
+    DOI before the Google Scholar SearchAPI lookup.
+    """
+    return get_citation_entry(title_or_doi, format="bibtex", api_key=api_key)
+
+
+def get_endnote_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> str:
+    """Return an EndNote entry for a paper title or DOI.
+
+    DOI inputs consume an additional Semantic Scholar request to resolve the
+    DOI before the Google Scholar SearchAPI lookup.
+    """
+    return get_citation_entry(title_or_doi, format="endnote", api_key=api_key)
+
+
+def _get_searchapi_data_cid(title_or_doi: str, api_key: Optional[str]) -> str:
+    """Resolve a title or DOI to an exact Google Scholar data CID."""
+    doi = re.search(DOI_PATTERN, title_or_doi, re.IGNORECASE)
+    search_title = title_or_doi
+
+    def find_exact(title: str) -> Optional[str]:
+        normalized_title = _normalize_citation_title(title)
+        # SearchApi results can vary between requests, so retry exact matching.
+        for _ in range(_SEARCH_API_ATTEMPTS):
+            for paper in _search_searchapi_title(title, api_key):
+                if (
+                    paper.get("data_cid")
+                    and _normalize_citation_title(paper.get("title", ""))
+                    == normalized_title
+                ):
+                    return paper["data_cid"]
+        return None
+
+    if doi:
+        response = _semantic_scholar_requests_get_with_backoff(
+            f"{PAPER_URL}DOI:{doi.group(0)}",
+            params={"fields": "title"},
+            max_retries=3,
+        )
+        paper = response.json()
+        search_title = paper.get("title", "")
+        data_cid = find_exact(search_title) if search_title else None
+        if data_cid:
+            return data_cid
+    else:
+        data_cid = find_exact(search_title)
+        if data_cid:
+            return data_cid
+    raise RuntimeError(
+        f"SearchApi returned no exact Scholar match for {title_or_doi!r}."
+    )
+
+
+def _search_searchapi_title(title: str, api_key: Optional[str]) -> list[dict]:
+    """Search Google Scholar for a title and return organic results."""
+    if not title:
+        return []
+    response = search_api_requests_get(
+        api_key=api_key,
+        params={
+            "engine": "google_scholar",
+            "q": f"allintitle: {title}",
+            "hl": "en",
+            "num": 20,
+        },
+    )
+    return response.json().get("organic_results", [])
+
+
+def _normalize_citation_title(title: str) -> str:
+    """Normalize a title for exact Scholar result matching."""
+    return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
+
+
+def _get_searchapi_export(link: str, format: Literal["endnote", "bibtex"]) -> str:
+    """Fetch citation text from a Google Scholar export link."""
+    for attempt in range(_SEARCH_API_ATTEMPTS):
+        export = requests.get(
+            link,
+            headers={
+                "Referer": "https://scholar.google.com/",
+                "User-Agent": "Mozilla/5.0",
+            },
+            timeout=90,
+        )
+        if export.ok:
+            citation = export.text.strip()
+            if not citation:
+                raise RuntimeError(f"SearchApi returned an empty {format} export.")
+            return citation
+        if export.status_code not in {429, 500, 502, 503, 504}:
+            export.raise_for_status()
+        if attempt < _SEARCH_API_ATTEMPTS - 1:
+            # Google Scholar export links can transiently reject a fresh request.
+            time.sleep(1)
+    export.raise_for_status()
+    raise RuntimeError(f"Could not retrieve the {format} export.")
 
 
 def get_citations_from_title(
