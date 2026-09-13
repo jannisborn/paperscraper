@@ -8,9 +8,10 @@ from paperscraper.citations import (
     get_citation_entry,
     get_citations_by_doi,
     get_citations_from_title,
+    get_citing_papers_from_title,
     get_endnote_entry,
 )
-from paperscraper.citations.citations import _resolve_citation_backend
+from paperscraper.citations.searchapi import _resolve_citation_backend
 from paperscraper.citations.utils import (
     SEARCH_API_CACHE,
     SEARCH_API_CACHE_PATH,
@@ -29,6 +30,11 @@ API_KEYS = load_api_keys("api_keys.txt")
 PAPER_TITLE = "GT4SD: Generative Toolkit for Scientific Discovery"
 PAPER_DOI = "10.1038/s42256-023-00639-z"
 CITATION_TITLE = "Quantum doubly stochastic transformers"
+CONTEXTUAL_OT_TITLE = "Quantum theory and application of contextual optimal transport"
+REGRESSION_TRANSFORMER_TITLE = (
+    "Regression transformer enables concurrent sequence regression and generation "
+    "for molecular language modelling"
+)
 
 
 class TestCitations:
@@ -115,6 +121,28 @@ class TestCitations:
             api_key=API_KEYS["SEARCH_API_KEY"],
         )
         assert "@article{born2026quantum" in dispatched
+
+    def test_citing_papers_from_title_searchapi(self):
+        citing_papers = get_citing_papers_from_title(
+            CONTEXTUAL_OT_TITLE,
+            api_key=API_KEYS["SEARCH_API_KEY"],
+        )
+        assert 0 < len(citing_papers) < 20
+
+    def test_citing_papers_max_results_searchapi(self):
+        citing_papers = get_citing_papers_from_title(
+            REGRESSION_TRANSFORMER_TITLE,
+            max_results=25,
+            api_key=API_KEYS["SEARCH_API_KEY"],
+        )
+        assert len(citing_papers) == 25
+
+    def test_all_citing_papers_from_title_searchapi(self):
+        citing_papers = get_citing_papers_from_title(
+            REGRESSION_TRANSFORMER_TITLE,
+            api_key=API_KEYS["SEARCH_API_KEY"],
+        )
+        assert len(citing_papers) > 200
 
     def test_searchapi_loads_cache(self, tmp_path):
         cache_path = tmp_path / "searchapi-cache.json"

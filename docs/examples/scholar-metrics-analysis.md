@@ -32,10 +32,43 @@ Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
 
 ```pycon
 >>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
->>> get_bibtex_entry("Quantum doubly stochastic transformers")
-'@article{born2026quantum, ...}'
->>> get_endnote_entry("10.1038/s42256-023-00639-z")
-'%0 Journal Article...'
+>>> title = "Quantum theory and application of contextual optimal transport"
+>>> print(get_bibtex_entry(title))
+@inproceedings{mariella2024quantum,
+  title={Quantum theory and application of contextual optimal transport},
+  author={Mariella, Nicola and Akhriev, Albert and Tacchino, Francesco and Zoufal, Christa and Gonzalez-Espitia, Juan Carlos and Harsanyi, Benedek and Koskin, Eugene and Tavernelli, Ivano and Woerner, Stefan and Rapsomaniki, Marianna and Zhuk, Sergiy and Born, Jannis},
+  booktitle={International Conference on Machine Learning},
+  pages={34822--34845},
+  year={2024},
+  organization={PMLR}
+}
+>>> print(get_endnote_entry(title))
+%0 Conference Paper
+%T Quantum theory and application of contextual optimal transport
+%A Mariella, Nicola
+%A Akhriev, Albert
+%A Tacchino, Francesco
+%A Zoufal, Christa
+%A Gonzalez-Espitia, Juan Carlos
+%A Harsanyi, Benedek
+%A Koskin, Eugene
+%A Tavernelli, Ivano
+%A Woerner, Stefan
+%A Rapsomaniki, Marianna
+%A Zhuk, Sergiy
+%A Born, Jannis
+%B International Conference on Machine Learning
+%P 34822-34845
+%D 2024
+%I PMLR
+```
+
+List titles of papers citing it on Google Scholar:
+
+```pycon
+>>> from paperscraper.citations import get_citing_papers_from_title
+>>> get_citing_papers_from_title(title)
+['Advancing single-cell omics and cell-based therapeutics with quantum computing', 'The Quantum Optimization Benchmarking Library', ...]
 ```
 
 ```sh

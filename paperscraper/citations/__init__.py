@@ -4,6 +4,7 @@ from .citations import (  # noqa
     get_citation_entry,
     get_citations_by_doi,
     get_citations_from_title,
+    get_citing_papers_from_title,
     get_endnote_entry,
 )
 from .core import SelfLinkClient  # noqa

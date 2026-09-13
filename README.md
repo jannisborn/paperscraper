@@ -200,6 +200,7 @@ from paperscraper.citations import (
     get_bibtex_entry,
     get_citations_by_doi,
     get_citations_from_title,
+    get_citing_papers_from_title,
     get_endnote_entry,
 )
 from paperscraper.impact import Impactor
@@ -216,8 +217,10 @@ get_scholar_papers(
     search_api_kwargs={"top_k": 5, "num_enrich": 1},
 )
 
-get_bibtex_entry("Quantum doubly stochastic transformers")
-get_endnote_entry("10.1038/s42256-023-00639-z")
+title = "Quantum theory and application of contextual optimal transport"
+get_bibtex_entry(title)
+get_endnote_entry(title)
+get_citing_papers_from_title(title)
 Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 ```
 
