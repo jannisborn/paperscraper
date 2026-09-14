@@ -63,12 +63,18 @@ Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
 %I PMLR
 ```
 
-List titles of papers citing it on Google Scholar:
+List papers citing it on Google Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_citing_papers_from_title
->>> get_citing_papers_from_title(title)
-['Advancing single-cell omics and cell-based therapeutics with quantum computing', 'The Quantum Optimization Benchmarking Library', ...]
+>>> paper = get_citing_papers_from_title(title, max_results=1, full_info=True)[0]
+>>> paper.__dict__
+{
+    'input': 'Advancing single-cell omics and cell-based therapeutics with quantum computing',
+    'authors': ['A Bose', 'K Rhrissorrakrai', 'F Utro', 'L Parida'],
+    'title': 'Advancing single-cell omics and cell-based therapeutics with quantum computing',
+    'doi': '10.1038/s41580-025-00918-0',
+}
 ```
 
 ```sh

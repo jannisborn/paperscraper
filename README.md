@@ -217,15 +217,18 @@ get_scholar_papers(
     search_api_kwargs={"top_k": 5, "num_enrich": 1},
 )
 
-title = "Quantum theory and application of contextual optimal transport"
+title = "Quantum doubly stochastic transformers"
 get_bibtex_entry(title)
 get_endnote_entry(title)
 get_citing_papers_from_title(title)
+get_citing_papers_from_title(title, max_results=5, full_info=True)
 Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 ```
 
 Set `SEARCH_API_KEY` to use the SearchAPI Google Scholar backend. Outputs include
 citation counts and Scholar search metadata (author list, title, abstract, journal).
+Citing-paper results are `Paper` objects; `full_info=True` also resolves available
+DOIs and authors.
 
 Author-level [Semantic Scholar](https://www.semanticscholar.org/) metrics can be retrieved by
 Semantic Scholar ID, name, or [ORCID](https://orcid.org/):

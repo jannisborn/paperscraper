@@ -8,5 +8,6 @@ from .citations import (  # noqa
     get_endnote_entry,
 )
 from .core import SelfLinkClient  # noqa
+from .entity import Paper  # noqa
 from .self_citations import self_citations_paper  # noqa
 from .self_references import self_references_paper  # noqa

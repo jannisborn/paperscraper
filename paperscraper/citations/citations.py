@@ -4,6 +4,7 @@ from typing import Iterable, Literal, Optional
 
 from semanticscholar import SemanticScholarException
 
+from .entity import Paper
 from .searchapi import (
     _SEARCH_API_ATTEMPTS,
     SEARCH_API_CACHE,
@@ -12,11 +13,15 @@ from .searchapi import (
     _get_citations_from_title_scholarly,
     _get_citations_from_title_semantic_scholar,
     _get_searchapi_citation_entry,
-    _get_searchapi_citing_paper_titles,
+    _get_searchapi_citing_papers,
     _resolve_citation_backend,
     search_api_requests_get,
 )
-from .utils import PAPER_URL, _semantic_scholar_requests_get_with_backoff
+from .utils import (
+    PAPER_URL,
+    _semantic_scholar_requests_get_with_backoff,
+    get_doi_from_title,
+)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -92,14 +97,20 @@ def get_endnote_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> st
 def get_citing_papers_from_title(
     title: str,
     max_results: Optional[int] = None,
+    full_info: bool = False,
     *,
     api_key: Optional[str] = None,
-) -> list[str]:
-    """Return titles of papers citing a paper on Google Scholar.
+    ss_api_key: Optional[str] = None,
+) -> list[Paper]:
+    """Return papers citing a paper on Google Scholar.
 
     The title is matched exactly before SearchAPI requests the papers citing
     it. By default all pages are retrieved. Set ``max_results`` to limit the
-    result count. Each SearchAPI request/page returns up to 20 entries.
+    result count. Each SearchAPI request/page returns up to 20 entries. By
+    default only titles are populated. ``full_info=True`` also populates
+    authors and resolves available DOIs through Semantic Scholar, consuming
+    one Semantic Scholar request per result. API keys default to
+    ``SEARCH_API_KEY`` and ``SS_API_KEY`` respectively.
     """
     if not isinstance(title, str):
         raise TypeError(f"Pass str not {type(title)}")
@@ -109,9 +120,26 @@ def get_citing_papers_from_title(
         raise TypeError(f"Pass int or None not {type(max_results)}")
     if max_results is not None and max_results < 0:
         raise ValueError("max_results must be non-negative")
-    return _get_searchapi_citing_paper_titles(
+    if not isinstance(full_info, bool):
+        raise TypeError(f"Pass bool not {type(full_info)}")
+
+    results = _get_searchapi_citing_papers(
         title.strip(), api_key, max_results=max_results
     )
+    papers = []
+    for result in results:
+        paper_title = result["title"]
+        authors = []
+        doi = ""
+        if full_info:
+            authors = [
+                author["name"]
+                for author in result.get("authors", [])
+                if author.get("name")
+            ]
+            doi = get_doi_from_title(paper_title, api_key=ss_api_key) or ""
+        papers.append(Paper(paper_title, doi=doi, authors=authors))
+    return papers
 
 
 def get_citations_from_title(

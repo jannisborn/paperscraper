@@ -57,7 +57,7 @@ def _run_scholarly_test(func, args, kwargs):
         pytest.fail(message)
 
 
-def handle_scholar_exception(func):
+def handle_scholarly_exception(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
