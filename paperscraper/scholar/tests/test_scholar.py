@@ -1,26 +1,28 @@
 import logging
+import time
 
 import pandas as pd
 
 from paperscraper.pdf import load_api_keys
 from paperscraper.scholar import get_and_dump_scholar_papers, get_scholar_papers
-from paperscraper.tests.scholar import handle_scholar_exception
+from paperscraper.tests.scholar import handle_scholarly_exception
 
 logging.disable(logging.INFO)
 
 API_KEYS = load_api_keys("api_keys.txt")
 FIELDS = ["title", "abstract", "citations", "year", "authors", "journal"]
+SEARCH_API_TEST_COOLDOWN = 5
 
 
 class TestScholar:
-    @handle_scholar_exception
+    @handle_scholarly_exception
     def test_dump_search(self, tmpdir):
         temp_dir = tmpdir.mkdir("scholar_papers")
         output_filepath = temp_dir.join("results.jsonl")
         get_and_dump_scholar_papers("GT4SD", str(output_filepath), backend="scholarly")
         assert output_filepath.check(file=1)
 
-    @handle_scholar_exception
+    @handle_scholarly_exception
     def test_basic_search(self):
         results = get_scholar_papers("GT4SD", backend="scholarly")
         assert len(results) > 0 and isinstance(results, pd.DataFrame)
@@ -47,6 +49,7 @@ class TestScholar:
         assert gt4sd["journal"].lower() == "npj computational materials"
         assert "John R Smith" in gt4sd["authors"]
         assert "Generative Toolkit for Scientific Discovery" in gt4sd["abstract"]
+        time.sleep(SEARCH_API_TEST_COOLDOWN)
 
         regression_transformer = get_scholar_papers(
             "Regression Transformer",
@@ -60,8 +63,9 @@ class TestScholar:
         ).iloc[0]
         assert regression_transformer["citations"] > 0
         assert regression_transformer["journal"] == "Nature Machine Intelligence"
+        time.sleep(SEARCH_API_TEST_COOLDOWN)
 
-    @handle_scholar_exception
+    @handle_scholarly_exception
     def test_bad_search(self):
         results = get_scholar_papers("GT4SDfsdhfiobfpsdfbsdp", backend="scholarly")
         assert len(results) == 0

@@ -1,28 +1,30 @@
 import logging
-import re
 import sys
 from typing import Iterable, Literal, Optional
 
-from bs4 import BeautifulSoup
-from scholarly import scholarly
 from semanticscholar import SemanticScholarException
 
+from .entity import Paper
+from .searchapi import (
+    _SEARCH_API_ATTEMPTS,
+    SEARCH_API_CACHE,
+    _cache_search_api_citation,
+    _get_citation_count_from_searchapi_html,
+    _get_citations_from_title_scholarly,
+    _get_citations_from_title_semantic_scholar,
+    _get_searchapi_citation_entry,
+    _get_searchapi_citing_papers,
+    _resolve_citation_backend,
+    search_api_requests_get,
+)
 from .utils import (
     PAPER_URL,
-    SEARCH_API_CACHE,
-    SEARCH_API_KEY,
-    SS_API_KEY,
-    _resolve_backend,
     _semantic_scholar_requests_get_with_backoff,
-    save_search_api_cache,
-    search_api_requests_get,
+    get_doi_from_title,
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# SearchApi queries are stochastic
-_SEARCH_API_ATTEMPTS = 3
 
 
 def get_citations_by_doi(doi: str) -> int:
@@ -51,6 +53,93 @@ def get_citations_by_doi(doi: str) -> int:
     except SemanticScholarException.ObjectNotFoundException:
         logger.warning(f"Could not find paper {doi}, assuming 0 citation.")
         return 0
+
+
+def get_citation_entry(
+    title_or_doi: str,
+    format: Literal["endnote", "bibtex"] = "bibtex",
+    *,
+    api_key: Optional[str] = None,
+) -> str:
+    """Return a BibTeX or EndNote entry for a paper found on Google Scholar.
+
+    ``title_or_doi`` may be a paper title or DOI. DOI inputs require an
+    additional Semantic Scholar request to resolve the DOI to a title before
+    searching Google Scholar. The SearchAPI key is read from ``SEARCH_API_KEY``
+    unless ``api_key`` is provided.
+    """
+    if not isinstance(title_or_doi, str):
+        raise TypeError(f"Pass str not {type(title_or_doi)}")
+    if format not in {"endnote", "bibtex"}:
+        raise ValueError("format must be 'endnote' or 'bibtex'")
+
+    return _get_searchapi_citation_entry(title_or_doi.strip(), format, api_key)
+
+
+def get_bibtex_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> str:
+    """Return a BibTeX entry for a paper title or DOI.
+
+    DOI inputs consume an additional Semantic Scholar request to resolve the
+    DOI before the Google Scholar SearchAPI lookup.
+    """
+    return get_citation_entry(title_or_doi, format="bibtex", api_key=api_key)
+
+
+def get_endnote_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> str:
+    """Return an EndNote entry for a paper title or DOI.
+
+    DOI inputs consume an additional Semantic Scholar request to resolve the
+    DOI before the Google Scholar SearchAPI lookup.
+    """
+    return get_citation_entry(title_or_doi, format="endnote", api_key=api_key)
+
+
+def get_citing_papers_from_title(
+    title: str,
+    max_results: Optional[int] = None,
+    full_info: bool = False,
+    *,
+    api_key: Optional[str] = None,
+    ss_api_key: Optional[str] = None,
+) -> list[Paper]:
+    """Return papers citing a paper on Google Scholar.
+
+    The title is matched exactly before SearchAPI requests the papers citing
+    it. By default all pages are retrieved. Set ``max_results`` to limit the
+    result count. Each SearchAPI request/page returns up to 20 entries. By
+    default only titles are populated. ``full_info=True`` also populates
+    authors and resolves available DOIs through Semantic Scholar, consuming
+    one Semantic Scholar request per result. API keys default to
+    ``SEARCH_API_KEY`` and ``SS_API_KEY`` respectively.
+    """
+    if not isinstance(title, str):
+        raise TypeError(f"Pass str not {type(title)}")
+    if max_results is not None and (
+        not isinstance(max_results, int) or isinstance(max_results, bool)
+    ):
+        raise TypeError(f"Pass int or None not {type(max_results)}")
+    if max_results is not None and max_results < 0:
+        raise ValueError("max_results must be non-negative")
+    if not isinstance(full_info, bool):
+        raise TypeError(f"Pass bool not {type(full_info)}")
+
+    results = _get_searchapi_citing_papers(
+        title.strip(), api_key, max_results=max_results
+    )
+    papers = []
+    for result in results:
+        paper_title = result["title"]
+        authors = []
+        doi = ""
+        if full_info:
+            authors = [
+                author["name"]
+                for author in result.get("authors", [])
+                if author.get("name")
+            ]
+            doi = get_doi_from_title(paper_title, api_key=ss_api_key) or ""
+        papers.append(Paper(paper_title, doi=doi, authors=authors))
+    return papers
 
 
 def get_citations_from_title(
@@ -88,180 +177,8 @@ def get_citations_from_title(
     if resolved_backend == "semantic_scholar":
         return _get_citations_from_title_semantic_scholar(title, api_key)
     if resolved_backend == "searchapi":
-        return _get_citations_from_title_searchapi(title, api_key)
+        return get_citations_from_title_searchapi(title, api_key)
     raise ValueError(f"Unknown backend: {backend}")
-
-
-def _get_citations_from_title_scholarly(title: str) -> int:
-    """
-    Retrieve a Google Scholar citation count through scholarly.
-
-    Args:
-        title: Paper title.
-
-    Returns:
-        Citation count.
-    """
-    matches = scholarly.search_pubs(f'"{title}"')
-    counts = [int(paper["num_citations"]) for paper in matches]
-    if len(counts) == 0:
-        logger.warning(f"Found no match for {title}.")
-        return 0
-    if len(counts) > 1:
-        logger.warning(f"Found {len(counts)} matches for {title}, returning first one.")
-    return counts[0]
-
-
-def _get_citations_from_title_semantic_scholar(
-    title: str, api_key: Optional[str]
-) -> int:
-    """
-    Retrieve a Semantic Scholar citation count.
-
-    Args:
-        title: Paper title.
-        api_key: Explicit API key.
-
-    Returns:
-        Citation count.
-    """
-    response = _semantic_scholar_requests_get_with_backoff(
-        f"{PAPER_URL}search",
-        params={"query": title, "fields": "citationCount", "limit": 1},
-        api_key=api_key,
-    )
-    matches = response.json().get("data", [])
-    if not matches:
-        logger.warning(f"Found no match for {title}.")
-        return 0
-    return int(matches[0].get("citationCount") or 0)
-
-
-def _get_citations_from_title_searchapi(title: str, api_key: Optional[str]) -> int:
-    """
-    Retrieve a Google Scholar citation count through SearchApi.
-
-    Args:
-        title: Paper title.
-        api_key: Explicit API key.
-
-    Returns:
-        Citation count.
-    """
-    normalized_title = " ".join(title.casefold().split())
-    citation_cache = SEARCH_API_CACHE["citations"]
-    if title in citation_cache:
-        return citation_cache[title]
-
-    search_ids = []
-    author_names = set()
-    for _ in range(_SEARCH_API_ATTEMPTS):
-        response = search_api_requests_get(
-            api_key=api_key,
-            params={
-                "engine": "google_scholar",
-                "q": f'"{title}"',
-                "hl": "en",
-                "num": 20,
-            },
-        )
-        data = response.json()
-        metadata = data.get("search_metadata", {})
-        search_ids.append(metadata.get("id", "unknown"))
-        author_names.update(
-            author["name"]
-            for paper in data.get("organic_results", [])
-            if " ".join(paper.get("title", "").casefold().split()).startswith(
-                normalized_title
-            )
-            for author in paper.get("authors", [])
-            if author.get("name")
-        )
-        exact_matches = [
-            paper
-            for paper in data.get("organic_results", [])
-            if " ".join(paper.get("title", "").casefold().split()) == normalized_title
-        ]
-        if not exact_matches:
-            continue
-
-        preferred_matches = [
-            paper for paper in exact_matches if paper.get("type") != "CITATION"
-        ] or exact_matches
-        counts = {
-            int(cited_by["total"])
-            for paper in preferred_matches
-            if (cited_by := paper.get("inline_links", {}).get("cited_by", {})).get(
-                "total"
-            )
-            is not None
-        }
-        if len(counts) == 1:
-            count = counts.pop()
-            return _cache_search_api_citation(title, count)
-        if len(counts) > 1:
-            raise RuntimeError(f"SearchApi returned conflicting counts for {title!r}.")
-
-        data_cids = {
-            paper["data_cid"] for paper in preferred_matches if paper.get("data_cid")
-        }
-        html_url = metadata.get("html_url")
-        if html_url and data_cids:
-            count = _get_citation_count_from_searchapi_html(
-                html_url, data_cids, api_key
-            )
-            if count is not None:
-                return _cache_search_api_citation(title, count)
-
-    count = get_citation_count_from_searchapi_author(
-        title, api_key, author_names=author_names
-    )
-    if count is not None:
-        return _cache_search_api_citation(title, count)
-
-    raise RuntimeError(
-        f"SearchApi returned no complete exact match for {title!r} "
-        f"(search IDs: {', '.join(search_ids)})."
-    )
-
-
-def _cache_search_api_citation(title: str, count: int) -> int:
-    """Cache a citation count and persist the SearchApi cache."""
-    SEARCH_API_CACHE["citations"][title] = count
-    save_search_api_cache()
-    return count
-
-
-def _get_citation_count_from_searchapi_html(
-    html_url: str, data_cids: set[str], api_key: Optional[str]
-) -> Optional[int]:
-    """
-    Retrieve citation counts omitted from a SearchApi JSON response.
-
-    Args:
-        html_url: Archived SearchApi HTML URL.
-        data_cids: Exact-match result identifiers.
-        api_key: Explicit API key.
-
-    Returns:
-        Citation count if available.
-    """
-    response = search_api_requests_get(api_key=api_key, url=html_url)
-    soup = BeautifulSoup(response.text, "html.parser")
-    counts = set()
-    for result in soup.select(".gs_r[data-cid]"):
-        if result.get("data-cid") not in data_cids:
-            continue
-        cited_by = result.select_one('a[href*="cites="]')
-        if cited_by is None:
-            continue
-        match = re.fullmatch(r"Cited by ([\d,]+)", cited_by.get_text(" ", strip=True))
-        if match:
-            counts.add(int(match.group(1).replace(",", "")))
-
-    if len(counts) > 1:
-        raise RuntimeError("SearchApi HTML returned conflicting citation counts.")
-    return counts.pop() if counts else None
 
 
 def get_citation_count_from_searchapi_author(
@@ -270,17 +187,7 @@ def get_citation_count_from_searchapi_author(
     *,
     author_names: Optional[Iterable[str]] = None,
 ) -> Optional[int]:
-    """
-    Retrieve a canonical count through a matching Scholar author profile.
-
-    Args:
-        title: Paper title.
-        api_key: Explicit API key.
-        author_names: Candidate author names, if already known.
-
-    Returns:
-        Citation count if a matching author article is available.
-    """
+    """Retrieve a canonical count through a matching Scholar author profile."""
     normalized_title = " ".join(title.casefold().split())
     candidate_authors = set(author_names or ())
 
@@ -366,20 +273,80 @@ def get_citation_count_from_searchapi_author(
     return None
 
 
-def _resolve_citation_backend(backend: str, api_key: Optional[str]) -> str:
-    """
-    Resolve the citation backend.
+def get_citations_from_title_searchapi(title: str, api_key: Optional[str]) -> int:
+    """Retrieve a Google Scholar citation count through SearchApi."""
+    normalized_title = " ".join(title.casefold().split())
+    citation_cache = SEARCH_API_CACHE["citations"]
+    if title in citation_cache:
+        return citation_cache[title]
 
-    Args:
-        backend: Requested backend.
-        api_key: Explicit API key.
+    search_ids = []
+    author_names = set()
+    for _ in range(_SEARCH_API_ATTEMPTS):
+        response = search_api_requests_get(
+            api_key=api_key,
+            params={
+                "engine": "google_scholar",
+                "q": f'"{title}"',
+                "hl": "en",
+                "num": 20,
+            },
+        )
+        data = response.json()
+        metadata = data.get("search_metadata", {})
+        search_ids.append(metadata.get("id", "unknown"))
+        author_names.update(
+            author["name"]
+            for paper in data.get("organic_results", [])
+            if " ".join(paper.get("title", "").casefold().split()).startswith(
+                normalized_title
+            )
+            for author in paper.get("authors", [])
+            if author.get("name")
+        )
+        exact_matches = [
+            paper
+            for paper in data.get("organic_results", [])
+            if " ".join(paper.get("title", "").casefold().split()) == normalized_title
+        ]
+        if not exact_matches:
+            continue
 
-    Returns:
-        Resolved backend.
-    """
-    return _resolve_backend(
-        backend,
-        api_key,
-        (("searchapi", SEARCH_API_KEY), ("semantic_scholar", SS_API_KEY)),
-        "scholarly",
+        preferred_matches = [
+            paper for paper in exact_matches if paper.get("type") != "CITATION"
+        ] or exact_matches
+        counts = {
+            int(cited_by["total"])
+            for paper in preferred_matches
+            if (cited_by := paper.get("inline_links", {}).get("cited_by", {})).get(
+                "total"
+            )
+            is not None
+        }
+        if len(counts) == 1:
+            count = counts.pop()
+            return _cache_search_api_citation(title, count)
+        if len(counts) > 1:
+            raise RuntimeError(f"SearchApi returned conflicting counts for {title!r}.")
+
+        data_cids = {
+            paper["data_cid"] for paper in preferred_matches if paper.get("data_cid")
+        }
+        html_url = metadata.get("html_url")
+        if html_url and data_cids:
+            count = _get_citation_count_from_searchapi_html(
+                html_url, data_cids, api_key
+            )
+            if count is not None:
+                return _cache_search_api_citation(title, count)
+
+    count = get_citation_count_from_searchapi_author(
+        title, api_key, author_names=author_names
+    )
+    if count is not None:
+        return _cache_search_api_citation(title, count)
+
+    raise RuntimeError(
+        f"SearchApi returned no complete exact match for {title!r} "
+        f"(search IDs: {', '.join(search_ids)})."
     )

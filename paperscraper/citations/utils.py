@@ -258,19 +258,21 @@ async def wait_for_request_slot() -> None:
         await asyncio.sleep(delay)
 
 
-def get_doi_from_title(title: str) -> Optional[str]:
+def get_doi_from_title(title: str, *, api_key: Optional[str] = None) -> Optional[str]:
     """
     Searches the DOI of a paper based on the paper title
 
     Args:
         title: Paper title
+        api_key: Explicit Semantic Scholar API key.
 
     Returns:
         DOI according to semantic scholar API
     """
-    response = semantic_scholar_requests_get(
+    response = _semantic_scholar_requests_get_with_backoff(
         PAPER_URL + "search",
         params={"query": title, "fields": "externalIds", "limit": 1},
+        api_key=api_key,
     )
     data = response.json()
 
