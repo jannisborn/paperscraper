@@ -41,6 +41,7 @@ def _get_searchapi_citation_entry(
                 "engine": "google_scholar_cite",
                 "data_cid": data_cid,
                 "hl": "en",
+                "no_cache": "true",
             },
         )
         link = next(
@@ -288,17 +289,24 @@ def _search_searchapi_title_data(
     if not title:
         return {}
     search_query = f"allintitle: {title}" if query == "allintitle" else title
-    response = search_api_requests_get(
-        api_key=api_key,
-        params={
-            "engine": "google_scholar",
-            "q": search_query,
-            "hl": "en",
-            "num": 20,
-            "as_sdt": 0,
-        },
-    )
-    return response.json()
+    for attempt in range(_SEARCH_API_ATTEMPTS):
+        try:
+            response = search_api_requests_get(
+                api_key=api_key,
+                params={
+                    "engine": "google_scholar",
+                    "q": search_query,
+                    "hl": "en",
+                    "num": 20,
+                    "as_sdt": 0,
+                },
+            )
+            return response.json()
+        except requests.exceptions.RequestException:
+            if attempt == _SEARCH_API_ATTEMPTS - 1:
+                raise
+            time.sleep(1)
+    return {}
 
 
 def _normalize_citation_title(title: str) -> str:
