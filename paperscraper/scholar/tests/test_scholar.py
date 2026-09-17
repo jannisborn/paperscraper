@@ -12,6 +12,13 @@ logging.disable(logging.INFO)
 API_KEYS = load_api_keys("api_keys.txt")
 FIELDS = ["title", "abstract", "citations", "year", "authors", "journal"]
 SEARCH_API_TEST_COOLDOWN = 5
+GT4SD_TITLE = (
+    "Accelerating material design with the generative toolkit for scientific discovery"
+)
+REGRESSION_TRANSFORMER_TITLE = (
+    "Regression transformer enables concurrent sequence regression and generation "
+    "for molecular language modelling"
+)
 
 
 class TestScholar:
@@ -30,7 +37,7 @@ class TestScholar:
 
     def test_searchapi(self):
         results = get_scholar_papers(
-            "GT4SD",
+            f'"{GT4SD_TITLE}"',
             backend="searchapi",
             api_key=API_KEYS["SEARCH_API_KEY"],
             search_api_kwargs={
@@ -41,9 +48,8 @@ class TestScholar:
         )
         assert len(results) > 0 and isinstance(results, pd.DataFrame)
         assert all(x in results.columns for x in FIELDS)
-        gt4sd = results[
-            results["title"].str.contains("generative toolkit", case=False)
-        ].iloc[0]
+        gt4sd = results.iloc[0]
+        assert gt4sd["title"].casefold() == GT4SD_TITLE.casefold()
         assert gt4sd["citations"] > 0
         assert gt4sd["year"] == 2023
         assert gt4sd["journal"].lower() == "npj computational materials"
@@ -52,7 +58,7 @@ class TestScholar:
         time.sleep(SEARCH_API_TEST_COOLDOWN)
 
         regression_transformer = get_scholar_papers(
-            "Regression Transformer",
+            f'"{REGRESSION_TRANSFORMER_TITLE}"',
             backend="searchapi",
             api_key=API_KEYS["SEARCH_API_KEY"],
             search_api_kwargs={
@@ -61,6 +67,10 @@ class TestScholar:
                 "max_author_requests": 5,
             },
         ).iloc[0]
+        assert (
+            regression_transformer["title"].casefold()
+            == REGRESSION_TRANSFORMER_TITLE.casefold()
+        )
         assert regression_transformer["citations"] > 0
         assert regression_transformer["journal"] == "Nature Machine Intelligence"
         time.sleep(SEARCH_API_TEST_COOLDOWN)

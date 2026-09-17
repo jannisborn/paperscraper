@@ -206,6 +206,8 @@ def _get_searchapi_citing_papers(
                 paper for paper in data.get("organic_results", []) if paper.get("title")
             ]
             papers.extend(page_results)
+            if not page_results:
+                return papers
             if max_results is not None and len(papers) >= max_results:
                 return papers[:max_results]
             if max_pages is not None and page >= max_pages:
@@ -261,6 +263,11 @@ def _get_searchapi_citing_page(
     if last_error is not None:
         raise last_error
     if last_response_error is not None:
+        if (
+            page > 1
+            and last_response_error == "Google Scholar didn't return any results."
+        ):
+            return {}
         raise RuntimeError(f"SearchApi Cited By error: {last_response_error}")
     return None
 
