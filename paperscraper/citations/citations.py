@@ -4,9 +4,9 @@ from typing import Iterable, Literal, Optional
 
 from semanticscholar import SemanticScholarException
 
+from ..utils import retry_with_exponential_backoff
 from .entity import Paper
 from .searchapi import (
-    _SEARCH_API_ATTEMPTS,
     SEARCH_API_CACHE,
     _cache_search_api_citation,
     _get_citation_count_from_searchapi_html,
@@ -194,9 +194,8 @@ def get_citation_count_from_searchapi_author(
     candidate_authors = set(author_names or ())
 
     # Discover authors when the initial paper search did not provide them.
-    for _ in range(_SEARCH_API_ATTEMPTS):
-        if candidate_authors:
-            break
+    @retry_with_exponential_backoff(retry_if=lambda found: not found, base_delay=0)
+    def discover_authors() -> bool:
         response = search_api_requests_get(
             api_key=api_key,
             params={
@@ -215,6 +214,10 @@ def get_citation_count_from_searchapi_author(
             for author in paper.get("authors", [])
             if author.get("name")
         )
+        return bool(candidate_authors)
+
+    if not candidate_authors:
+        discover_authors()
 
     # Resolve the most specific candidate names to Scholar profiles.
     for author_name in sorted(candidate_authors, key=len, reverse=True)[:3]:
@@ -284,7 +287,9 @@ def get_citations_from_title_searchapi(title: str, api_key: Optional[str]) -> in
 
     search_ids = []
     author_names = set()
-    for _ in range(_SEARCH_API_ATTEMPTS):
+
+    @retry_with_exponential_backoff(retry_if=lambda count: count is None, base_delay=0)
+    def search() -> Optional[int]:
         response = search_api_requests_get(
             api_key=api_key,
             params={
@@ -312,7 +317,7 @@ def get_citations_from_title_searchapi(title: str, api_key: Optional[str]) -> in
             if " ".join(paper.get("title", "").casefold().split()) == normalized_title
         ]
         if not exact_matches:
-            continue
+            return None
 
         preferred_matches = [
             paper for paper in exact_matches if paper.get("type") != "CITATION"
@@ -341,6 +346,11 @@ def get_citations_from_title_searchapi(title: str, api_key: Optional[str]) -> in
             )
             if count is not None:
                 return _cache_search_api_citation(title, count)
+        return None
+
+    count = search()
+    if count is not None:
+        return count
 
     count = get_citation_count_from_searchapi_author(
         title, api_key, author_names=author_names

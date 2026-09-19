@@ -1,13 +1,47 @@
 import json
 import logging
 import sys
+import time
+from functools import wraps
 from importlib import resources
-from typing import Dict, List
+from typing import Callable, Dict, List, Tuple, Type, TypeVar
 
 import pandas as pd
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
+
+
+def retry_with_exponential_backoff(
+    *,
+    max_attempts: int = 3,
+    retry_if: Callable[[T], bool] = lambda result: False,
+    exceptions: Tuple[Type[BaseException], ...] = (),
+    base_delay: float = 1,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Retry a function after failures, waiting ``base_delay * 2**attempt``."""
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> T:
+            for attempt in range(max_attempts):
+                try:
+                    result = func(*args, **kwargs)
+                except exceptions:
+                    if attempt == max_attempts - 1:
+                        raise
+                else:
+                    if not retry_if(result) or attempt == max_attempts - 1:
+                        return result
+                if base_delay:
+                    time.sleep(base_delay * 2**attempt)
+            raise RuntimeError("unreachable")
+
+        return wrapper
+
+    return decorator
 
 
 def get_server_dumps_dir() -> str:
