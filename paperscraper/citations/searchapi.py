@@ -35,35 +35,45 @@ def _get_searchapi_citation_entry(
     """Fetch a BibTeX or EndNote export through SearchApi."""
     data_cid = _get_searchapi_data_cid(title_or_doi, api_key)
     for attempt in range(_SEARCH_API_ATTEMPTS):
-        response = search_api_requests_get(
-            api_key=api_key,
-            params={
-                "engine": "google_scholar_cite",
-                "data_cid": data_cid,
-                "hl": "en",
-                "no_cache": "true",
-            },
-        )
+        try:
+            data = search_api_requests_get(
+                api_key=api_key,
+                params={
+                    "engine": "google_scholar_cite",
+                    "data_cid": data_cid,
+                    "hl": "en",
+                    "no_cache": "true",
+                },
+            ).json()
+        except requests.exceptions.RequestException:
+            if attempt == _SEARCH_API_ATTEMPTS - 1:
+                raise
+            time.sleep(2**attempt)
+            continue
         link = next(
             (
                 entry.get("link")
-                for entry in response.json().get("links", [])
+                for entry in data.get("links", [])
                 if entry.get("title", "").casefold() == format
             ),
             None,
         )
         if link:
             try:
-                return _get_searchapi_export(link, format)
+                return _get_searchapi_export(
+                    link,
+                    format,
+                    referer=data.get("search_metadata", {}).get("request_url"),
+                )
             except requests.exceptions.HTTPError:
                 if attempt >= _SEARCH_API_ATTEMPTS - 1:
                     raise
                 # Export links can be stale even when the cite response succeeds.
-                time.sleep(1)
+                time.sleep(2**attempt)
                 continue
         if attempt < _SEARCH_API_ATTEMPTS - 1:
             # SearchAPI may intermittently return no cite results for a valid CID.
-            time.sleep(1)
+            time.sleep(2**attempt)
 
     raise RuntimeError(
         f"SearchApi returned no {format} export for data_cid {data_cid!r}."
@@ -79,14 +89,20 @@ def _get_searchapi_data_cid(title_or_doi: str, api_key: Optional[str]) -> str:
         normalized_title = _normalize_citation_title(title)
         # SearchApi results can vary between requests, so retry exact matching.
         for query in ("allintitle", "plain"):
-            for _ in range(_SEARCH_API_ATTEMPTS):
-                for paper in _search_searchapi_title(title, api_key, query=query):
+            for attempt in range(_SEARCH_API_ATTEMPTS):
+                try:
+                    papers = _search_searchapi_title(title, api_key, query=query)
+                except requests.exceptions.RequestException:
+                    papers = []
+                for paper in papers:
                     if (
                         paper.get("data_cid")
                         and _normalize_citation_title(paper.get("title", ""))
                         == normalized_title
                     ):
                         return paper["data_cid"]
+                if attempt < _SEARCH_API_ATTEMPTS - 1:
+                    time.sleep(2**attempt)
         return None
 
     if doi:
@@ -113,8 +129,11 @@ def _get_searchapi_cites_params(title: str, api_key: Optional[str]) -> list[dict
     """Resolve a title to parameters accepted by Scholar's cites query."""
     normalized_title = _normalize_citation_title(title)
     for query in ("allintitle", "plain"):
-        for _ in range(_SEARCH_API_ATTEMPTS):
-            data = _search_searchapi_title_data(title, api_key, query=query)
+        for attempt in range(_SEARCH_API_ATTEMPTS):
+            try:
+                data = _search_searchapi_title_data(title, api_key, query=query)
+            except requests.exceptions.RequestException:
+                data = {}
             exact_matches = [
                 paper
                 for paper in data.get("organic_results", [])
@@ -146,6 +165,8 @@ def _get_searchapi_cites_params(title: str, api_key: Optional[str]) -> list[dict
                 )
                 if cites_params:
                     return cites_params
+            if attempt < _SEARCH_API_ATTEMPTS - 1:
+                time.sleep(2**attempt)
     raise RuntimeError(f"SearchApi returned no exact cited-by match for {title!r}.")
 
 
@@ -193,44 +214,71 @@ def _get_searchapi_citing_papers(
         return []
 
     cites_params = _get_searchapi_cites_params(title, api_key)
+    papers = []
+    seen = set()
     for cites_query in cites_params:
-        papers = []
-        total = cites_query.get("total")
-        max_pages = (total + 19) // 20 if total else None
+        total = cites_query.get("total") or 0
         page = 1
         while True:
-            data = _get_searchapi_citing_page(cites_query, page, api_key)
-            if data is None:
-                break
-
+            required = min(total, max_results) if max_results is not None else total
+            data = _get_searchapi_citing_page(
+                cites_query,
+                page,
+                api_key,
+                min_results=min(10, max(0, required - len(papers))),
+                require_next=required - len(papers) > 10,
+            )
+            total = max(
+                total, data.get("search_information", {}).get("total_results") or 0
+            )
             page_results = [
                 paper for paper in data.get("organic_results", []) if paper.get("title")
             ]
-            papers.extend(page_results)
-            if not page_results:
-                return papers
+            added = 0
+            for paper in page_results:
+                identity = paper.get("data_cid") or _normalize_citation_title(
+                    paper["title"]
+                )
+                if identity not in seen:
+                    seen.add(identity)
+                    papers.append(paper)
+                    added += 1
             if max_results is not None and len(papers) >= max_results:
                 return papers[:max_results]
-            if max_pages is not None and page >= max_pages:
+            if total and len(papers) >= total:
                 return papers
-            if max_pages is None:
-                if not page_results or (
-                    not data.get("pagination", {}).get("next")
-                    and len(page_results) < 20
-                ):
-                    return papers
-            page += 1
-    raise RuntimeError(f"SearchApi returned no Cited By results for {title!r}.")
+            next_link = data.get("pagination", {}).get("next")
+            if not next_link:
+                if len(papers) < total:
+                    raise RuntimeError(
+                        f"Incomplete SearchApi Cited By results for {title!r}: "
+                        f"retrieved {len(papers)} of {total} advertised papers "
+                        f"at page {page} (search {data.get('search_metadata', {}).get('id')})."
+                    )
+                break
+            if not added:
+                raise RuntimeError(f"SearchApi Cited By page {page} made no progress.")
+            next_page = data.get("pagination", {}).get("current", page) + 1
+            if next_page <= page:
+                raise RuntimeError(
+                    "SearchApi returned non-advancing Cited By pagination."
+                )
+            page = next_page
+    return papers
 
 
 def _get_searchapi_citing_page(
     cites_query: dict,
     page: int,
     api_key: Optional[str],
-) -> Optional[dict]:
+    min_results: int = 0,
+    require_next: bool = False,
+) -> dict:
     """Retrieve one Google Scholar Cited By page with bounded retries."""
     last_error = None
     last_response_error = None
+    combined_results = {}
+    combined_data = None
     for attempt in range(_SEARCH_API_ATTEMPTS):
         try:
             data = search_api_requests_get(
@@ -238,11 +286,10 @@ def _get_searchapi_citing_page(
                 params={
                     "engine": "google_scholar",
                     "hl": "en",
-                    "num": 20,
+                    "num": 10,
                     "page": page,
                     "cites": cites_query["cites"],
-                    "as_sdt": 0,
-                    "filter": 1,
+                    "no_cache": "true",
                 },
             ).json()
         except requests.exceptions.RequestException as exc:
@@ -250,27 +297,35 @@ def _get_searchapi_citing_page(
             data = None
         if data is not None and data.get("error"):
             last_response_error = data["error"]
-        if data is not None and "error" not in data and data.get("organic_results"):
-            return data
-        if (
-            attempt == _SEARCH_API_ATTEMPTS - 1
-            and data is not None
-            and "error" not in data
-        ):
-            return data
+        if data is not None and "error" not in data:
+            combined_data = combined_data or data
+            if data.get("pagination", {}).get("next"):
+                combined_data["pagination"] = data["pagination"]
+            for paper in data.get("organic_results", []):
+                if not paper.get("title"):
+                    continue
+                identity = paper.get("data_cid") or _normalize_citation_title(
+                    paper["title"]
+                )
+                combined_results[identity] = paper
+            if len(combined_results) >= min_results and (
+                not require_next or combined_data.get("pagination", {}).get("next")
+            ):
+                combined_data["organic_results"] = list(combined_results.values())
+                return combined_data
         if attempt < _SEARCH_API_ATTEMPTS - 1:
             # SearchAPI may intermittently fail a valid Cited By query.
-            time.sleep(5)
+            time.sleep(2**attempt)
+    if combined_data is not None:
+        combined_data["organic_results"] = list(combined_results.values())
+        return combined_data
     if last_error is not None:
         raise last_error
     if last_response_error is not None:
-        if (
-            page > 1
-            and last_response_error == "Google Scholar didn't return any results."
-        ):
-            return {}
-        raise RuntimeError(f"SearchApi Cited By error: {last_response_error}")
-    return None
+        raise RuntimeError(
+            f"SearchApi Cited By page {page} error: {last_response_error}"
+        )
+    raise RuntimeError(f"SearchApi returned no Cited By page {page}.")
 
 
 def _search_searchapi_title(
@@ -289,24 +344,17 @@ def _search_searchapi_title_data(
     if not title:
         return {}
     search_query = f"allintitle: {title}" if query == "allintitle" else title
-    for attempt in range(_SEARCH_API_ATTEMPTS):
-        try:
-            response = search_api_requests_get(
-                api_key=api_key,
-                params={
-                    "engine": "google_scholar",
-                    "q": search_query,
-                    "hl": "en",
-                    "num": 20,
-                    "as_sdt": 0,
-                },
-            )
-            return response.json()
-        except requests.exceptions.RequestException:
-            if attempt == _SEARCH_API_ATTEMPTS - 1:
-                raise
-            time.sleep(1)
-    return {}
+    response = search_api_requests_get(
+        api_key=api_key,
+        params={
+            "engine": "google_scholar",
+            "q": search_query,
+            "hl": "en",
+            "num": 20,
+            "as_sdt": 0,
+        },
+    )
+    return response.json()
 
 
 def _normalize_citation_title(title: str) -> str:
@@ -314,17 +362,27 @@ def _normalize_citation_title(title: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
 
 
-def _get_searchapi_export(link: str, format: Literal["endnote", "bibtex"]) -> str:
+def _get_searchapi_export(
+    link: str,
+    format: Literal["endnote", "bibtex"],
+    referer: Optional[str] = None,
+) -> str:
     """Fetch citation text from a Google Scholar export link."""
     for attempt in range(_SEARCH_API_ATTEMPTS):
-        export = requests.get(
-            link,
-            headers={
-                "Referer": "https://scholar.google.com/",
-                "User-Agent": "Mozilla/5.0",
-            },
-            timeout=90,
-        )
+        try:
+            export = requests.get(
+                link,
+                headers={
+                    "Referer": referer or "https://scholar.google.com/",
+                    "User-Agent": "Mozilla/5.0",
+                },
+                timeout=90,
+            )
+        except requests.exceptions.RequestException:
+            if attempt == _SEARCH_API_ATTEMPTS - 1:
+                raise
+            time.sleep(2**attempt)
+            continue
         if export.ok:
             citation = export.text.strip()
             if not citation:
@@ -334,7 +392,7 @@ def _get_searchapi_export(link: str, format: Literal["endnote", "bibtex"]) -> st
             export.raise_for_status()
         if attempt < _SEARCH_API_ATTEMPTS - 1:
             # Google Scholar export links can transiently reject a fresh request.
-            time.sleep(1)
+            time.sleep(2**attempt)
     export.raise_for_status()
     raise RuntimeError(f"Could not retrieve the {format} export.")
 

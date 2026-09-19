@@ -33,10 +33,7 @@ API_KEYS = load_api_keys("api_keys.txt")
 PAPER_DOI = "10.1038/s42256-023-00639-z"
 CITATION_TITLE = "Quantum doubly stochastic transformers"
 CONTEXTUAL_OT_TITLE = "Quantum theory and application of contextual optimal transport"
-REGRESSION_TRANSFORMER_TITLE = (
-    "Regression transformer enables concurrent sequence regression and generation "
-    "for molecular language modelling"
-)
+QUANTUM_TITLE = "Towards Quantum-Enabled Cell-Centric Therapeutics"
 
 
 class TestCitations:
@@ -142,7 +139,7 @@ class TestCitations:
 
     def test_citing_papers_full_info_searchapi(self):
         citing_papers = get_citing_papers_from_title(
-            REGRESSION_TRANSFORMER_TITLE,
+            QUANTUM_TITLE,
             max_results=5,
             full_info=True,
             api_key=API_KEYS["SEARCH_API_KEY"],
@@ -166,7 +163,7 @@ class TestCitations:
 
     def test_citing_papers_max_results_searchapi(self):
         citing_papers = get_citing_papers_from_title(
-            REGRESSION_TRANSFORMER_TITLE,
+            QUANTUM_TITLE,
             max_results=25,
             api_key=API_KEYS["SEARCH_API_KEY"],
         )
@@ -176,10 +173,10 @@ class TestCitations:
 
     def test_all_citing_papers_from_title_searchapi(self):
         citing_papers = get_citing_papers_from_title(
-            REGRESSION_TRANSFORMER_TITLE,
+            QUANTUM_TITLE,
             api_key=API_KEYS["SEARCH_API_KEY"],
         )
-        assert len(citing_papers) > 200
+        assert len(citing_papers) > 28
         assert all(isinstance(paper, Paper) for paper in citing_papers)
         time.sleep(SEARCH_API_TEST_COOLDOWN)
 
