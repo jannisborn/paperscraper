@@ -1,12 +1,14 @@
 import logging
 import re
 import sys
+import time
 from typing import Dict, List, Literal, Optional, Tuple
 
 import pandas as pd
 import requests
 from scholarly import scholarly
 
+from ..citations.searchapi import _SEARCH_API_ATTEMPTS
 from ..citations.utils import SEARCH_API_KEY, _resolve_backend, search_api_requests_get
 from ..utils import dump_papers
 
@@ -109,18 +111,40 @@ def get_scholar_papers_searchapi(
         pd.DataFrame. One paper per row.
     """
     resolved_kwargs = _resolve_search_api_kwargs(search_api_kwargs)
-    response = search_api_requests_get(
-        api_key=api_key,
-        params={
-            "engine": "google_scholar",
-            "q": title,
-            "hl": "en",
-            "num": resolved_kwargs["top_k"],
-        },
-    )
+    exact_title = title[1:-1] if re.fullmatch(r'"[^"]+"', title) else None
+    papers = []
+    for attempt in range(_SEARCH_API_ATTEMPTS):
+        try:
+            response = search_api_requests_get(
+                api_key=api_key,
+                params={
+                    "engine": "google_scholar",
+                    "q": f"allintitle: {exact_title}" if exact_title else title,
+                    "hl": "en",
+                    "num": 20 if exact_title else resolved_kwargs["top_k"],
+                },
+            )
+        except requests.exceptions.RequestException:
+            if attempt == _SEARCH_API_ATTEMPTS - 1:
+                raise
+            time.sleep(2**attempt)
+            continue
+        papers = response.json().get("organic_results", [])
+        if exact_title:
+            normalized_title = _normalize_searchapi_title(exact_title)
+            papers = [
+                paper
+                for paper in papers
+                if _normalize_searchapi_title(paper.get("title", ""))
+                == normalized_title
+            ]
+        if papers or not exact_title:
+            break
+        if attempt < _SEARCH_API_ATTEMPTS - 1:
+            time.sleep(2**attempt)
 
     processed = []
-    for index, paper in enumerate(response.json().get("organic_results", [])):
+    for index, paper in enumerate(papers[: resolved_kwargs["top_k"]]):
         # Search result snippets are not abstracts; only the citation view exposes one.
         citation = (
             get_searchapi_scholar_citation(

@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from scholarly import scholarly
 
+from ..scholar.scholar import get_searchapi_scholar_citation
 from .utils import (
     DOI_PATTERN,
     PAPER_URL,
@@ -33,7 +34,10 @@ def _get_searchapi_citation_entry(
     api_key: Optional[str],
 ) -> str:
     """Fetch a BibTeX or EndNote export through SearchApi."""
-    data_cid = _get_searchapi_data_cid(title_or_doi, api_key)
+    paper = _get_searchapi_paper(title_or_doi, api_key)
+    data_cid = paper["data_cid"]
+    data = {}
+    last_error = None
     for attempt in range(_SEARCH_API_ATTEMPTS):
         try:
             data = search_api_requests_get(
@@ -65,27 +69,37 @@ def _get_searchapi_citation_entry(
                     format,
                     referer=data.get("search_metadata", {}).get("request_url"),
                 )
-            except requests.exceptions.HTTPError:
-                if attempt >= _SEARCH_API_ATTEMPTS - 1:
-                    raise
+            except requests.exceptions.RequestException as exc:
+                last_error = exc
+                if (
+                    exc.response is not None
+                    and exc.response.status_code == 403
+                    and data.get("citations")
+                ):
+                    return _format_searchapi_export(
+                        data, paper, title_or_doi, format, api_key
+                    )
                 # Export links can be stale even when the cite response succeeds.
-                time.sleep(2**attempt)
+                if attempt < _SEARCH_API_ATTEMPTS - 1:
+                    time.sleep(2**attempt)
                 continue
         if attempt < _SEARCH_API_ATTEMPTS - 1:
             # SearchAPI may intermittently return no cite results for a valid CID.
             time.sleep(2**attempt)
 
-    raise RuntimeError(
-        f"SearchApi returned no {format} export for data_cid {data_cid!r}."
-    )
+    if data.get("citations"):
+        return _format_searchapi_export(data, paper, title_or_doi, format, api_key)
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"SearchApi returned no {format} export for {data_cid!r}.")
 
 
-def _get_searchapi_data_cid(title_or_doi: str, api_key: Optional[str]) -> str:
-    """Resolve a title or DOI to an exact Google Scholar data CID."""
+def _get_searchapi_paper(title_or_doi: str, api_key: Optional[str]) -> dict:
+    """Resolve a title or DOI to an exact Google Scholar result."""
     doi = re.search(DOI_PATTERN, title_or_doi, re.IGNORECASE)
     search_title = title_or_doi
 
-    def find_exact(title: str) -> Optional[str]:
+    def find_exact(title: str) -> Optional[dict]:
         normalized_title = _normalize_citation_title(title)
         # SearchApi results can vary between requests, so retry exact matching.
         for query in ("allintitle", "plain"):
@@ -100,7 +114,7 @@ def _get_searchapi_data_cid(title_or_doi: str, api_key: Optional[str]) -> str:
                         and _normalize_citation_title(paper.get("title", ""))
                         == normalized_title
                     ):
-                        return paper["data_cid"]
+                        return paper
                 if attempt < _SEARCH_API_ATTEMPTS - 1:
                     time.sleep(2**attempt)
         return None
@@ -113,13 +127,13 @@ def _get_searchapi_data_cid(title_or_doi: str, api_key: Optional[str]) -> str:
         )
         paper = response.json()
         search_title = paper.get("title", "")
-        data_cid = find_exact(search_title) if search_title else None
-        if data_cid:
-            return data_cid
+        paper = find_exact(search_title) if search_title else None
+        if paper:
+            return paper
     else:
-        data_cid = find_exact(search_title)
-        if data_cid:
-            return data_cid
+        paper = find_exact(search_title)
+        if paper:
+            return paper
     raise RuntimeError(
         f"SearchApi returned no exact Scholar match for {title_or_doi!r}."
     )
@@ -360,6 +374,109 @@ def _search_searchapi_title_data(
 def _normalize_citation_title(title: str) -> str:
     """Normalize a title for exact Scholar result matching."""
     return re.sub(r"[^a-z0-9]+", " ", title.casefold()).strip()
+
+
+def _format_searchapi_export(
+    data: dict,
+    paper: dict,
+    title_or_doi: str,
+    format: Literal["endnote", "bibtex"],
+    api_key: Optional[str],
+) -> str:
+    """Format Cite metadata when Google blocks its signed export link."""
+    metadata = _parse_searchapi_chicago_citation(data)
+    if format == "bibtex":
+        key = re.sub(r"\W", "", metadata["authors"][0].split(",")[0].lower())
+        key += metadata["year"]
+        key += re.sub(r"\W", "", metadata["title"].split()[0].lower())
+        fields = [
+            ("title", metadata["title"]),
+            ("author", " and ".join(metadata["authors"])),
+            ("journal", metadata["journal"]),
+            ("volume", metadata["volume"]),
+            ("number", metadata.get("issue")),
+            ("pages", metadata["pages"].replace("-", "--")),
+            ("year", metadata["year"]),
+        ]
+        body = ",\n".join(f"  {name}={{{value}}}" for name, value in fields if value)
+        return f"@article{{{key},\n{body}\n}}"
+
+    details = get_searchapi_scholar_citation(paper, api_key, {"max_author_requests": 9})
+    if details.get("authors"):
+        metadata["authors"] = [
+            _to_last_first(author.strip()) for author in details["authors"].split(",")
+        ]
+    for key in ("title", "journal", "volume", "issue", "pages", "publisher"):
+        if details.get(key):
+            metadata[key] = details[key]
+
+    doi = re.search(DOI_PATTERN, title_or_doi, re.IGNORECASE)
+    doi_metadata = _get_doi_metadata(doi.group(0)) if doi else {}
+    lines = [
+        ("%0", "Journal Article"),
+        ("%T", metadata["title"]),
+        *(("%A", author) for author in metadata["authors"]),
+        ("%J", metadata["journal"]),
+        ("%V", metadata["volume"]),
+        ("%N", metadata.get("issue")),
+        ("%P", metadata["pages"]),
+        ("%@", doi_metadata.get("SN")),
+        ("%D", metadata["year"]),
+        ("%I", metadata.get("publisher") or doi_metadata.get("PB")),
+    ]
+    return "\n".join(f"{name} {value}" for name, value in lines if value)
+
+
+def _parse_searchapi_chicago_citation(data: dict) -> dict:
+    """Parse SearchApi's structured Chicago citation into common fields."""
+    snippet = next(
+        (
+            citation.get("snippet", "")
+            for citation in data.get("citations", [])
+            if citation.get("title") == "Chicago"
+        ),
+        "",
+    )
+    match = re.fullmatch(
+        r'(?P<authors>.+?)\. ["“](?P<title>.+?)\.["”] '
+        r"(?P<journal>.+?) (?P<volume>\d+)"
+        r"(?:, no\. (?P<issue>[^ ]+))? \((?P<year>\d{4})\): "
+        r"(?P<pages>[\d–-]+)\.",
+        snippet,
+    )
+    if not match:
+        raise RuntimeError("Could not parse SearchApi's Chicago citation export.")
+    metadata = match.groupdict()
+    author_parts = [part.strip() for part in metadata.pop("authors").split(",")]
+    metadata["authors"] = [f"{author_parts[0]}, {author_parts[1]}"] + [
+        _to_last_first(author.removeprefix("and ")) for author in author_parts[2:]
+    ]
+    return metadata
+
+
+def _to_last_first(author: str) -> str:
+    """Convert a Google Scholar author name to ``Last, First``."""
+    names = author.split()
+    return f"{names[-1]}, {' '.join(names[:-1])}" if len(names) > 1 else author
+
+
+def _get_doi_metadata(doi: str) -> dict:
+    """Retrieve RIS metadata for fields omitted by Google Scholar Cite."""
+    try:
+        response = requests.get(
+            f"https://doi.org/{doi}",
+            headers={"Accept": "application/x-research-info-systems"},
+            timeout=90,
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        return {}
+    metadata = {}
+    for line in response.text.splitlines():
+        parts = line.split("  - ", 1)
+        if len(parts) == 2:
+            metadata[parts[0]] = parts[1]
+    return metadata
 
 
 def _get_searchapi_export(

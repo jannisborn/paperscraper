@@ -114,7 +114,7 @@ class TestCitations:
         assert "%P 432-444" in endnote
         assert "%@ 2522-5839" in endnote
         assert "%D 2023" in endnote
-        assert "%I Nature Publishing Group UK London" in endnote
+        assert "%I Nature Publishing Group UK" in endnote
         time.sleep(SEARCH_API_TEST_COOLDOWN)
 
         dispatched = get_citation_entry(
