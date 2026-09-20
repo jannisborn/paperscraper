@@ -230,54 +230,66 @@ def _get_searchapi_citing_papers(
     cites_params = _get_searchapi_cites_params(title, api_key)
     papers = []
     seen = set()
+    advertised_total = 0
     for cites_query in cites_params:
         total = cites_query.get("total") or 0
-        page = 1
-        while True:
-            required = min(total, max_results) if max_results is not None else total
-            data = _get_searchapi_citing_page(
-                cites_query,
-                page,
-                api_key,
-                min_results=min(10, max(0, required - len(papers))),
-                require_next=required - len(papers) > 10,
-            )
-            total = max(
-                total, data.get("search_information", {}).get("total_results") or 0
-            )
-            page_results = [
-                paper for paper in data.get("organic_results", []) if paper.get("title")
-            ]
-            added = 0
-            for paper in page_results:
-                identity = paper.get("data_cid") or _normalize_citation_title(
-                    paper["title"]
+        advertised_total = max(advertised_total, total)
+
+        # ``page`` is the API contract; ``pagination.next`` is stochastic metadata.
+        # Merge fresh numeric-page sweeps until the advertised result set is complete.
+        @retry_with_exponential_backoff(
+            max_attempts=5, retry_if=lambda complete: not complete
+        )
+        def fetch_pages() -> bool:
+            nonlocal advertised_total, total
+            page = 1
+            while True:
+                data = _get_searchapi_citing_page(
+                    cites_query,
+                    page,
+                    api_key,
+                    min_results=1,
                 )
-                if identity not in seen:
-                    seen.add(identity)
-                    papers.append(paper)
-                    added += 1
+                total = max(
+                    total,
+                    data.get("search_information", {}).get("total_results") or 0,
+                )
+                advertised_total = max(advertised_total, total)
+                for paper in data.get("organic_results", []):
+                    if not paper.get("title"):
+                        continue
+                    identity = paper.get("data_cid") or _normalize_citation_title(
+                        paper["title"]
+                    )
+                    if identity not in seen:
+                        seen.add(identity)
+                        papers.append(paper)
+
+                required = min(total, max_results) if max_results is not None else total
+                if required and len(papers) >= required:
+                    return True
+                if required:
+                    if page * 10 >= required:
+                        return False
+                elif not data.get("pagination", {}).get("next"):
+                    return True
+                page += 1
+
+        if fetch_pages():
             if max_results is not None and len(papers) >= max_results:
                 return papers[:max_results]
             if total and len(papers) >= total:
                 return papers
-            next_link = data.get("pagination", {}).get("next")
-            if not next_link:
-                if len(papers) < total:
-                    raise RuntimeError(
-                        f"Incomplete SearchApi Cited By results for {title!r}: "
-                        f"retrieved {len(papers)} of {total} advertised papers "
-                        f"at page {page} (search {data.get('search_metadata', {}).get('id')})."
-                    )
-                break
-            if not added:
-                raise RuntimeError(f"SearchApi Cited By page {page} made no progress.")
-            next_page = data.get("pagination", {}).get("current", page) + 1
-            if next_page <= page:
-                raise RuntimeError(
-                    "SearchApi returned non-advancing Cited By pagination."
-                )
-            page = next_page
+    required = (
+        min(advertised_total, max_results)
+        if max_results is not None
+        else advertised_total
+    )
+    if required and len(papers) < required:
+        raise RuntimeError(
+            f"Incomplete SearchApi Cited By results for {title!r}: "
+            f"retrieved {len(papers)} of {required} requested papers."
+        )
     return papers
 
 
@@ -286,7 +298,6 @@ def _get_searchapi_citing_page(
     page: int,
     api_key: Optional[str],
     min_results: int = 0,
-    require_next: bool = False,
 ) -> dict:
     """Retrieve one Google Scholar Cited By page with bounded retries."""
     last_error = None
@@ -325,9 +336,7 @@ def _get_searchapi_citing_page(
                     paper["title"]
                 )
                 combined_results[identity] = paper
-            if len(combined_results) >= min_results and (
-                not require_next or combined_data.get("pagination", {}).get("next")
-            ):
+            if len(combined_results) >= min_results:
                 combined_data["organic_results"] = list(combined_results.values())
                 return True
         return False
