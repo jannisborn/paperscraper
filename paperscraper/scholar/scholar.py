@@ -151,6 +151,12 @@ def get_scholar_papers_searchapi(
             else {}
         )
         entry = _parse_searchapi_scholar_result(paper, citation)
+        if "citations" in fields and entry["citations"] < 0:
+            from ..citations.citations import get_citations_from_title_searchapi
+
+            entry["citations"] = get_citations_from_title_searchapi(
+                paper["title"], api_key
+            )
         processed.append({key: value for key, value in entry.items() if key in fields})
 
     return pd.DataFrame(processed, columns=fields)

@@ -174,10 +174,9 @@ class TestCitations:
     def test_all_citing_papers_from_title_searchapi(self):
         citing_papers = get_citing_papers_from_title(
             QUANTUM_TITLE,
-            max_results=29,
             api_key=API_KEYS["SEARCH_API_KEY"],
         )
-        assert len(citing_papers) == 29
+        assert len(citing_papers) >= 29
         assert all(isinstance(paper, Paper) for paper in citing_papers)
         time.sleep(SEARCH_API_TEST_COOLDOWN)
 

@@ -106,11 +106,11 @@ def get_citing_papers_from_title(
 
     The title is matched exactly before SearchAPI requests the papers citing
     it. By default all pages are retrieved. Set ``max_results`` to limit the
-    result count. Each SearchAPI request/page returns up to 10 entries. By
-    default only titles are populated. ``full_info=True`` also populates
-    authors and resolves available DOIs through Semantic Scholar, consuming
-    one Semantic Scholar request per result. API keys default to
-    ``SEARCH_API_KEY`` and ``SS_API_KEY`` respectively.
+    result count. SearchApi pages contain up to 20 entries. By default only
+    titles are populated. ``full_info=True`` also populates authors and
+    resolves available DOIs through Semantic Scholar, consuming one Semantic
+    Scholar request per result. API keys default to ``SEARCH_API_KEY`` and
+    ``SS_API_KEY`` respectively.
     Raises ``RuntimeError`` if retrieval ends below the advertised citation
     count, rather than returning an incomplete list as a complete result.
     """

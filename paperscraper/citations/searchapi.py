@@ -231,25 +231,52 @@ def _get_searchapi_citing_papers(
     papers = []
     seen = set()
     advertised_total = 0
+    failures = []
+    search_ids = []
     for cites_query in cites_params:
         total = cites_query.get("total") or 0
         advertised_total = max(advertised_total, total)
+        attempt = 0
 
-        # ``page`` is the API contract; ``pagination.next`` is stochastic metadata.
-        # Merge fresh numeric-page sweeps until the advertised result set is complete.
+        # SearchApi exposes independent live pages, so retry a whole sweep after
+        # an incomplete page and keep unique results from earlier sweeps.
         @retry_with_exponential_backoff(
             max_attempts=5, retry_if=lambda complete: not complete
         )
         def fetch_pages() -> bool:
-            nonlocal advertised_total, total
+            nonlocal advertised_total, attempt, total
+            attempt += 1
+            page_size = 20 if attempt == 1 else 10
             page = 1
             while True:
-                data = _get_searchapi_citing_page(
-                    cites_query,
-                    page,
-                    api_key,
-                    min_results=1,
-                )
+                try:
+                    data = search_api_requests_get(
+                        api_key=api_key,
+                        params={
+                            "engine": "google_scholar",
+                            "hl": "en",
+                            "num": page_size,
+                            "page": page,
+                            "cites": cites_query["cites"],
+                        },
+                    ).json()
+                except requests.exceptions.RequestException as exc:
+                    status = (
+                        exc.response.status_code if exc.response is not None else None
+                    )
+                    if status is not None and status not in {408, 429} and status < 500:
+                        raise
+                    failures.append(
+                        f"page {page}: HTTP {status}"
+                        if status
+                        else f"page {page}: {type(exc).__name__}"
+                    )
+                    return False
+                search_ids.append(data.get("search_metadata", {}).get("id", "unknown"))
+                if data.get("error"):
+                    failures.append(f"page {page}: {data['error']}")
+                    return False
+
                 total = max(
                     total,
                     data.get("search_information", {}).get("total_results") or 0,
@@ -269,7 +296,10 @@ def _get_searchapi_citing_papers(
                 if required and len(papers) >= required:
                     return True
                 if required:
-                    if page * 10 >= required:
+                    if page * page_size >= required:
+                        failures.append(
+                            f"page {page}: {len(papers)} of {required} results"
+                        )
                         return False
                 elif not data.get("pagination", {}).get("next"):
                     return True
@@ -288,72 +318,11 @@ def _get_searchapi_citing_papers(
     if required and len(papers) < required:
         raise RuntimeError(
             f"Incomplete SearchApi Cited By results for {title!r}: "
-            f"retrieved {len(papers)} of {required} requested papers."
+            f"retrieved {len(papers)} of {required} requested papers "
+            f"(last failure: {failures[-1] if failures else 'unknown'}; "
+            f"search IDs: {', '.join(search_ids[-5:])})."
         )
     return papers
-
-
-def _get_searchapi_citing_page(
-    cites_query: dict,
-    page: int,
-    api_key: Optional[str],
-    min_results: int = 0,
-) -> dict:
-    """Retrieve one Google Scholar Cited By page with bounded retries."""
-    last_error = None
-    last_response_error = None
-    combined_results = {}
-    combined_data = None
-
-    @retry_with_exponential_backoff(retry_if=lambda complete: not complete)
-    def fetch_page() -> bool:
-        nonlocal combined_data, last_error, last_response_error
-        try:
-            data = search_api_requests_get(
-                api_key=api_key,
-                params={
-                    "engine": "google_scholar",
-                    "hl": "en",
-                    "num": 10,
-                    "page": page,
-                    "cites": cites_query["cites"],
-                    "no_cache": "true",
-                },
-            ).json()
-        except requests.exceptions.RequestException as exc:
-            last_error = exc
-            data = None
-        if data is not None and data.get("error"):
-            last_response_error = data["error"]
-        if data is not None and "error" not in data:
-            combined_data = combined_data or data
-            if data.get("pagination", {}).get("next"):
-                combined_data["pagination"] = data["pagination"]
-            for paper in data.get("organic_results", []):
-                if not paper.get("title"):
-                    continue
-                identity = paper.get("data_cid") or _normalize_citation_title(
-                    paper["title"]
-                )
-                combined_results[identity] = paper
-            if len(combined_results) >= min_results:
-                combined_data["organic_results"] = list(combined_results.values())
-                return True
-        return False
-
-    # SearchAPI may intermittently fail a valid Cited By query.
-    if fetch_page():
-        return combined_data
-    if combined_data is not None:
-        combined_data["organic_results"] = list(combined_results.values())
-        return combined_data
-    if last_error is not None:
-        raise last_error
-    if last_response_error is not None:
-        raise RuntimeError(
-            f"SearchApi Cited By page {page} error: {last_response_error}"
-        )
-    raise RuntimeError(f"SearchApi returned no Cited By page {page}.")
 
 
 def _search_searchapi_title(
