@@ -30,7 +30,14 @@ class Paper(Entity):
     doi: str = ""
     authors: List[str] = []
 
-    def __init__(self, input: str, mode: ModeType = "infer"):
+    def __init__(
+        self,
+        input: str,
+        mode: ModeType = "infer",
+        *,
+        doi: Optional[str] = None,
+        authors: Optional[List[str]] = None,
+    ):
         """
         Set up a Paper object for analysis.
 
@@ -38,6 +45,8 @@ class Paper(Entity):
             input: Paper identifier. This can be the title, DOI or semantic scholar ID
                 of the paper.
             mode: The format in which the ID was provided. Defaults to "infer".
+            doi: Known DOI. Supplying metadata skips identifier resolution.
+            authors: Known authors. Supplying metadata skips identifier resolution.
 
         Raises:
             ValueError: If unknown mode is given.
@@ -47,6 +56,12 @@ class Paper(Entity):
 
         input = input.strip()
         self.input = input
+        self.authors = list(authors or [])
+        if doi is not None or authors is not None:
+            self.title = input
+            self.doi = doi or ""
+            return
+
         if mode == "infer":
             mode = determine_paper_input_type(input)
 

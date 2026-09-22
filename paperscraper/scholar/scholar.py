@@ -8,7 +8,7 @@ import requests
 from scholarly import scholarly
 
 from ..citations.utils import SEARCH_API_KEY, _resolve_backend, search_api_requests_get
-from ..utils import dump_papers
+from ..utils import dump_papers, retry_with_exponential_backoff
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -109,18 +109,37 @@ def get_scholar_papers_searchapi(
         pd.DataFrame. One paper per row.
     """
     resolved_kwargs = _resolve_search_api_kwargs(search_api_kwargs)
-    response = search_api_requests_get(
-        api_key=api_key,
-        params={
-            "engine": "google_scholar",
-            "q": title,
-            "hl": "en",
-            "num": resolved_kwargs["top_k"],
-        },
+    exact_title = title[1:-1] if re.fullmatch(r'"[^"]+"', title) else None
+
+    @retry_with_exponential_backoff(
+        retry_if=lambda papers: exact_title is not None and not papers,
+        exceptions=(requests.exceptions.RequestException,),
     )
+    def search() -> list[dict]:
+        response = search_api_requests_get(
+            api_key=api_key,
+            params={
+                "engine": "google_scholar",
+                "q": f"allintitle: {exact_title}" if exact_title else title,
+                "hl": "en",
+                "num": 20 if exact_title else resolved_kwargs["top_k"],
+            },
+        )
+        papers = response.json().get("organic_results", [])
+        if exact_title:
+            normalized_title = _normalize_searchapi_title(exact_title)
+            papers = [
+                paper
+                for paper in papers
+                if _normalize_searchapi_title(paper.get("title", ""))
+                == normalized_title
+            ]
+        return papers
+
+    papers = search()
 
     processed = []
-    for index, paper in enumerate(response.json().get("organic_results", [])):
+    for index, paper in enumerate(papers[: resolved_kwargs["top_k"]]):
         # Search result snippets are not abstracts; only the citation view exposes one.
         citation = (
             get_searchapi_scholar_citation(
@@ -132,6 +151,12 @@ def get_scholar_papers_searchapi(
             else {}
         )
         entry = _parse_searchapi_scholar_result(paper, citation)
+        if "citations" in fields and entry["citations"] < 0:
+            from ..citations.citations import get_citations_from_title_searchapi
+
+            entry["citations"] = get_citations_from_title_searchapi(
+                paper["title"], api_key
+            )
         processed.append({key: value for key, value in entry.items() if key in fields})
 
     return pd.DataFrame(processed, columns=fields)

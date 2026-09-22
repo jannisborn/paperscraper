@@ -28,6 +28,55 @@ The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI 
 An explicit `api_key` can be passed with a specific backend. 
 NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.
 
+Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
+
+```pycon
+>>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
+>>> title = "Quantum theory and application of contextual optimal transport"
+>>> print(get_bibtex_entry(title))
+@inproceedings{mariella2024quantum,
+  title={Quantum theory and application of contextual optimal transport},
+  author={Mariella, Nicola and Akhriev, Albert and Tacchino, Francesco and Zoufal, Christa and Gonzalez-Espitia, Juan Carlos and Harsanyi, Benedek and Koskin, Eugene and Tavernelli, Ivano and Woerner, Stefan and Rapsomaniki, Marianna and Zhuk, Sergiy and Born, Jannis},
+  booktitle={International Conference on Machine Learning},
+  pages={34822--34845},
+  year={2024},
+  organization={PMLR}
+}
+>>> print(get_endnote_entry(title))
+%0 Conference Paper
+%T Quantum theory and application of contextual optimal transport
+%A Mariella, Nicola
+%A Akhriev, Albert
+%A Tacchino, Francesco
+%A Zoufal, Christa
+%A Gonzalez-Espitia, Juan Carlos
+%A Harsanyi, Benedek
+%A Koskin, Eugene
+%A Tavernelli, Ivano
+%A Woerner, Stefan
+%A Rapsomaniki, Marianna
+%A Zhuk, Sergiy
+%A Born, Jannis
+%B International Conference on Machine Learning
+%P 34822-34845
+%D 2024
+%I PMLR
+```
+
+List papers citing it on Google Scholar:
+
+```pycon
+>>> from paperscraper.citations import get_citing_papers_from_title
+>>> paper = get_citing_papers_from_title(title, max_results=1, full_info=True)[0]
+>>> paper.__dict__
+{
+    'input': 'Advancing single-cell omics and cell-based therapeutics with quantum computing',
+    'authors': ['A Bose', 'K Rhrissorrakrai', 'F Utro', 'L Parida'],
+    'title': 'Advancing single-cell omics and cell-based therapeutics with quantum computing',
+    'doi': '10.1038/s41580-025-00918-0',
+}
+```
+
 ```sh
 export SEARCH_API_KEY=YOUR_API_KEY
 export SS_API_KEY=YOUR_API_KEY

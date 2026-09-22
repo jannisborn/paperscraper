@@ -3100,6 +3100,7 @@ name = "paperscraper"
 source = { editable = "." }
 dependencies = [
     { name = "arxiv" },
+    { name = "bibtexparser" },
     { name = "boto3" },
     { name = "bs4" },
     { name = "dotenv" },
@@ -3148,6 +3149,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "arxiv", specifier = ">=2.4.0" },
+    { name = "bibtexparser", specifier = ">=1.4.3,<2" },
     { name = "boto3" },
     { name = "bs4", specifier = ">=0.0.1" },
     { name = "dotenv" },
