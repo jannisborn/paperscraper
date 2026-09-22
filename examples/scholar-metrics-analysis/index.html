@@ -1064,131 +1064,174 @@ Semantic Scholar metrics, and journal impact factors.</p>
 <p>The default <code>backend</code> is <code>"auto"</code>: it tries to use Google Scholar via SearchAPI (through the env var <code>SEARCH_API_KEY</code>) then Semantic Scholar (through <code>SS_API_KEY</code>) and otherwise uses Google Scholar via <code>scholarly</code> (which has very limited throughput).
 An explicit <code>api_key</code> can be passed with a specific backend. 
 NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SEARCH_API_KEY</span><span class="o">=</span>YOUR_API_KEY
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SS_API_KEY</span><span class="o">=</span>YOUR_API_KEY
+<p>Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_bibtex_entry</span><span class="p">,</span> <span class="n">get_endnote_entry</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Quantum theory and application of contextual optimal transport&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">get_bibtex_entry</span><span class="p">(</span><span class="n">title</span><span class="p">))</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="go">@inproceedings{mariella2024quantum,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="go">  title={Quantum theory and application of contextual optimal transport},</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="go">  author={Mariella, Nicola and Akhriev, Albert and Tacchino, Francesco and Zoufal, Christa and Gonzalez-Espitia, Juan Carlos and Harsanyi, Benedek and Koskin, Eugene and Tavernelli, Ivano and Woerner, Stefan and Rapsomaniki, Marianna and Zhuk, Sergiy and Born, Jannis},</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="go">  booktitle={International Conference on Machine Learning},</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="go">  pages={34822--34845},</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="go">  year={2024},</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="go">  organization={PMLR}</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="go">}</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">get_endnote_entry</span><span class="p">(</span><span class="n">title</span><span class="p">))</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="go">%0 Conference Paper</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="go">%T Quantum theory and application of contextual optimal transport</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="go">%A Mariella, Nicola</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="go">%A Akhriev, Albert</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="go">%A Tacchino, Francesco</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="go">%A Zoufal, Christa</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="go">%A Gonzalez-Espitia, Juan Carlos</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="go">%A Harsanyi, Benedek</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="go">%A Koskin, Eugene</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="go">%A Tavernelli, Ivano</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="go">%A Woerner, Stefan</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="go">%A Rapsomaniki, Marianna</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="go">%A Zhuk, Sergiy</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="go">%A Born, Jannis</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="go">%B International Conference on Machine Learning</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="go">%P 34822-34845</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="go">%D 2024</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="go">%I PMLR</span>
+</code></pre></div>
+<p>List papers citing it on Google Scholar:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_citing_papers_from_title</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper</span> <span class="o">=</span> <span class="n">get_citing_papers_from_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">full_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper</span><span class="o">.</span><span class="vm">__dict__</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="go">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="go">    &#39;input&#39;: &#39;Advancing single-cell omics and cell-based therapeutics with quantum computing&#39;,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="go">    &#39;authors&#39;: [&#39;A Bose&#39;, &#39;K Rhrissorrakrai&#39;, &#39;F Utro&#39;, &#39;L Parida&#39;],</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="go">    &#39;title&#39;: &#39;Advancing single-cell omics and cell-based therapeutics with quantum computing&#39;,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="go">    &#39;doi&#39;: &#39;10.1038/s41580-025-00918-0&#39;,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="go">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SEARCH_API_KEY</span><span class="o">=</span>YOUR_API_KEY
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SS_API_KEY</span><span class="o">=</span>YOUR_API_KEY
 </code></pre></div>
 <p>For larger runs, <code>SS_REQUEST_TIMEOUT</code>, <code>SS_CONCURRENCY_LIMIT</code>, and
 <code>SS_RATE_LIMIT_DELAY</code> can be tuned through environment variables.</p>
 <h2 id="researcher-metrics">Researcher Metrics<a class="headerlink" href="#researcher-metrics" title="Permanent link">&para;</a></h2>
 <p>Semantic Scholar author pages expose <code>paperCount</code>, <code>citationCount</code>, and <code>hIndex</code>.
 You can query them by Semantic Scholar Author ID:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">semantic_scholar_requests_get</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">ssaid</span> <span class="o">=</span> <span class="s2">&quot;2062641025&quot;</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">metrics</span> <span class="o">=</span> <span class="n">semantic_scholar_requests_get</span><span class="p">(</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="sa">f</span><span class="s2">&quot;https://api.semanticscholar.org/graph/v1/author/</span><span class="si">{</span><span class="n">ssaid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="s2">&quot;name,paperCount,citationCount,hIndex&quot;</span><span class="p">},</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">semantic_scholar_requests_get</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">ssaid</span> <span class="o">=</span> <span class="s2">&quot;2062641025&quot;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">metrics</span> <span class="o">=</span> <span class="n">semantic_scholar_requests_get</span><span class="p">(</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="sa">f</span><span class="s2">&quot;https://api.semanticscholar.org/graph/v1/author/</span><span class="si">{</span><span class="n">ssaid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="s2">&quot;name,paperCount,citationCount,hIndex&quot;</span><span class="p">},</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>{
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    &quot;authorId&quot;: &quot;2062641025&quot;,
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    &quot;name&quot;: &quot;Jannis Born&quot;,
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    &quot;paperCount&quot;: 63,
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    &quot;citationCount&quot;: 1910,
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    &quot;hIndex&quot;: 21,
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>{
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    &quot;authorId&quot;: &quot;2062641025&quot;,
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    &quot;name&quot;: &quot;Jannis Born&quot;,
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    &quot;paperCount&quot;: 63,
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    &quot;citationCount&quot;: 1910,
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    &quot;hIndex&quot;: 21,
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>}
 </code></pre></div>
 <p>Resolve the same author by name:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">author_name_to_ssaid</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_name_to_ssaid</span><span class="p">(</span><span class="s2">&quot;Jannis Born&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="go">(&quot;2062641025&quot;, &quot;Jannis Born&quot;)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">author_name_to_ssaid</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_name_to_ssaid</span><span class="p">(</span><span class="s2">&quot;Jannis Born&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="go">(&quot;2062641025&quot;, &quot;Jannis Born&quot;)</span>
 </code></pre></div>
 <p>Or resolve through ORCID first:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.orcid</span><span class="w"> </span><span class="kn">import</span> <span class="n">orcid_to_author_name</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">author_name_to_ssaid</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">name</span> <span class="o">=</span> <span class="n">orcid_to_author_name</span><span class="p">(</span><span class="s2">&quot;0000-0001-8307-5670&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_name_to_ssaid</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="go">(&quot;2062641025&quot;, &quot;Jannis Born&quot;)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.orcid</span><span class="w"> </span><span class="kn">import</span> <span class="n">orcid_to_author_name</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">author_name_to_ssaid</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">name</span> <span class="o">=</span> <span class="n">orcid_to_author_name</span><span class="p">(</span><span class="s2">&quot;0000-0001-8307-5670&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">author_name_to_ssaid</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="go">(&quot;2062641025&quot;, &quot;Jannis Born&quot;)</span>
 </code></pre></div>
 <p>If you need the actual Semantic Scholar paper IDs for an author, use
 <code>get_papers_for_author</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_papers_for_author</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_ids</span> <span class="o">=</span> <span class="n">get_papers_for_author</span><span class="p">(</span><span class="s2">&quot;2062641025&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">paper_ids</span><span class="p">)</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="go">63  # Number of papers linked to this Semantic Scholar author record.</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="go">&#39;6c245545fcb88df49cf921ba0871b40818665b92&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_papers_for_author</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_ids</span> <span class="o">=</span> <span class="n">get_papers_for_author</span><span class="p">(</span><span class="s2">&quot;2062641025&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">paper_ids</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="go">63  # Number of papers linked to this Semantic Scholar author record.</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">paper_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="go">&#39;6c245545fcb88df49cf921ba0871b40818665b92&#39;</span>
 </code></pre></div>
 <p>Citation and paper counts can change as Semantic Scholar updates author records.</p>
 <h2 id="journal-impact-factors">Journal Impact Factors<a class="headerlink" href="#journal-impact-factors" title="Permanent link">&para;</a></h2>
 <p>Use <code>Impactor</code> to search journal names, abbreviations, E-ISSNs, or NLM IDs.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.impact</span><span class="w"> </span><span class="kn">import</span> <span class="n">Impactor</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span> <span class="o">=</span> <span class="n">Impactor</span><span class="p">()</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Nat Comms&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">85</span><span class="p">,</span> <span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;impact&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="go">[</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="go">    {&quot;journal&quot;: &quot;Nature Computational Science&quot;, &quot;factor&quot;: 18.3, &quot;score&quot;: 88},</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="go">    {&quot;journal&quot;: &quot;Nature Communications&quot;, &quot;factor&quot;: 15.7, &quot;score&quot;: 94},</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="go">    {&quot;journal&quot;: &quot;Natural Computing&quot;, &quot;factor&quot;: 1.6, &quot;score&quot;: 88},</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="go">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.impact</span><span class="w"> </span><span class="kn">import</span> <span class="n">Impactor</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span> <span class="o">=</span> <span class="n">Impactor</span><span class="p">()</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Nat Comms&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">85</span><span class="p">,</span> <span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;impact&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="go">[</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="go">    {&quot;journal&quot;: &quot;Nature Computational Science&quot;, &quot;factor&quot;: 18.3, &quot;score&quot;: 88},</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="go">    {&quot;journal&quot;: &quot;Nature Communications&quot;, &quot;factor&quot;: 15.7, &quot;score&quot;: 94},</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="go">    {&quot;journal&quot;: &quot;Natural Computing&quot;, &quot;factor&quot;: 1.6, &quot;score&quot;: 88},</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="go">]</span>
 </code></pre></div>
 <p><code>threshold</code> defaults to <code>100</code>, which behaves like an exact search. Lower values
 allow fuzzier matches. <code>sort_by</code> can be <code>"impact"</code>, <code>"journal"</code>, or <code>"score"</code>.</p>
 <p>Search by abbreviation, NLM ID, or E-ISSN:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Nat Rev Earth Environ&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;101771060&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;2662-138X&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Nat Rev Earth Environ&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;101771060&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;2662-138X&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="go">[{&quot;journal&quot;: &quot;Nature Reviews Earth &amp; Environment&quot;, &quot;factor&quot;: 71.5, &quot;score&quot;: 100}]</span>
 </code></pre></div>
 <p>Filter by impact factor range:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Neural network&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">85</span><span class="p">,</span> <span class="n">min_impact</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">max_impact</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="go">[</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="go">    {&quot;journal&quot;: &quot;IEEE Transactions on Neural Networks and Learning Systems&quot;, &quot;factor&quot;: 8.9, &quot;score&quot;: 93},</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="go">    {&quot;journal&quot;: &quot;NEURAL NETWORKS&quot;, &quot;factor&quot;: 6.3, &quot;score&quot;: 91},</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="go">    {&quot;journal&quot;: &quot;Network&quot;, &quot;factor&quot;: 3.1, &quot;score&quot;: 92},</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="go">    {&quot;journal&quot;: &quot;NETWORK-COMPUTATION IN NEURAL SYSTEMS&quot;, &quot;factor&quot;: 1.6, &quot;score&quot;: 92},</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="go">    {&quot;journal&quot;: &quot;WORK-A Journal of Prevention Assessment &amp; Rehabilitation&quot;, &quot;factor&quot;: 1.5, &quot;score&quot;: 86},</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="go">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Neural network&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">85</span><span class="p">,</span> <span class="n">min_impact</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">max_impact</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="go">[</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="go">    {&quot;journal&quot;: &quot;IEEE Transactions on Neural Networks and Learning Systems&quot;, &quot;factor&quot;: 8.9, &quot;score&quot;: 93},</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="go">    {&quot;journal&quot;: &quot;NEURAL NETWORKS&quot;, &quot;factor&quot;: 6.3, &quot;score&quot;: 91},</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="go">    {&quot;journal&quot;: &quot;Network&quot;, &quot;factor&quot;: 3.1, &quot;score&quot;: 92},</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="go">    {&quot;journal&quot;: &quot;NETWORK-COMPUTATION IN NEURAL SYSTEMS&quot;, &quot;factor&quot;: 1.6, &quot;score&quot;: 92},</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="go">    {&quot;journal&quot;: &quot;WORK-A Journal of Prevention Assessment &amp; Rehabilitation&quot;, &quot;factor&quot;: 1.5, &quot;score&quot;: 86},</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="go">]</span>
 </code></pre></div>
 <p>Return all available fields:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;quantum information&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="go">[</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="go">    {</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="go">        &quot;factor&quot;: 8.3,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="go">        &quot;jcr&quot;: &quot;Q1&quot;,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="go">        &quot;nlm_id&quot;: &quot;101722857&quot;,</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="go">        &quot;journal&quot;: &quot;npj Quantum Information&quot;,</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="go">        &quot;issn&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="go">        &quot;journal_abbr&quot;: &quot;npj Quantum Inf&quot;,</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="go">        &quot;eissn&quot;: &quot;2056-6387&quot;,</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="go">        &quot;score&quot;: 92,</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="go">    },</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="go">    {</span>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="go">        &quot;factor&quot;: 2.9,</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="go">        &quot;jcr&quot;: &quot;Q2&quot;,</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="go">        &quot;nlm_id&quot;: &quot;101703749&quot;,</span>
-<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="go">        &quot;journal&quot;: &quot;Information&quot;,</span>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="go">        &quot;issn&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Information (Basel)&quot;,</span>
-<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="go">        &quot;eissn&quot;: &quot;2078-2489&quot;,</span>
-<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="go">        &quot;score&quot;: 95,</span>
-<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="go">    },</span>
-<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="go">    {</span>
-<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="go">        &quot;factor&quot;: 1.3,</span>
-<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="go">        &quot;jcr&quot;: &quot;Q2&quot;,</span>
-<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="go">        &quot;nlm_id&quot;: &quot;9877123&quot;,</span>
-<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="go">        &quot;journal&quot;: &quot;NATION&quot;,</span>
-<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="go">        &quot;issn&quot;: &quot;0027-8378&quot;,</span>
-<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Nation&quot;,</span>
-<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="go">        &quot;eissn&quot;: &quot;0027-8378&quot;,</span>
-<a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="go">        &quot;score&quot;: 91,</span>
-<a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="go">    },</span>
-<a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="go">    {</span>
-<a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span class="go">        &quot;factor&quot;: 1.1,</span>
-<a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="go">        &quot;jcr&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span class="go">        &quot;nlm_id&quot;: &quot;138060&quot;,</span>
-<a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span class="go">        &quot;journal&quot;: &quot;Reformation&quot;,</span>
-<a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="go">        &quot;issn&quot;: &quot;1357-4175&quot;,</span>
-<a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
-<a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Reformation&quot;,</span>
-<a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="go">        &quot;eissn&quot;: &quot;1752-0738&quot;,</span>
-<a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a><span class="go">        &quot;score&quot;: 90,</span>
-<a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a><span class="go">    },</span>
-<a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a><span class="go">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">impactor</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;quantum information&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="go">[</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="go">    {</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="go">        &quot;factor&quot;: 8.3,</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="go">        &quot;jcr&quot;: &quot;Q1&quot;,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="go">        &quot;nlm_id&quot;: &quot;101722857&quot;,</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="go">        &quot;journal&quot;: &quot;npj Quantum Information&quot;,</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="go">        &quot;issn&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="go">        &quot;journal_abbr&quot;: &quot;npj Quantum Inf&quot;,</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="go">        &quot;eissn&quot;: &quot;2056-6387&quot;,</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="go">        &quot;score&quot;: 92,</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="go">    },</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="go">    {</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="go">        &quot;factor&quot;: 2.9,</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="go">        &quot;jcr&quot;: &quot;Q2&quot;,</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="go">        &quot;nlm_id&quot;: &quot;101703749&quot;,</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="go">        &quot;journal&quot;: &quot;Information&quot;,</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="go">        &quot;issn&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Information (Basel)&quot;,</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="go">        &quot;eissn&quot;: &quot;2078-2489&quot;,</span>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="go">        &quot;score&quot;: 95,</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="go">    },</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a><span class="go">    {</span>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a><span class="go">        &quot;factor&quot;: 1.3,</span>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a><span class="go">        &quot;jcr&quot;: &quot;Q2&quot;,</span>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="go">        &quot;nlm_id&quot;: &quot;9877123&quot;,</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="go">        &quot;journal&quot;: &quot;NATION&quot;,</span>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="go">        &quot;issn&quot;: &quot;0027-8378&quot;,</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Nation&quot;,</span>
+<a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a><span class="go">        &quot;eissn&quot;: &quot;0027-8378&quot;,</span>
+<a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="go">        &quot;score&quot;: 91,</span>
+<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="go">    },</span>
+<a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a><span class="go">    {</span>
+<a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a><span class="go">        &quot;factor&quot;: 1.1,</span>
+<a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="go">        &quot;jcr&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a><span class="go">        &quot;nlm_id&quot;: &quot;138060&quot;,</span>
+<a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a><span class="go">        &quot;journal&quot;: &quot;Reformation&quot;,</span>
+<a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="go">        &quot;issn&quot;: &quot;1357-4175&quot;,</span>
+<a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a><span class="go">        &quot;zky&quot;: &quot;.&quot;,</span>
+<a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a><span class="go">        &quot;journal_abbr&quot;: &quot;Reformation&quot;,</span>
+<a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a><span class="go">        &quot;eissn&quot;: &quot;1752-0738&quot;,</span>
+<a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a><span class="go">        &quot;score&quot;: 90,</span>
+<a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a><span class="go">    },</span>
+<a id="__codelineno-13-47" name="__codelineno-13-47" href="#__codelineno-13-47"></a><span class="go">]</span>
 </code></pre></div>
 
 
