@@ -1,34 +1,104 @@
 # Scholar Metrics Analysis
 
-This page collects examples for paper citation counts, researcher-level
+This page covers Google Scholar workflows through SearchAPI, researcher-level
 Semantic Scholar metrics, and journal impact factors.
+
+## SearchAPI Setup
+
+Set the API key once through the environment, or pass `api_key=...` to each
+function explicitly:
+
+```sh
+export SEARCH_API_KEY=YOUR_SEARCHAPI_KEY
+export SS_API_KEY=YOUR_SEMANTIC_SCHOLAR_KEY  # Optional enrichment.
+```
+
+The SearchAPI-backed utilities cover the following workflows:
+
+| Task | Function | Result |
+| --- | --- | --- |
+| Search Scholar | `get_scholar_papers` | Paper metadata as a DataFrame |
+| Count citations | `get_citations_from_title` | Google Scholar citation count |
+| Export a citation | `get_bibtex_entry`, `get_endnote_entry` | BibTeX or EndNote text |
+| Find citing papers | `get_citing_papers_from_title` | A list of `Paper` objects |
+| Find an author's papers | `get_scholar_author_papers` | Author-paper metadata as a DataFrame |
+
+SearchAPI calls are retried with bounded exponential backoff. The complete
+outputs below were captured from live calls on 23 September 2026. They reflect
+live Google Scholar data, so paper order and citation counts can change.
+
+## Keyword Paper Search
+
+Search Google Scholar and return paper metadata as a DataFrame:
+
+```pycon
+>>> from paperscraper.scholar import get_scholar_papers
+>>> papers = get_scholar_papers(
+...     "GT4SD",
+...     backend="searchapi",
+...     search_api_kwargs={"top_k": 1, "num_enrich": 1},
+... )
+>>> papers.iloc[0].to_dict()
+{
+    'title': 'Accelerating material design with the generative toolkit for scientific discovery',
+    'authors': [
+        'Matteo Manica',
+        'Jannis Born',
+        'Joris Cadow',
+        'Dimitrios Christofidellis',
+        'Ashish Dave',
+        'Dean Clarke',
+        'Yves Gaetan Nana Teukam',
+        'Giorgio Giannone',
+        'Samuel C Hoffman',
+        'Matthew Buchan',
+        'Vijil Chenthamarakshan',
+        'Timothy Donovan',
+        'Hsiang Han Hsu',
+        'Federico Zipoli',
+        'Oliver Schilter',
+        'Akihiro Kishimoto',
+        'Lisa Hamada',
+        'Inkit Padhi',
+        'Karl Wehden',
+        'Lauren McHugh',
+        'Alexy Khrabrov',
+        'Payel Das',
+        'Seiji Takeda',
+        'John R Smith',
+    ],
+    'year': 2023,
+    'abstract': 'With the growing availability of data within various scientific domains, generative models hold enormous potential to accelerate scientific discovery. They harness powerful representations learned from datasets to speed up the formulation of novel hypotheses with the potential to impact material discovery broadly. We present the Generative Toolkit for Scientific Discovery (GT4SD). This extensible open-source library enables scientists, developers, and researchers to train and use state-of-the-art generative models to accelerate scientific discovery focused on organic material design.',
+    'journal': 'NPJ Computational Materials',
+    'citations': 58,
+}
+```
+
+`top_k` limits the returned rows. `num_enrich` controls how many rows receive
+additional author-profile requests for full author, abstract, and journal data.
 
 ## Paper Citation Counts
 
-Fetch citation counts by DOI using Semantic Scholar:
-
-```pycon
->>> from paperscraper.citations import get_citations_by_doi
->>> get_citations_by_doi("10.1021/acs.jcim.3c00132")
-12  # Semantic Scholar citation count.
-```
-
-Fetch citation counts by title from Google Scholar (SearchAPI or scholarly backend) or Semantic Scholar:
+Retrieve a Google Scholar citation count from an exact paper title:
 
 ```pycon
 >>> from paperscraper.citations import get_citations_from_title
->>> title = "GT4SD: Generative Toolkit for Scientific Discovery"
+>>> title = "Quantum theory and application of contextual optimal transport"
 >>> get_citations_from_title(title, backend="searchapi")
-57  # Google Scholar citation count.
->>> get_citations_from_title(title, backend="semantic_scholar")
-18  # Semantic Scholar citation count.
+7
 ```
 
-The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI (through the env var `SEARCH_API_KEY`) then Semantic Scholar (through `SS_API_KEY`) and otherwise uses Google Scholar via `scholarly` (which has very limited throughput).
-An explicit `api_key` can be passed with a specific backend. 
-NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.
+The default `backend` is `"auto"`: it uses SearchAPI when `SEARCH_API_KEY` is
+configured, then Semantic Scholar when `SS_API_KEY` is configured, and otherwise
+falls back to `scholarly`, which has limited throughput. An explicit `api_key`
+can be passed with a specific backend. Citation counts can differ between
+providers and between Scholar records for different versions of a paper.
 
-Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
+## Bibliographic Export
+
+Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format.
+Both functions accept a title or DOI; DOI inputs are first resolved through
+Semantic Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
@@ -43,7 +113,7 @@ Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
   organization={PMLR}
 }
 >>> print(get_endnote_entry(title))
-%0 Conference Paper
+%0 Journal Article
 %T Quantum theory and application of contextual optimal transport
 %A Mariella, Nicola
 %A Akhriev, Albert
@@ -55,18 +125,17 @@ Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
 %A Tavernelli, Ivano
 %A Woerner, Stefan
 %A Rapsomaniki, Marianna
-%A Zhuk, Sergiy
-%A Born, Jannis
-%B International Conference on Machine Learning
-%P 34822-34845
+%J arXiv preprint arXiv:2402.14991
 %D 2024
-%I PMLR
 ```
 
-List papers citing it on Google Scholar:
+## Citing Papers
+
+List papers citing a title on Google Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_citing_papers_from_title
+>>> title = "Quantum theory and application of contextual optimal transport"
 >>> paper = get_citing_papers_from_title(title, max_results=1, full_info=True)[0]
 >>> paper.__dict__
 {
@@ -77,15 +146,57 @@ List papers citing it on Google Scholar:
 }
 ```
 
-```sh
-export SEARCH_API_KEY=YOUR_API_KEY
-export SS_API_KEY=YOUR_API_KEY
+By default, citing-paper results contain titles. `full_info=True` additionally
+resolves authors and available DOIs through Semantic Scholar, using
+`SS_API_KEY` unless `ss_api_key=...` is passed. For larger runs,
+`SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and `SS_RATE_LIMIT_DELAY` can be
+tuned through environment variables.
+
+## Google Scholar Author Papers
+
+Return papers and associated metadata for a researcher:
+
+```pycon
+>>> from paperscraper.scholar import get_scholar_author_papers
+>>> paper = get_scholar_author_papers(
+...     "Jannis Born",
+...     max_results=5,
+...     full_info=True,
+... ).iloc[4]
+>>> paper.to_dict()
+{
+    'title': 'Unifying Molecular and Textual Representations via Multi-task Language Modelling',
+    'authors': [
+        'Dimitrios Christofidellis*',
+        'Giorgio Giannone*',
+        'Jannis Born',
+        'Ole Winther',
+        'Teodoro Laino',
+        'Matteo Manica',
+    ],
+    'publication': 'International Conference on Machine Learning, ICML 2023, 2023',
+    'year': 2023,
+    'citations': 201,
+    'journal': 'International Conference on Machine Learning, ICML 2023',
+    'date': '2023/1/29',
+    'volume': '',
+    'issue': '',
+    'pages': '',
+    'publisher': '',
+    'description': 'The recent advances in neural language models have also been successfully applied to the field of chemistry, offering generative solutions for classical problems in molecular design and synthesis planning. These new methods have the potential to fuel a new era of data-driven automation in scientific discovery. However, specialized models are still typically required for each task, leading to the need for problem-specific fine-tuning and neglecting task interrelations. The main obstacle in this field is the lack of a unified representation between natural language and chemical representations, complicating and limiting human-machine interaction. Here, we propose the first multi-domain, multi-task language model that can solve a wide range of tasks in both the chemical and natural language domains. Our model can handle chemical and natural language concurrently, without requiring expensive pre-training on single domains or task-specific models. Interestingly, sharing weights across domains remarkably improves our model when benchmarked against state-of-the-art baselines on single-domain and cross-domain tasks. In particular, sharing information across domains and tasks gives rise to large improvements in cross-domain tasks, the magnitude of which increase with scale, as measured by more than a dozen of relevant metrics. Our work suggests that such models can robustly and efficiently accelerate discovery in physical sciences by superseding problem-specific fine-tuning and enhancing human-model interactions.',
+}
 ```
 
-For larger runs, `SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and
-`SS_RATE_LIMIT_DELAY` can be tuned through environment variables.
+`full_info=True` adds journal and publication details at the cost of one extra
+request per paper. Pass `author_id` to select a specific profile when names are
+ambiguous.
 
-## Researcher Metrics
+When no exact profile exists, the function falls back to an `author:"name"`
+Scholar search and warns that namesakes may be mixed. This fallback cannot
+provide `full_info`. `max_results` defaults to 30, and explicit smaller or
+larger integer limits are respected.
+
+## Semantic Scholar Author Metrics
 
 Semantic Scholar author pages expose `paperCount`, `citationCount`, and `hIndex`.
 You can query them by Semantic Scholar Author ID:
