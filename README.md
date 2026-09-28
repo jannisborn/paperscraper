@@ -6,9 +6,8 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
 [![codecov](https://codecov.io/github/jannisborn/paperscraper/branch/main/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
+[![Supported by SearchAPI](https://img.shields.io/badge/Supported%20by-SearchAPI-5b5bd6)](https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper)
 # paperscraper
-
-[![Supported by SearchAPI](https://img.shields.io/badge/Supported%20by-SearchAPI-5b5bd6?style=for-the-badge)](https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper)
 
 `paperscraper` is a `python` package for scraping publication metadata or full text files
 (PDF or XML) from
