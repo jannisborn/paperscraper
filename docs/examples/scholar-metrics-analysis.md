@@ -34,43 +34,18 @@ Search Google Scholar and return paper metadata as a DataFrame:
 ```pycon
 >>> from paperscraper.scholar import get_scholar_papers
 >>> papers = get_scholar_papers(
-...     "GT4SD",
+...     "CMonge",
 ...     backend="searchapi",
 ...     search_api_kwargs={"top_k": 1, "num_enrich": 1},
 ... )
 >>> papers.iloc[0].to_dict()
 {
-    'title': 'Accelerating material design with the generative toolkit for scientific discovery',
-    'authors': [
-        'Matteo Manica',
-        'Jannis Born',
-        'Joris Cadow',
-        'Dimitrios Christofidellis',
-        'Ashish Dave',
-        'Dean Clarke',
-        'Yves Gaetan Nana Teukam',
-        'Giorgio Giannone',
-        'Samuel C Hoffman',
-        'Matthew Buchan',
-        'Vijil Chenthamarakshan',
-        'Timothy Donovan',
-        'Hsiang Han Hsu',
-        'Federico Zipoli',
-        'Oliver Schilter',
-        'Akihiro Kishimoto',
-        'Lisa Hamada',
-        'Inkit Padhi',
-        'Karl Wehden',
-        'Lauren McHugh',
-        'Alexy Khrabrov',
-        'Payel Das',
-        'Seiji Takeda',
-        'John R Smith',
-    ],
-    'year': 2023,
-    'abstract': 'With the growing availability of data within various scientific domains, generative models hold enormous potential to accelerate scientific discovery. They harness powerful representations learned from datasets to speed up the formulation of novel hypotheses with the potential to impact material discovery broadly. We present the Generative Toolkit for Scientific Discovery (GT4SD). This extensible open-source library enables scientists, developers, and researchers to train and use state-of-the-art generative models to accelerate scientific discovery focused on organic material design.',
-    'journal': 'NPJ Computational Materials',
-    'citations': 58,
+    'title': 'Conditional Monge Gap enables generalizable single-cell perturbation modelling',
+    'authors': ['Alice Driessen', 'Dhruva Abhijit Rajwade', 'Benedek Harsanyi', 'Marianna Rapsomaniki', 'Jannis Born'],
+    'year': 2026,
+    'abstract': 'Learning the response of single cells to various treatments offers great potential to enable targeted therapies. In this context, neural optimal transport has emerged as a principled methodological framework because it inherently accommodates the challenges of unpaired data induced by cell destruction during data acquisition. However, most existing optimal transport approaches are incapable of conditioning on different treatment contexts and we still lack methods that show promising generalizability to unseen treatments. Here we propose the Conditional Monge Gap (CMonge), which learns optimal transport maps conditionally on arbitrary covariates.',
+    'journal': 'Nature Machine Intelligence',
+    'citations': 2,
 }
 ```
 
@@ -102,31 +77,29 @@ Semantic Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
->>> title = "Quantum theory and application of contextual optimal transport"
+>>> title = "Quantum doubly stochastic transformers"
 >>> print(get_bibtex_entry(title))
-@inproceedings{mariella2024quantum,
-  title={Quantum theory and application of contextual optimal transport},
-  author={Mariella, Nicola and Akhriev, Albert and Tacchino, Francesco and Zoufal, Christa and Gonzalez-Espitia, Juan Carlos and Harsanyi, Benedek and Koskin, Eugene and Tavernelli, Ivano and Woerner, Stefan and Rapsomaniki, Marianna and Zhuk, Sergiy and Born, Jannis},
-  booktitle={International Conference on Machine Learning},
-  pages={34822--34845},
-  year={2024},
-  organization={PMLR}
+@article{born2026quantum,
+  title={Quantum doubly stochastic transformers},
+  author={Born, Jannis and Skogh, Filip and Rhrissorrakrai, Kahn and Utro, Filippo and Wagner, Nico and Sobczyk, Aleksandros},
+  journal={Advances in Neural Information Processing Systems},
+  volume={38},
+  pages={70224--70254},
+  year={2026}
 }
 >>> print(get_endnote_entry(title))
 %0 Journal Article
-%T Quantum theory and application of contextual optimal transport
-%A Mariella, Nicola
-%A Akhriev, Albert
-%A Tacchino, Francesco
-%A Zoufal, Christa
-%A Gonzalez-Espitia, Juan Carlos
-%A Harsanyi, Benedek
-%A Koskin, Eugene
-%A Tavernelli, Ivano
-%A Woerner, Stefan
-%A Rapsomaniki, Marianna
-%J arXiv preprint arXiv:2402.14991
-%D 2024
+%T Quantum doubly stochastic transformers
+%A Born, Jannis
+%A Skogh, Filip
+%A Rhrissorrakrai, Kahn
+%A Utro, Filippo
+%A Wagner, Nico
+%A Sobczyk, Aleksandros
+%J Advances in Neural Information Processing Systems
+%V 38
+%P 70224-70254
+%D 2026
 ```
 
 ## Citing Papers
@@ -160,30 +133,40 @@ Return papers and associated metadata for a researcher:
 >>> from paperscraper.scholar import get_scholar_author_papers
 >>> paper = get_scholar_author_papers(
 ...     "Jannis Born",
-...     max_results=5,
+...     max_results=25,
 ...     full_info=True,
-... ).iloc[4]
+... ).iloc[23]
 >>> paper.to_dict()
 {
-    'title': 'Unifying Molecular and Textual Representations via Multi-task Language Modelling',
+    'title': "Regress, Don't Guess--A Regression-like Loss on Number Tokens for Language Models",
     'authors': [
-        'Dimitrios Christofidellis*',
-        'Giorgio Giannone*',
+        'Jonas Zausinger',
+        'Lars Pennig',
+        'Anamarija Kozina',
+        'Sean Sdahl',
+        'Julian Sikora',
+        'Adrian Dendorfer',
+        'Timofey Kuznetsov',
+        'Mohamad Hagog',
+        'Nina Wiedemann',
+        'Kacper Chlodny',
+        'Vincent Limbach',
+        'Anna Ketteler',
+        'Thorben Prein',
+        'Vishwa Mohan Singh',
+        'Michael Morris Danziger',
         'Jannis Born',
-        'Ole Winther',
-        'Teodoro Laino',
-        'Matteo Manica',
     ],
-    'publication': 'International Conference on Machine Learning, ICML 2023, 2023',
-    'year': 2023,
-    'citations': 201,
-    'journal': 'International Conference on Machine Learning, ICML 2023',
-    'date': '2023/1/29',
+    'publication': 'International Conference on Machine Learning, ICML 2025, 2025',
+    'year': 2025,
+    'citations': 18,
+    'journal': '',
+    'date': '2025',
     'volume': '',
     'issue': '',
     'pages': '',
     'publisher': '',
-    'description': 'The recent advances in neural language models have also been successfully applied to the field of chemistry, offering generative solutions for classical problems in molecular design and synthesis planning. These new methods have the potential to fuel a new era of data-driven automation in scientific discovery. However, specialized models are still typically required for each task, leading to the need for problem-specific fine-tuning and neglecting task interrelations. The main obstacle in this field is the lack of a unified representation between natural language and chemical representations, complicating and limiting human-machine interaction. Here, we propose the first multi-domain, multi-task language model that can solve a wide range of tasks in both the chemical and natural language domains. Our model can handle chemical and natural language concurrently, without requiring expensive pre-training on single domains or task-specific models. Interestingly, sharing weights across domains remarkably improves our model when benchmarked against state-of-the-art baselines on single-domain and cross-domain tasks. In particular, sharing information across domains and tasks gives rise to large improvements in cross-domain tasks, the magnitude of which increase with scale, as measured by more than a dozen of relevant metrics. Our work suggests that such models can robustly and efficiently accelerate discovery in physical sciences by superseding problem-specific fine-tuning and enhancing human-model interactions.',
+    'description': '',
 }
 ```
 
