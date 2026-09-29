@@ -1,72 +1,114 @@
 # Scholar Metrics Analysis
 
-This page collects examples for paper citation counts, researcher-level
+This page covers Google Scholar workflows through SearchAPI, researcher-level
 Semantic Scholar metrics, and journal impact factors.
+
+## SearchAPI Setup
+
+Set the API key once through the environment, or pass `api_key=...` to each
+function explicitly:
+
+```sh
+export SEARCH_API_KEY=YOUR_SEARCHAPI_KEY
+export SS_API_KEY=YOUR_SEMANTIC_SCHOLAR_KEY  # Optional enrichment.
+```
+
+The SearchAPI-backed utilities cover the following workflows:
+
+| Task | Function | Result |
+| --- | --- | --- |
+| Search Scholar | `get_scholar_papers` | Paper metadata as a DataFrame |
+| Count citations | `get_citations_from_title` | Google Scholar citation count |
+| Export a citation | `get_bibtex_entry`, `get_endnote_entry` | BibTeX or EndNote text |
+| Find citing papers | `get_citing_papers_from_title` | A list of `Paper` objects |
+| Find an author's papers | `get_scholar_author_papers` | Author-paper metadata as a DataFrame |
+
+SearchAPI calls are retried with bounded exponential backoff. The complete
+outputs below were captured from live calls on 23 September 2026. They reflect
+live Google Scholar data, so paper order and citation counts can change.
+
+## Keyword Paper Search
+
+Search Google Scholar and return paper metadata as a DataFrame:
+
+```pycon
+>>> from paperscraper.scholar import get_scholar_papers
+>>> papers = get_scholar_papers(
+...     "CMonge",
+...     backend="searchapi",
+...     search_api_kwargs={"top_k": 1, "num_enrich": 1},
+... )
+>>> papers.iloc[0].to_dict()
+{
+    'title': 'Conditional Monge Gap enables generalizable single-cell perturbation modelling',
+    'authors': ['Alice Driessen', 'Dhruva Abhijit Rajwade', 'Benedek Harsanyi', 'Marianna Rapsomaniki', 'Jannis Born'],
+    'year': 2026,
+    'abstract': 'Learning the response of single cells to various treatments offers great potential to enable targeted therapies. In this context, neural optimal transport has emerged as a principled methodological framework because it inherently accommodates the challenges of unpaired data induced by cell destruction during data acquisition. However, most existing optimal transport approaches are incapable of conditioning on different treatment contexts and we still lack methods that show promising generalizability to unseen treatments. Here we propose the Conditional Monge Gap (CMonge), which learns optimal transport maps conditionally on arbitrary covariates.',
+    'journal': 'Nature Machine Intelligence',
+    'citations': 2,
+}
+```
+
+`top_k` limits the returned rows. `num_enrich` controls how many rows receive
+additional author-profile requests for full author, abstract, and journal data.
 
 ## Paper Citation Counts
 
-Fetch citation counts by DOI using Semantic Scholar:
-
-```pycon
->>> from paperscraper.citations import get_citations_by_doi
->>> get_citations_by_doi("10.1021/acs.jcim.3c00132")
-12  # Semantic Scholar citation count.
-```
-
-Fetch citation counts by title from Google Scholar (SearchAPI or scholarly backend) or Semantic Scholar:
+Retrieve a Google Scholar citation count from an exact paper title:
 
 ```pycon
 >>> from paperscraper.citations import get_citations_from_title
->>> title = "GT4SD: Generative Toolkit for Scientific Discovery"
+>>> title = "Quantum theory and application of contextual optimal transport"
 >>> get_citations_from_title(title, backend="searchapi")
-57  # Google Scholar citation count.
->>> get_citations_from_title(title, backend="semantic_scholar")
-18  # Semantic Scholar citation count.
+7
 ```
 
-The default `backend` is `"auto"`: it tries to use Google Scholar via SearchAPI (through the env var `SEARCH_API_KEY`) then Semantic Scholar (through `SS_API_KEY`) and otherwise uses Google Scholar via `scholarly` (which has very limited throughput).
-An explicit `api_key` can be passed with a specific backend. 
-NOTE: Citation counts will differ between Semantic Scholar and Google Scholar.
+The default `backend` is `"auto"`: it uses SearchAPI when `SEARCH_API_KEY` is
+configured, then Semantic Scholar when `SS_API_KEY` is configured, and otherwise
+falls back to `scholarly`, which has limited throughput. An explicit `api_key`
+can be passed with a specific backend. Citation counts can differ between
+providers and between Scholar records for different versions of a paper.
 
-Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format:
+## Bibliographic Export
+
+Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format.
+Both functions accept a title or DOI; DOI inputs are first resolved through
+Semantic Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_bibtex_entry, get_endnote_entry
->>> title = "Quantum theory and application of contextual optimal transport"
+>>> title = "Quantum doubly stochastic transformers"
 >>> print(get_bibtex_entry(title))
-@inproceedings{mariella2024quantum,
-  title={Quantum theory and application of contextual optimal transport},
-  author={Mariella, Nicola and Akhriev, Albert and Tacchino, Francesco and Zoufal, Christa and Gonzalez-Espitia, Juan Carlos and Harsanyi, Benedek and Koskin, Eugene and Tavernelli, Ivano and Woerner, Stefan and Rapsomaniki, Marianna and Zhuk, Sergiy and Born, Jannis},
-  booktitle={International Conference on Machine Learning},
-  pages={34822--34845},
-  year={2024},
-  organization={PMLR}
+@article{born2026quantum,
+  title={Quantum doubly stochastic transformers},
+  author={Born, Jannis and Skogh, Filip and Rhrissorrakrai, Kahn and Utro, Filippo and Wagner, Nico and Sobczyk, Aleksandros},
+  journal={Advances in Neural Information Processing Systems},
+  volume={38},
+  pages={70224--70254},
+  year={2026}
 }
 >>> print(get_endnote_entry(title))
-%0 Conference Paper
-%T Quantum theory and application of contextual optimal transport
-%A Mariella, Nicola
-%A Akhriev, Albert
-%A Tacchino, Francesco
-%A Zoufal, Christa
-%A Gonzalez-Espitia, Juan Carlos
-%A Harsanyi, Benedek
-%A Koskin, Eugene
-%A Tavernelli, Ivano
-%A Woerner, Stefan
-%A Rapsomaniki, Marianna
-%A Zhuk, Sergiy
+%0 Journal Article
+%T Quantum doubly stochastic transformers
 %A Born, Jannis
-%B International Conference on Machine Learning
-%P 34822-34845
-%D 2024
-%I PMLR
+%A Skogh, Filip
+%A Rhrissorrakrai, Kahn
+%A Utro, Filippo
+%A Wagner, Nico
+%A Sobczyk, Aleksandros
+%J Advances in Neural Information Processing Systems
+%V 38
+%P 70224-70254
+%D 2026
 ```
 
-List papers citing it on Google Scholar:
+## Citing Papers
+
+List papers citing a title on Google Scholar:
 
 ```pycon
 >>> from paperscraper.citations import get_citing_papers_from_title
+>>> title = "Quantum theory and application of contextual optimal transport"
 >>> paper = get_citing_papers_from_title(title, max_results=1, full_info=True)[0]
 >>> paper.__dict__
 {
@@ -77,15 +119,67 @@ List papers citing it on Google Scholar:
 }
 ```
 
-```sh
-export SEARCH_API_KEY=YOUR_API_KEY
-export SS_API_KEY=YOUR_API_KEY
+By default, citing-paper results contain titles. `full_info=True` additionally
+resolves authors and available DOIs through Semantic Scholar, using
+`SS_API_KEY` unless `ss_api_key=...` is passed. For larger runs,
+`SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and `SS_RATE_LIMIT_DELAY` can be
+tuned through environment variables.
+
+## Google Scholar Author Papers
+
+Return papers and associated metadata for a researcher:
+
+```pycon
+>>> from paperscraper.scholar import get_scholar_author_papers
+>>> paper = get_scholar_author_papers(
+...     "Jannis Born",
+...     max_results=25,
+...     full_info=True,
+... ).iloc[23]
+>>> paper.to_dict()
+{
+    'title': "Regress, Don't Guess--A Regression-like Loss on Number Tokens for Language Models",
+    'authors': [
+        'Jonas Zausinger',
+        'Lars Pennig',
+        'Anamarija Kozina',
+        'Sean Sdahl',
+        'Julian Sikora',
+        'Adrian Dendorfer',
+        'Timofey Kuznetsov',
+        'Mohamad Hagog',
+        'Nina Wiedemann',
+        'Kacper Chlodny',
+        'Vincent Limbach',
+        'Anna Ketteler',
+        'Thorben Prein',
+        'Vishwa Mohan Singh',
+        'Michael Morris Danziger',
+        'Jannis Born',
+    ],
+    'publication': 'International Conference on Machine Learning, ICML 2025, 2025',
+    'year': 2025,
+    'citations': 18,
+    'journal': '',
+    'date': '2025',
+    'volume': '',
+    'issue': '',
+    'pages': '',
+    'publisher': '',
+    'description': '',
+}
 ```
 
-For larger runs, `SS_REQUEST_TIMEOUT`, `SS_CONCURRENCY_LIMIT`, and
-`SS_RATE_LIMIT_DELAY` can be tuned through environment variables.
+`full_info=True` adds journal and publication details at the cost of one extra
+request per paper. Pass `author_id` to select a specific profile when names are
+ambiguous.
 
-## Researcher Metrics
+When no exact profile exists, the function falls back to an `author:"name"`
+Scholar search and warns that namesakes may be mixed. This fallback cannot
+provide `full_info`. `max_results` defaults to 30, and explicit smaller or
+larger integer limits are respected.
+
+## Semantic Scholar Author Metrics
 
 Semantic Scholar author pages expose `paperCount`, `citationCount`, and `hIndex`.
 You can query them by Semantic Scholar Author ID:

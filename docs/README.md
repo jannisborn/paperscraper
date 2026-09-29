@@ -49,8 +49,8 @@ uv add paperscraper
 
 -   **Inspect citation behavior**
 
-    Query citation counts, author metrics, journal impact factors, and
-    paper-level or researcher-level self-citation and self-reference rates.
+    Export citations, find citing papers and author publications, query citation
+    counts and journal metrics, or inspect self-citation behavior.
 
     [:octicons-arrow-right-24: Scholar metrics](examples/scholar-metrics-analysis.md)
 
@@ -82,7 +82,7 @@ inner lists define synonyms combined with `OR`.
 - Use [PDF Retrieval](examples/pdf-retrieval.md) for full-text download options
   and supported fallbacks.
 - Use [Scholar Metrics Analysis](examples/scholar-metrics-analysis.md) for
-  citation counts, author metrics, and journal metrics.
+  SearchAPI citation exports, citing papers, author publications, and metrics.
 - Use [Self-Citation Analysis](examples/self-citation-analysis.md) for
   self-citation and self-reference workflows.
 

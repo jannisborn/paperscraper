@@ -6,6 +6,7 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
 [![codecov](https://codecov.io/github/jannisborn/paperscraper/branch/main/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
+[![Supported by SearchAPI](https://img.shields.io/badge/Supported%20by-SearchAPI-5b5bd6)](https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper)
 # paperscraper
 
 `paperscraper` is a `python` package for scraping publication metadata or full text files
@@ -204,7 +205,7 @@ from paperscraper.citations import (
     get_endnote_entry,
 )
 from paperscraper.impact import Impactor
-from paperscraper.scholar import get_scholar_papers
+from paperscraper.scholar import get_scholar_author_papers, get_scholar_papers
 
 get_citations_by_doi("10.1021/acs.jcim.3c00132")
 get_citations_from_title(
@@ -216,6 +217,7 @@ get_scholar_papers(
     backend="searchapi",
     search_api_kwargs={"top_k": 5, "num_enrich": 1},
 )
+get_scholar_author_papers("Jannis Born", max_results=5)
 
 title = "Quantum doubly stochastic transformers"
 get_bibtex_entry(title)
@@ -228,7 +230,8 @@ Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 Set `SEARCH_API_KEY` to use the SearchAPI Google Scholar backend. Outputs include
 citation counts and Scholar search metadata (author list, title, abstract, journal).
 Citing-paper results are `Paper` objects; `full_info=True` also resolves available
-DOIs and authors.
+DOIs and authors. Author lookup prefers an exact Scholar profile and falls back to
+an `author:"name"` search when no profile exists; its default limit is 30 papers.
 
 Author-level [Semantic Scholar](https://www.semanticscholar.org/) metrics can be retrieved by
 Semantic Scholar ID, name, or [ORCID](https://orcid.org/):

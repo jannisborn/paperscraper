@@ -22,6 +22,18 @@ scholar_field_mapper = {
 }
 process_fields = {"year": lambda x: int(x) if x.isdigit() else -1, "citations": int}
 
+_AUTHOR_PAPER_FIELDS = ["title", "authors", "publication", "year", "citations"]
+_AUTHOR_DETAIL_FIELDS = [
+    "journal",
+    "date",
+    "volume",
+    "issue",
+    "pages",
+    "publisher",
+    "description",
+]
+_AUTHOR_PAGE_SIZE = 20
+
 
 def get_scholar_papers(
     title: str,
@@ -160,6 +172,268 @@ def get_scholar_papers_searchapi(
         processed.append({key: value for key, value in entry.items() if key in fields})
 
     return pd.DataFrame(processed, columns=fields)
+
+
+def get_scholar_author_papers(
+    author: str,
+    max_results: int = 30,
+    *,
+    author_id: Optional[str] = None,
+    api_key: Optional[str] = None,
+    full_info: bool = False,
+) -> pd.DataFrame:
+    """Return papers by a researcher from Google Scholar through SearchApi.
+
+    An exact Google Scholar profile is preferred. If none exists, results from
+    an ``author:\"name\"`` Scholar query are returned and may mix namesakes.
+    The default limit is 30 papers; explicit integer limits are respected.
+    ``full_info=True`` requires a profile and consumes one extra SearchApi
+    request per paper.
+
+    Args:
+        author: Researcher name.
+        max_results: Maximum papers to return. Defaults to 30.
+        author_id: Optional Google Scholar author ID for exact identification.
+        api_key: Explicit SearchApi key.
+        full_info: Add journal, date, volume, issue, pages, publisher, and
+            description from each paper's citation detail.
+
+    Returns:
+        pd.DataFrame. One paper per row.
+    """
+    if not isinstance(author, str):
+        raise TypeError(f"Pass str not {type(author)}")
+    author = author.strip()
+    if not author:
+        raise ValueError("author must not be empty")
+    if not isinstance(max_results, int) or isinstance(max_results, bool):
+        raise TypeError(f"Pass int not {type(max_results)}")
+    if max_results < 0:
+        raise ValueError("max_results must be non-negative")
+    if author_id is not None and (not isinstance(author_id, str) or not author_id):
+        raise ValueError("author_id must be a non-empty string")
+    if not isinstance(full_info, bool):
+        raise TypeError(f"Pass bool not {type(full_info)}")
+
+    fields = _AUTHOR_PAPER_FIELDS + (_AUTHOR_DETAIL_FIELDS if full_info else [])
+    if max_results == 0:
+        return pd.DataFrame(columns=fields)
+
+    search = None
+    if author_id is None:
+        search_params = {
+            "engine": "google_scholar",
+            "q": f'author:"{author}"',
+            "hl": "en",
+            "num": _AUTHOR_PAGE_SIZE,
+        }
+        search = _get_searchapi_data(search_params, api_key)
+        exact_profiles = [
+            profile
+            for profile in search.get("profiles", [])
+            if _normalize_searchapi_author(profile.get("name", ""))
+            == _normalize_searchapi_author(author)
+            and profile.get("author_id")
+        ]
+        if len(exact_profiles) > 1:
+            candidates = ", ".join(
+                f"{profile['author_id']} ({profile.get('affiliations', 'unknown')})"
+                for profile in exact_profiles
+            )
+            raise RuntimeError(
+                f"Multiple exact Google Scholar profiles found for {author!r}: "
+                f"{candidates}. Pass author_id to disambiguate."
+            )
+        author_id = exact_profiles[0]["author_id"] if exact_profiles else None
+
+    if author_id is not None:
+        profile_params = {
+            "engine": "google_scholar_author",
+            "author_id": author_id,
+            "hl": "en",
+        }
+        profile = _get_searchapi_data(profile_params, api_key)
+        if not profile.get("author"):
+            raise RuntimeError(
+                f"SearchApi returned no author profile for {author_id!r}."
+            )
+        articles = _get_searchapi_pages(
+            profile_params,
+            "articles",
+            "citation_id",
+            max_results,
+            api_key,
+            first_page=profile,
+        )
+        return pd.DataFrame(
+            [
+                _parse_searchapi_author_article(
+                    article,
+                    api_key,
+                    full_info=full_info,
+                )
+                for article in articles
+            ],
+            columns=fields,
+        )
+
+    if full_info:
+        raise RuntimeError(
+            f"full_info requires a Google Scholar profile for {author!r}."
+        )
+    logger.warning(
+        "No exact Google Scholar profile found for %r; returning name-query "
+        "results that may mix namesakes.",
+        author,
+    )
+    papers = _get_searchapi_pages(
+        search_params,
+        "organic_results",
+        "data_cid",
+        max_results,
+        api_key,
+        first_page=search,
+    )
+    from ..citations.citations import get_citations_from_title_searchapi
+
+    processed = []
+    for paper in papers:
+        entry = _parse_searchapi_scholar_result(paper, {})
+        if entry["citations"] < 0:
+            entry["citations"] = get_citations_from_title_searchapi(
+                paper["title"], api_key
+            )
+        entry["publication"] = _normalize_searchapi_text(paper.get("publication", ""))
+        processed.append({field: entry[field] for field in fields})
+    return pd.DataFrame(processed, columns=fields)
+
+
+def _get_searchapi_data(
+    params: dict, api_key: Optional[str], *, required_key: Optional[str] = None
+) -> dict:
+    """Fetch SearchApi JSON with bounded retries."""
+
+    @retry_with_exponential_backoff(
+        retry_if=lambda data: (
+            bool(data.get("error"))
+            or (required_key is not None and not data.get(required_key))
+        ),
+        exceptions=(requests.exceptions.RequestException,),
+    )
+    def fetch() -> dict:
+        return search_api_requests_get(api_key=api_key, params=params).json()
+
+    data = fetch()
+    if data.get("error"):
+        raise RuntimeError(f"SearchApi request failed: {data['error']}")
+    if required_key is not None and not data.get(required_key):
+        raise RuntimeError(f"SearchApi returned no {required_key.replace('_', ' ')}.")
+    return data
+
+
+def _get_searchapi_pages(
+    params: dict,
+    result_key: str,
+    identity_key: str,
+    limit: int,
+    api_key: Optional[str],
+    *,
+    first_page: dict,
+) -> list[dict]:
+    """Collect deduplicated results from numeric SearchApi pages."""
+    results = []
+    seen = set()
+    page = 1
+    while len(results) < limit:
+        data = (
+            first_page
+            if page == 1
+            else _get_searchapi_data({**params, "page": page}, api_key)
+        )
+        page_results = data.get(result_key, [])
+        added = 0
+        for result in page_results:
+            if not result.get("title"):
+                continue
+            identity = result.get(identity_key) or _normalize_searchapi_title(
+                result["title"]
+            )
+            if identity not in seen:
+                seen.add(identity)
+                results.append(result)
+                added += 1
+                if len(results) == limit:
+                    return results
+        if not page_results or not added:
+            break
+        if len(page_results) < _AUTHOR_PAGE_SIZE and not data.get("pagination", {}).get(
+            "next"
+        ):
+            break
+        page += 1
+    return results
+
+
+def _parse_searchapi_author_article(
+    article: dict, api_key: Optional[str], *, full_info: bool
+) -> dict:
+    """Parse a Google Scholar Author article and optionally enrich it."""
+    publication = _normalize_searchapi_text(article.get("publication", ""))
+    year = article.get("year") or _parse_searchapi_year(publication)
+    cited_by = article.get("cited_by", {}).get("total")
+    authors = _normalize_searchapi_text(article.get("authors", ""))
+    citation = {}
+    if full_info or cited_by is None:
+        citation_id = article.get("citation_id")
+        if not citation_id:
+            raise RuntimeError(
+                f"SearchApi returned no citation ID for {article.get('title')!r}."
+            )
+        citation = _get_searchapi_data(
+            {
+                "engine": "google_scholar_author",
+                "view_op": "view_citation",
+                "citation_id": citation_id,
+                "hl": "en",
+            },
+            api_key,
+            required_key="citation",
+        )["citation"]
+        cited_by = citation.get("cited_by", {}).get("total", cited_by)
+    entry = {
+        "title": article.get("title", ""),
+        "authors": [name.strip() for name in authors.split(",") if name.strip()],
+        "publication": publication,
+        "year": int(year) if year else -1,
+        "citations": int(cited_by) if cited_by is not None else 0,
+    }
+    if not full_info:
+        return entry
+
+    parsed = _parse_searchapi_scholar_result(article, citation)
+    entry.update(
+        {
+            "title": parsed["title"],
+            "authors": parsed["authors"],
+            "year": parsed["year"],
+            "citations": (
+                parsed["citations"] if parsed["citations"] >= 0 else entry["citations"]
+            ),
+            "journal": parsed["journal"],
+            "date": parsed["date"],
+            "volume": citation.get("volume", ""),
+            "issue": citation.get("issue", ""),
+            "pages": citation.get("pages", ""),
+            "publisher": citation.get("publisher", ""),
+            "description": citation.get("description", ""),
+        }
+    )
+    return entry
+
+
+def _normalize_searchapi_author(author: str) -> str:
+    """Normalize an author name for exact profile matching."""
+    return " ".join(author.casefold().split())
 
 
 def _resolve_search_api_kwargs(search_api_kwargs: Optional[dict]) -> Dict[str, int]:
