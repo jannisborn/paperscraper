@@ -72,7 +72,10 @@ def get_citation_entry(
     search_title = None
     if doi:
         response = _semantic_scholar_requests_get_with_backoff(
-            f"{PAPER_URL}DOI:{doi.group(0)}", params={"fields": "title"}, max_retries=3
+            f"{PAPER_URL}DOI:{doi.group(0)}",
+            params={"fields": "title"},
+            base_delay=5.0,
+            factor=2.0,
         )
         search_title = response.json().get("title") or ""
     return SearchAPICitations(SearchAPIClient(api_key)).get_citation_entry(

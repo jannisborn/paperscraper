@@ -1,7 +1,9 @@
 import json
 import logging
+import math
 import sys
 import time
+from email.utils import parsedate_to_datetime
 from functools import wraps
 from importlib import resources
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, TypeVar
@@ -13,6 +15,20 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 DOI_PATTERN = r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b"
+
+
+def retry_after_seconds(value: Optional[str]) -> float:
+    """Parse an HTTP Retry-After delay or date; invalid/past values mean no delay."""
+    if value is None:
+        return 0.0
+    try:
+        seconds = float(value)
+    except (ValueError, TypeError):
+        try:
+            seconds = parsedate_to_datetime(value).timestamp() - time.time()
+        except (ValueError, TypeError, OverflowError):
+            return 0.0
+    return max(0.0, seconds) if math.isfinite(seconds) else 0.0
 
 
 def _resolve_backend(

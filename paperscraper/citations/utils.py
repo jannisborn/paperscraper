@@ -23,6 +23,7 @@ from ..searchapi.core import (  # noqa: F401 (compatibility re-exports)
 from ..utils import (  # noqa: F401 (compatibility re-export)
     DOI_PATTERN,
     _resolve_backend,
+    retry_after_seconds,
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -166,6 +167,7 @@ def _semantic_scholar_requests_get_with_backoff(
             resp = semantic_scholar_requests_get(
                 url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs
             )
+            last_exc = None
         except requests.exceptions.RequestException as exc:
             last_exc = exc
             sleep_for = min(delay, max_delay)
@@ -183,13 +185,14 @@ def _semantic_scholar_requests_get_with_backoff(
                     resp.raise_for_status()
                 return resp
 
-            sleep_for = min(delay, max_delay)
-            ra = resp.headers.get("Retry-After")
-            if ra is not None:
-                try:
-                    sleep_for = min(float(ra), max_delay)
-                except ValueError:
-                    pass
+            # The cap applies to our backoff, never to the server's minimum wait.
+            sleep_for = max(
+                min(delay, max_delay),
+                retry_after_seconds(resp.headers.get("Retry-After")),
+            )
+            last_exc = requests.HTTPError(
+                f"Semantic Scholar returned HTTP {resp.status_code}", response=resp
+            )
 
         if attempt == max_retries:
             raise RuntimeError(
@@ -200,7 +203,14 @@ def _semantic_scholar_requests_get_with_backoff(
         delay = min(delay * factor, max_delay)
         if jitter_ratio > 0:
             jitter = sleep_for * jitter_ratio
-            sleep_for = max(0.0, sleep_for + random.uniform(-jitter, jitter))
+            sleep_for += random.uniform(0.0, jitter)
+        logger.warning(
+            "Semantic Scholar request failed (attempt %s/%s): %s; retrying in %.2fs",
+            attempt,
+            max_retries,
+            last_exc,
+            sleep_for,
+        )
         time.sleep(sleep_for)
 
     raise RuntimeError("_semantic_scholar_requests_get_with_backoff: unreachable")
