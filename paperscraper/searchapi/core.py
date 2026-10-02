@@ -746,7 +746,7 @@ class SearchAPICitations:
             @retry_with_exponential_backoff(
                 max_attempts=5, retry_if=lambda complete: not complete
             )
-            def fetch_pages() -> bool:
+            def fetch_pages(cites_query: dict) -> bool:
                 nonlocal advertised_total, attempt, total
                 attempt += 1
                 page_size = 20 if attempt == 1 else 10
@@ -817,7 +817,7 @@ class SearchAPICitations:
                         return True
                     page += 1
 
-            if fetch_pages():
+            if fetch_pages(cites_query):
                 if max_results is not None and len(papers) >= max_results:
                     return papers[:max_results]
                 if total and len(papers) >= total:
