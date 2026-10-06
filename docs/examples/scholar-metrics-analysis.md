@@ -17,11 +17,11 @@ The SearchAPI-backed utilities cover the following workflows:
 
 | Task | Function | Result |
 | --- | --- | --- |
-| Search Scholar | `get_scholar_papers` | Paper metadata as a DataFrame |
-| Count citations | `get_citations_from_title` | Google Scholar citation count |
-| Export a citation | `get_bibtex_entry`, `get_endnote_entry` | BibTeX or EndNote text |
-| Find citing papers | `get_citing_papers_from_title` | A list of `Paper` objects |
-| Find an author's papers | `get_scholar_author_papers` | Author-paper metadata as a DataFrame |
+| Search Scholar | [`get_scholar_papers`][paperscraper.scholar.get_scholar_papers] | Paper metadata as a DataFrame |
+| Count citations | [`get_citations_from_title`][paperscraper.citations.get_citations_from_title] | Google Scholar citation count |
+| Export a citation | [`get_bibtex_entry`][paperscraper.citations.get_bibtex_entry], [`get_endnote_entry`][paperscraper.citations.get_endnote_entry] | BibTeX or EndNote text |
+| Find citing papers | [`get_citing_papers_from_title`][paperscraper.citations.get_citing_papers_from_title] | A list of `Paper` objects |
+| Find an author's papers | [`get_scholar_author_papers`][paperscraper.scholar.get_scholar_author_papers] | Author-paper metadata as a DataFrame |
 
 SearchAPI calls are retried with bounded exponential backoff. The complete
 outputs below were captured from live calls on 23 September 2026. They reflect

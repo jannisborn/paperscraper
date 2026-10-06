@@ -1,13 +1,11 @@
 import asyncio
-import json
 import logging
 import os
 import random
 import re
 import sys
 import time
-from pathlib import Path
-from typing import Dict, List, Literal, Optional, Sequence, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import httpx
 import requests
@@ -15,6 +13,18 @@ from tqdm import tqdm
 from unidecode import unidecode
 
 from ..async_utils import optional_async, retry_with_exponential_backoff
+from ..searchapi.core import (  # noqa: F401 (compatibility re-exports)
+    SEARCH_API_CACHE,
+    SEARCH_API_CACHE_PATH,
+    SEARCH_API_KEY,
+    SEARCH_API_URL,
+    SearchAPIClient,
+)
+from ..utils import (  # noqa: F401 (compatibility re-export)
+    DOI_PATTERN,
+    _resolve_backend,
+    retry_after_seconds,
+)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,50 +35,19 @@ CONCURRENCY_LIMIT = max(1, int(os.getenv("SS_CONCURRENCY_LIMIT", "1")))
 # Minimum delay between outbound requests to Semantic Scholar.
 RATE_LIMIT_DELAY = max(0.0, float(os.getenv("SS_RATE_LIMIT_DELAY", "1.1")))
 
-DOI_PATTERN = r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b"
 PAPER_URL: str = "https://api.semanticscholar.org/graph/v1/paper/"
 AUTHOR_URL: str = "https://api.semanticscholar.org/graph/v1/author/search"
-SEARCH_API_URL: str = "https://www.searchapi.io/api/v1/search"
-
-
 SS_API_KEY = os.getenv("SS_API_KEY")
-SEARCH_API_KEY = os.getenv("SEARCH_API_KEY")
-SEARCH_API_CACHE_PATH = os.getenv("SEARCH_API_CACHE_PATH")
 
 
 def _load_search_api_cache(cache_path: Optional[str]) -> dict:
-    """Load the SearchApi cache from disk."""
-    if cache_path and Path(cache_path).is_file():
-        cache = json.loads(Path(cache_path).read_text())
-    else:
-        cache = {}
-    cache.setdefault("citations", {})
-    return cache
-
-
-SEARCH_API_CACHE = _load_search_api_cache(SEARCH_API_CACHE_PATH)
+    """Load the SearchAPI cache (compatibility entry point)."""
+    return SearchAPIClient.load_cache(cache_path)
 
 
 def save_search_api_cache() -> None:
-    """Save the SearchApi cache when a path is configured."""
-    if SEARCH_API_CACHE_PATH:
-        Path(SEARCH_API_CACHE_PATH).write_text(
-            json.dumps(SEARCH_API_CACHE, indent=2, sort_keys=True) + "\n"
-        )
-
-
-def _resolve_backend(
-    backend: str,
-    api_key: Optional[str],
-    api_backends: Sequence[Tuple[str, Optional[str]]],
-    default: str,
-) -> str:
-    """Resolve an automatic backend from configured API keys."""
-    if backend != "auto":
-        return backend
-    if api_key is not None:
-        raise ValueError("api_key cannot be used with backend='auto'")
-    return next((name for name, key in api_backends if key), default)
+    """Persist the shared SearchAPI cache (compatibility entry point)."""
+    SearchAPIClient().save_cache()
 
 
 HEADERS: Dict[str, str] = {}
@@ -159,20 +138,7 @@ def search_api_requests_get(
     Returns:
         requests.Response: API response.
     """
-    resolved_api_key = api_key if api_key is not None else SEARCH_API_KEY
-    if not resolved_api_key:
-        raise ValueError(
-            "SearchApi requires api_key or the SEARCH_API_KEY environment variable."
-        )
-
-    response = requests.get(
-        url,
-        headers={"Authorization": f"Bearer {resolved_api_key}"},
-        timeout=90,
-        **kwargs,
-    )
-    response.raise_for_status()
-    return response
+    return SearchAPIClient(api_key).get(url, **kwargs)
 
 
 def _semantic_scholar_requests_get_with_backoff(
@@ -201,6 +167,7 @@ def _semantic_scholar_requests_get_with_backoff(
             resp = semantic_scholar_requests_get(
                 url, timeout=REQUEST_TIMEOUT_SECONDS, **kwargs
             )
+            last_exc = None
         except requests.exceptions.RequestException as exc:
             last_exc = exc
             sleep_for = min(delay, max_delay)
@@ -218,13 +185,14 @@ def _semantic_scholar_requests_get_with_backoff(
                     resp.raise_for_status()
                 return resp
 
-            sleep_for = min(delay, max_delay)
-            ra = resp.headers.get("Retry-After")
-            if ra is not None:
-                try:
-                    sleep_for = min(float(ra), max_delay)
-                except ValueError:
-                    pass
+            # The cap applies to our backoff, never to the server's minimum wait.
+            sleep_for = max(
+                min(delay, max_delay),
+                retry_after_seconds(resp.headers.get("Retry-After")),
+            )
+            last_exc = requests.HTTPError(
+                f"Semantic Scholar returned HTTP {resp.status_code}", response=resp
+            )
 
         if attempt == max_retries:
             raise RuntimeError(
@@ -235,7 +203,14 @@ def _semantic_scholar_requests_get_with_backoff(
         delay = min(delay * factor, max_delay)
         if jitter_ratio > 0:
             jitter = sleep_for * jitter_ratio
-            sleep_for = max(0.0, sleep_for + random.uniform(-jitter, jitter))
+            sleep_for += random.uniform(0.0, jitter)
+        logger.warning(
+            "Semantic Scholar request failed (attempt %s/%s): %s; retrying in %.2fs",
+            attempt,
+            max_retries,
+            last_exc,
+            sleep_for,
+        )
         time.sleep(sleep_for)
 
     raise RuntimeError("_semantic_scholar_requests_get_with_backoff: unreachable")

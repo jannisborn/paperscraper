@@ -13,7 +13,7 @@ from paperscraper.citations import (
     get_citing_papers_from_title,
     get_endnote_entry,
 )
-from paperscraper.citations.searchapi import _resolve_citation_backend
+from paperscraper.citations.citations import _resolve_citation_backend
 from paperscraper.citations.utils import (
     SEARCH_API_CACHE,
     SEARCH_API_CACHE_PATH,
