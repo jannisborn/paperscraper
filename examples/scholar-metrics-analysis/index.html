@@ -951,7 +951,7 @@
   <a href="#searchapi-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SearchAPI Setup
+        SearchApi Setup
       
     </span>
   </a>
@@ -1100,15 +1100,19 @@
 
 
 <h1 id="scholar-metrics-analysis">Scholar Metrics Analysis<a class="headerlink" href="#scholar-metrics-analysis" title="Permanent link">&para;</a></h1>
-<p>This page covers Google Scholar workflows through SearchAPI, researcher-level
+<p>This page covers Google Scholar workflows through <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a>, researcher-level
 Semantic Scholar metrics, and journal impact factors.</p>
-<h2 id="searchapi-setup">SearchAPI Setup<a class="headerlink" href="#searchapi-setup" title="Permanent link">&para;</a></h2>
-<p>Set the API key once through the environment, or pass <code>api_key=...</code> to each
+<div align="right">
+<p><a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper"><img alt="SearchApi Google Scholar API — Get your API key" src="../assets/searchapi.png" width="480" /></a></p>
+<p>Supported by <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a></p>
+</div>
+<h2 id="searchapi-setup"><a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a> Setup<a class="headerlink" href="#searchapi-setup" title="Permanent link">&para;</a></h2>
+<p>Get a <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi API key</a> and set <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper"><code>SEARCH_API_KEY</code></a> through the environment, or pass <code>api_key=...</code> to each
 function explicitly:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SEARCH_API_KEY</span><span class="o">=</span>YOUR_SEARCHAPI_KEY
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SEARCH_API_KEY</span><span class="o">=</span>YOUR_API_KEY
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SS_API_KEY</span><span class="o">=</span>YOUR_SEMANTIC_SCHOLAR_KEY<span class="w">  </span><span class="c1"># Optional enrichment.</span>
 </code></pre></div>
-<p>The SearchAPI-backed utilities cover the following workflows:</p>
+<p>The <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a> utilities cover the following workflows:</p>
 <table>
 <thead>
 <tr>
@@ -1145,7 +1149,7 @@ function explicitly:</p>
 </tr>
 </tbody>
 </table>
-<p>SearchAPI calls are retried with bounded exponential backoff. The complete
+<p><a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a> calls are retried with bounded exponential backoff. The complete
 outputs below were captured from live calls on 23 September 2026. They reflect
 live Google Scholar data, so paper order and citation counts can change.</p>
 <h2 id="keyword-paper-search">Keyword Paper Search<a class="headerlink" href="#keyword-paper-search" title="Permanent link">&para;</a></h2>
@@ -1175,13 +1179,13 @@ additional author-profile requests for full author, abstract, and journal data.<
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">get_citations_from_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;searchapi&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="go">7</span>
 </code></pre></div>
-<p>The default <code>backend</code> is <code>"auto"</code>: it uses SearchAPI when <code>SEARCH_API_KEY</code> is
+<p>The default <code>backend</code> is <code>"auto"</code>: it uses <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a> when <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper"><code>SEARCH_API_KEY</code></a> is
 configured, then Semantic Scholar when <code>SS_API_KEY</code> is configured, and otherwise
 falls back to <code>scholarly</code>, which has limited throughput. An explicit <code>api_key</code>
 can be passed with a specific backend. Citation counts can differ between
 providers and between Scholar records for different versions of a paper.</p>
 <h2 id="bibliographic-export">Bibliographic Export<a class="headerlink" href="#bibliographic-export" title="Permanent link">&para;</a></h2>
-<p>Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format.
+<p>Export a Google Scholar citation through <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">SearchApi</a> in BibTeX or EndNote format.
 Both functions accept a title or DOI; DOI inputs are first resolved through
 Semantic Scholar:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">paperscraper.citations</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_bibtex_entry</span><span class="p">,</span> <span class="n">get_endnote_entry</span>

@@ -1999,7 +1999,7 @@
         <p>Return a BibTeX or EndNote entry for a paper found on Google Scholar.</p>
 <p><code>title_or_doi</code> may be a paper title or DOI. DOI inputs require an
 additional Semantic Scholar request to resolve the DOI to a title before
-searching Google Scholar. The SearchAPI key is read from <code>SEARCH_API_KEY</code>
+searching Google Scholar. The SearchApi key is read from <code>SEARCH_API_KEY</code>
 unless <code>api_key</code> is provided.</p>
 
 
@@ -2046,7 +2046,7 @@ unless <code>api_key</code> is provided.</p>
 <a id="__codelineno-0-59" name="__codelineno-0-59"></a>
 <a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    ``title_or_doi`` may be a paper title or DOI. DOI inputs require an</span>
 <a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    additional Semantic Scholar request to resolve the DOI to a title before</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    searching Google Scholar. The SearchAPI key is read from ``SEARCH_API_KEY``</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    searching Google Scholar. The SearchApi key is read from ``SEARCH_API_KEY``</span>
 <a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    unless ``api_key`` is provided.</span>
 <a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">title_or_doi</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -2087,7 +2087,7 @@ unless <code>api_key</code> is provided.</p>
 
         <p>Return a BibTeX entry for a paper title or DOI.</p>
 <p>DOI inputs consume an additional Semantic Scholar request to resolve the
-DOI before the Google Scholar SearchAPI lookup.</p>
+DOI before the Google Scholar SearchApi lookup.</p>
 
 
             <details class="mkdocstrings-source">
@@ -2102,7 +2102,7 @@ DOI before the Google Scholar SearchAPI lookup.</p>
 <a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a BibTeX entry for a paper title or DOI.</span>
 <a id="__codelineno-0-88" name="__codelineno-0-88"></a>
 <a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">    DOI inputs consume an additional Semantic Scholar request to resolve the</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">    DOI before the Google Scholar SearchAPI lookup.</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">    DOI before the Google Scholar SearchApi lookup.</span>
 <a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-92" name="__codelineno-0-92"></a>    <span class="k">return</span> <span class="n">get_citation_entry</span><span class="p">(</span><span class="n">title_or_doi</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;bibtex&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2124,7 +2124,7 @@ DOI before the Google Scholar SearchAPI lookup.</p>
 
         <p>Return an EndNote entry for a paper title or DOI.</p>
 <p>DOI inputs consume an additional Semantic Scholar request to resolve the
-DOI before the Google Scholar SearchAPI lookup.</p>
+DOI before the Google Scholar SearchApi lookup.</p>
 
 
             <details class="mkdocstrings-source">
@@ -2139,7 +2139,7 @@ DOI before the Google Scholar SearchAPI lookup.</p>
 <a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an EndNote entry for a paper title or DOI.</span>
 <a id="__codelineno-0-97" name="__codelineno-0-97"></a>
 <a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="sd">    DOI inputs consume an additional Semantic Scholar request to resolve the</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">    DOI before the Google Scholar SearchAPI lookup.</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">    DOI before the Google Scholar SearchApi lookup.</span>
 <a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="k">return</span> <span class="n">get_citation_entry</span><span class="p">(</span><span class="n">title_or_doi</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;endnote&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2160,7 +2160,7 @@ DOI before the Google Scholar SearchAPI lookup.</p>
     <div class="doc doc-contents ">
 
         <p>Return papers citing a paper on Google Scholar.</p>
-<p>The title is matched exactly before SearchAPI requests the papers citing
+<p>The title is matched exactly before SearchApi requests the papers citing
 it. By default all pages are retrieved. Set <code>max_results</code> to limit the
 result count. SearchApi pages contain up to 20 entries. By default only
 titles are populated. <code>full_info=True</code> also populates authors and
@@ -2230,7 +2230,7 @@ count, rather than returning an incomplete list as a complete result.</p>
 <a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Paper</span><span class="p">]:</span>
 <a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return papers citing a paper on Google Scholar.</span>
 <a id="__codelineno-0-113" name="__codelineno-0-113"></a>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    The title is matched exactly before SearchAPI requests the papers citing</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    The title is matched exactly before SearchApi requests the papers citing</span>
 <a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    it. By default all pages are retrieved. Set ``max_results`` to limit the</span>
 <a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">    result count. SearchApi pages contain up to 20 entries. By default only</span>
 <a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">    titles are populated. ``full_info=True`` also populates authors and</span>
@@ -5981,7 +5981,7 @@ returns the full name of the author from the ORCID public API.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Persist the shared SearchAPI cache (compatibility entry point).</p>
+        <p>Persist the shared SearchApi cache (compatibility entry point).</p>
 
 
             <details class="mkdocstrings-source">
@@ -5989,7 +5989,7 @@ returns the full name of the author from the ORCID public API.</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-48">48</a></span>
 <span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="k">def</span><span class="w"> </span><span class="nf">save_search_api_cache</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Persist the shared SearchAPI cache (compatibility entry point).&quot;&quot;&quot;</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Persist the shared SearchApi cache (compatibility entry point).&quot;&quot;&quot;</span>
 <a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="n">SearchAPIClient</span><span class="p">()</span><span class="o">.</span><span class="n">save_cache</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>

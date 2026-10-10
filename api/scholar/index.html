@@ -2338,7 +2338,7 @@
 <a id="__codelineno-0-631" name="__codelineno-0-631"></a>                    <span class="p">):</span>
 <a id="__codelineno-0-632" name="__codelineno-0-632"></a>                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_export</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">paper</span><span class="p">,</span> <span class="n">title_or_doi</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span>
 <a id="__codelineno-0-633" name="__codelineno-0-633"></a>                    <span class="c1"># Export links can be stale even when the cite response succeeds.</span>
-<a id="__codelineno-0-634" name="__codelineno-0-634"></a>            <span class="c1"># SearchAPI may intermittently return no cite results for a valid CID.</span>
+<a id="__codelineno-0-634" name="__codelineno-0-634"></a>            <span class="c1"># SearchApi may intermittently return no cite results for a valid CID.</span>
 <a id="__codelineno-0-635" name="__codelineno-0-635"></a>            <span class="k">return</span> <span class="kc">None</span>
 <a id="__codelineno-0-636" name="__codelineno-0-636"></a>
 <a id="__codelineno-0-637" name="__codelineno-0-637"></a>        <span class="n">export</span> <span class="o">=</span> <span class="n">fetch_export</span><span class="p">()</span>
@@ -3332,7 +3332,7 @@
 <a id="__codelineno-0-631" name="__codelineno-0-631"></a>                <span class="p">):</span>
 <a id="__codelineno-0-632" name="__codelineno-0-632"></a>                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_export</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">paper</span><span class="p">,</span> <span class="n">title_or_doi</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span>
 <a id="__codelineno-0-633" name="__codelineno-0-633"></a>                <span class="c1"># Export links can be stale even when the cite response succeeds.</span>
-<a id="__codelineno-0-634" name="__codelineno-0-634"></a>        <span class="c1"># SearchAPI may intermittently return no cite results for a valid CID.</span>
+<a id="__codelineno-0-634" name="__codelineno-0-634"></a>        <span class="c1"># SearchApi may intermittently return no cite results for a valid CID.</span>
 <a id="__codelineno-0-635" name="__codelineno-0-635"></a>        <span class="k">return</span> <span class="kc">None</span>
 <a id="__codelineno-0-636" name="__codelineno-0-636"></a>
 <a id="__codelineno-0-637" name="__codelineno-0-637"></a>    <span class="n">export</span> <span class="o">=</span> <span class="n">fetch_export</span><span class="p">()</span>
@@ -3618,7 +3618,7 @@
 
 
 
-        <p>SearchAPI HTTP transport and the shared citation cache.</p>
+        <p>SearchApi HTTP transport and the shared citation cache.</p>
 <p>Credentials are checked when a request is made, so cached results and empty
 queries retain their existing behavior without requiring an API key.</p>
 
@@ -3709,7 +3709,7 @@ queries retain their existing behavior without requiring an API key.</p>
 <span class="normal"><a href="#__codelineno-0-113">113</a></span>
 <span class="normal"><a href="#__codelineno-0-114">114</a></span>
 <span class="normal"><a href="#__codelineno-0-115">115</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">class</span><span class="w"> </span><span class="nc">SearchAPIClient</span><span class="p">:</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;SearchAPI HTTP transport and the shared citation cache.</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;SearchApi HTTP transport and the shared citation cache.</span>
 <a id="__codelineno-0-40" name="__codelineno-0-40"></a>
 <a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Credentials are checked when a request is made, so cached results and empty</span>
 <a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    queries retain their existing behavior without requiring an API key.</span>
@@ -3725,7 +3725,7 @@ queries retain their existing behavior without requiring an API key.</p>
 <a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="k">return</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-53" name="__codelineno-0-53"></a>
 <a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SEARCH_API_URL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one authenticated SearchAPI request without adding retries.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one authenticated SearchApi request without adding retries.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">SEARCH_API_KEY</span>
 <a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
 <a id="__codelineno-0-58" name="__codelineno-0-58"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -3846,7 +3846,7 @@ queries retain their existing behavior without requiring an API key.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Perform one authenticated SearchAPI request without adding retries.</p>
+        <p>Perform one authenticated SearchApi request without adding retries.</p>
 
 
             <details class="mkdocstrings-source">
@@ -3863,7 +3863,7 @@ queries retain their existing behavior without requiring an API key.</p>
 <span class="normal"><a href="#__codelineno-0-63">63</a></span>
 <span class="normal"><a href="#__codelineno-0-64">64</a></span>
 <span class="normal"><a href="#__codelineno-0-65">65</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SEARCH_API_URL</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform one authenticated SearchAPI request without adding retries.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform one authenticated SearchApi request without adding retries.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">api_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">SEARCH_API_KEY</span>
 <a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
 <a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
