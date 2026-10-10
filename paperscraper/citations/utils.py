@@ -41,12 +41,12 @@ SS_API_KEY = os.getenv("SS_API_KEY")
 
 
 def _load_search_api_cache(cache_path: Optional[str]) -> dict:
-    """Load the SearchAPI cache (compatibility entry point)."""
+    """Load the SearchApi cache (compatibility entry point)."""
     return SearchAPIClient.load_cache(cache_path)
 
 
 def save_search_api_cache() -> None:
-    """Persist the shared SearchAPI cache (compatibility entry point)."""
+    """Persist the shared SearchApi cache (compatibility entry point)."""
     SearchAPIClient().save_cache()
 
 

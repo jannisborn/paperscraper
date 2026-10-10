@@ -1,19 +1,29 @@
 # Scholar Metrics Analysis
 
-This page covers Google Scholar workflows through SearchAPI, researcher-level
+This page covers Google Scholar workflows through [SearchApi][searchapi], researcher-level
 Semantic Scholar metrics, and journal impact factors.
 
-## SearchAPI Setup
+<div align="right" markdown="1">
 
-Set the API key once through the environment, or pass `api_key=...` to each
+[![SearchApi Google Scholar API — Get your API key](../assets/searchapi.png){ width="480" }][searchapi]
+
+Supported by [SearchApi][searchapi]
+
+</div>
+
+[searchapi]: https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper
+
+## [SearchApi][searchapi] Setup
+
+Get a [SearchApi API key][searchapi] and set [`SEARCH_API_KEY`][searchapi] through the environment, or pass `api_key=...` to each
 function explicitly:
 
 ```sh
-export SEARCH_API_KEY=YOUR_SEARCHAPI_KEY
+export SEARCH_API_KEY=YOUR_API_KEY
 export SS_API_KEY=YOUR_SEMANTIC_SCHOLAR_KEY  # Optional enrichment.
 ```
 
-The SearchAPI-backed utilities cover the following workflows:
+The [SearchApi][searchapi] utilities cover the following workflows:
 
 | Task | Function | Result |
 | --- | --- | --- |
@@ -23,7 +33,7 @@ The SearchAPI-backed utilities cover the following workflows:
 | Find citing papers | [`get_citing_papers_from_title`][paperscraper.citations.get_citing_papers_from_title] | A list of `Paper` objects |
 | Find an author's papers | [`get_scholar_author_papers`][paperscraper.scholar.get_scholar_author_papers] | Author-paper metadata as a DataFrame |
 
-SearchAPI calls are retried with bounded exponential backoff. The complete
+[SearchApi][searchapi] calls are retried with bounded exponential backoff. The complete
 outputs below were captured from live calls on 23 September 2026. They reflect
 live Google Scholar data, so paper order and citation counts can change.
 
@@ -63,7 +73,7 @@ Retrieve a Google Scholar citation count from an exact paper title:
 7
 ```
 
-The default `backend` is `"auto"`: it uses SearchAPI when `SEARCH_API_KEY` is
+The default `backend` is `"auto"`: it uses [SearchApi][searchapi] when [`SEARCH_API_KEY`][searchapi] is
 configured, then Semantic Scholar when `SS_API_KEY` is configured, and otherwise
 falls back to `scholarly`, which has limited throughput. An explicit `api_key`
 can be passed with a specific backend. Citation counts can differ between
@@ -71,7 +81,7 @@ providers and between Scholar records for different versions of a paper.
 
 ## Bibliographic Export
 
-Export a Google Scholar citation through SearchAPI in BibTeX or EndNote format.
+Export a Google Scholar citation through [SearchApi][searchapi] in BibTeX or EndNote format.
 Both functions accept a title or DOI; DOI inputs are first resolved through
 Semantic Scholar:
 

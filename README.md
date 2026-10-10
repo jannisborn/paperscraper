@@ -6,7 +6,10 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 [![PyPI version](https://badge.fury.io/py/paperscraper.svg)](https://badge.fury.io/py/paperscraper)
 [![Downloads](https://static.pepy.tech/badge/paperscraper)](https://pepy.tech/project/paperscraper)
 [![codecov](https://codecov.io/github/jannisborn/paperscraper/branch/main/graph/badge.svg?token=Clwi0pu61a)](https://codecov.io/github/jannisborn/paperscraper)
-[![Supported by SearchAPI](https://img.shields.io/badge/Supported%20by-SearchAPI-5b5bd6)](https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper)
+[![Supported by SearchApi](https://img.shields.io/badge/Supported%20by-SearchApi-5b5bd6)](https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper)
+
+[searchapi]: https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper
+
 # paperscraper
 
 `paperscraper` is a `python` package for scraping publication metadata or full text files
@@ -18,6 +21,15 @@ It provides a streamlined interface to scrape metadata, retrieve citation counts
 from [Google Scholar](https://scholar.google.com/) or Semantic Scholar, query
 journal impact factors, and run simple postprocessing and plotting routines for
 meta-analysis.
+
+We're happy to announce that `paperscraper` now supports scraping Google Scholar
+via [SearchApi][searchapi]. See the [Scholar Metrics Analysis guide](https://jannisborn.github.io/paperscraper/examples/scholar-metrics-analysis/) for examples.
+
+<p align="center">
+  <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">
+    <img src="docs/assets/searchapi.png" alt="SearchApi Google Scholar API — Get your API key" width="480">
+  </a><br>
+</p>
 
 ## Table of Contents
 
@@ -227,7 +239,7 @@ get_citing_papers_from_title(title, max_results=5, full_info=True)
 Impactor().search("Nat Comms", threshold=85, sort_by="impact")
 ```
 
-Set `SEARCH_API_KEY` to use the SearchAPI Google Scholar backend. Outputs include
+Set [`SEARCH_API_KEY`][searchapi] to use the [SearchApi][searchapi] Google Scholar backend. Outputs include
 citation counts and Scholar search metadata (author list, title, abstract, journal).
 Citing-paper results are `Paper` objects; `full_info=True` also resolves available
 DOIs and authors. Author lookup prefers an exact Scholar profile and falls back to

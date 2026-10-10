@@ -1,4 +1,4 @@
-"""SearchAPI transport and Google Scholar workflows.
+"""SearchApi transport and Google Scholar workflows.
 
 The client owns HTTP and cache access. Scholar and citation services compose it
 and share metadata logic without importing one another's public wrappers.
@@ -36,7 +36,7 @@ _AUTHOR_PAGE_SIZE = 20
 
 
 class SearchAPIClient:
-    """SearchAPI HTTP transport and the shared citation cache.
+    """SearchApi HTTP transport and the shared citation cache.
 
     Credentials are checked when a request is made, so cached results and empty
     queries retain their existing behavior without requiring an API key.
@@ -52,7 +52,7 @@ class SearchAPIClient:
         return requests.get(url, timeout=90, **kwargs)
 
     def get(self, url: str = SEARCH_API_URL, **kwargs) -> requests.Response:
-        """Perform one authenticated SearchAPI request without adding retries."""
+        """Perform one authenticated SearchApi request without adding retries."""
         api_key = self.api_key if self.api_key is not None else SEARCH_API_KEY
         if not api_key:
             raise ValueError(
@@ -631,7 +631,7 @@ class SearchAPICitations:
                     ):
                         return self._format_export(data, paper, title_or_doi, format)
                     # Export links can be stale even when the cite response succeeds.
-            # SearchAPI may intermittently return no cite results for a valid CID.
+            # SearchApi may intermittently return no cite results for a valid CID.
             return None
 
         export = fetch_export()

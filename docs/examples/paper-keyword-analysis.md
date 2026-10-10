@@ -140,14 +140,16 @@ papers = get_scholar_papers(
 )
 ```
 
-Set `SEARCH_API_KEY` to use the SearchAPI backend. `top_k` controls the number
+Set [`SEARCH_API_KEY`][searchapi] to use the [SearchApi][searchapi] backend. `top_k` controls the number
 of matches to return and `num_enrich` controls how many of those receive extra
 author-profile lookups for full abstracts, author lists, journals, and citation counts.
-Set it to `0` for a single SearchAPI request but then your result will merely reflect
+Set it to `0` for a single [SearchApi][searchapi] request but then your result will merely reflect
 the content Google Scholar shows you [here](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=gt4sd&btnG=), i.e., all information is truncated.
 
 NOTE: Google Scholar does not use the nested Boolean query syntax. It follows the
 search behavior of the Google Scholar search box.
+
+[searchapi]: https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper
 
 ## Plotting
 

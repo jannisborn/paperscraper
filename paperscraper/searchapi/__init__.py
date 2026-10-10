@@ -1,4 +1,4 @@
-"""SearchAPI clients for Google Scholar workflows."""
+"""SearchApi clients for Google Scholar workflows."""
 
 from .core import SearchAPICitations, SearchAPIClient, SearchAPIScholar
 

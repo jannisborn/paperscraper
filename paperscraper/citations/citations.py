@@ -59,7 +59,7 @@ def get_citation_entry(
 
     ``title_or_doi`` may be a paper title or DOI. DOI inputs require an
     additional Semantic Scholar request to resolve the DOI to a title before
-    searching Google Scholar. The SearchAPI key is read from ``SEARCH_API_KEY``
+    searching Google Scholar. The SearchApi key is read from ``SEARCH_API_KEY``
     unless ``api_key`` is provided.
     """
     if not isinstance(title_or_doi, str):
@@ -87,7 +87,7 @@ def get_bibtex_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> str
     """Return a BibTeX entry for a paper title or DOI.
 
     DOI inputs consume an additional Semantic Scholar request to resolve the
-    DOI before the Google Scholar SearchAPI lookup.
+    DOI before the Google Scholar SearchApi lookup.
     """
     return get_citation_entry(title_or_doi, format="bibtex", api_key=api_key)
 
@@ -96,7 +96,7 @@ def get_endnote_entry(title_or_doi: str, *, api_key: Optional[str] = None) -> st
     """Return an EndNote entry for a paper title or DOI.
 
     DOI inputs consume an additional Semantic Scholar request to resolve the
-    DOI before the Google Scholar SearchAPI lookup.
+    DOI before the Google Scholar SearchApi lookup.
     """
     return get_citation_entry(title_or_doi, format="endnote", api_key=api_key)
 
@@ -111,7 +111,7 @@ def get_citing_papers_from_title(
 ) -> list[Paper]:
     """Return papers citing a paper on Google Scholar.
 
-    The title is matched exactly before SearchAPI requests the papers citing
+    The title is matched exactly before SearchApi requests the papers citing
     it. By default all pages are retrieved. Set ``max_results`` to limit the
     result count. SearchApi pages contain up to 20 entries. By default only
     titles are populated. ``full_info=True`` also populates authors and

@@ -82,8 +82,10 @@ inner lists define synonyms combined with `OR`.
 - Use [PDF Retrieval](examples/pdf-retrieval.md) for full-text download options
   and supported fallbacks.
 - Use [Scholar Metrics Analysis](examples/scholar-metrics-analysis.md) for
-  SearchAPI citation exports, citing papers, author publications, and metrics.
+  [SearchApi][searchapi] citation exports, citing papers, author publications, and metrics.
 - Use [Self-Citation Analysis](examples/self-citation-analysis.md) for
   self-citation and self-reference workflows.
 
 API details are available under [API Documentation](api/index.md).
+
+[searchapi]: https://www.searchapi.io/google-scholar?utm_source=Github&utm_medium=sponsorship&utm_campaign=google_scholar_api&utm_content=jannisborn%2Fpaperscraper
