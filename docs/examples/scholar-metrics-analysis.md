@@ -5,7 +5,7 @@ Semantic Scholar metrics, and journal impact factors.
 
 <div align="right" markdown="1">
 
-[![SearchApi Google Scholar API — Get your API key](../assets/searchapi.png){ width="480" }][searchapi]
+[![SearchApi Google Scholar API — Get your API key](https://raw.githubusercontent.com/jannisborn/paperscraper/main/assets/searchapi.png){ width="480" }][searchapi]
 
 Supported by [SearchApi][searchapi]
 

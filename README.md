@@ -27,7 +27,7 @@ via [SearchApi][searchapi]. See the [Scholar Metrics Analysis guide](https://jan
 
 <p align="center">
   <a href="https://www.searchapi.io/google-scholar?utm_source=Github&amp;utm_medium=sponsorship&amp;utm_campaign=google_scholar_api&amp;utm_content=jannisborn%2Fpaperscraper">
-    <img src="docs/assets/searchapi.png" alt="SearchApi Google Scholar API — Get your API key" width="480">
+    <img src="https://raw.githubusercontent.com/jannisborn/paperscraper/main/assets/searchapi.png" alt="SearchApi Google Scholar API — Get your API key" width="480">
   </a><br>
 </p>
 
